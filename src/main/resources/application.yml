@@ -1,3 +1,31 @@
 spring:
   application:
     name: waytoearth-backend
+
+# 카카오 설정 (환경변수에서 읽어옴)
+kakao:
+  client-id: ${KAKAO_CLIENT_ID}
+  redirect-uri: ${KAKAO_REDIRECT_URI}
+
+# Swagger 설정
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+
+# 로그 설정
+logging:
+  level:
+    com.waytoearth: DEBUG
+    org.springframework.web.reactive: DEBUG
+
+# 개발용 설정
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
