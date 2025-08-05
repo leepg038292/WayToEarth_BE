@@ -2,15 +2,19 @@ package com.waytoearth.service.auth;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.waytoearth.dto.response.auth.KakaoUserInfo;
+import com.waytoearth.exception.UnauthorizedException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import com.waytoearth.dto.response.auth.KakaoTokenResponse;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.util.Objects;
 
@@ -20,6 +24,7 @@ import java.util.Objects;
 public class KakaoApiService {
 
     private final WebClient kakaoAuthWebClient;
+    private final WebClient kakaoApiWebClient;
 
     @Value("${kakao.client-id}")
     private String clientId;
@@ -27,20 +32,25 @@ public class KakaoApiService {
     @Value("${kakao.redirect-uri}")
     private String redirectUri;
 
-    public KakaoTokenResponse getKakaoTokens(String authorizationCode) {
+    /**
+     * Authorization Code로 카카오 Access Token 발급
+     */
+    public String getKakaoAccessToken(String authorizationCode) {
         log.info("[KakaoApiService] 카카오 토큰 요청 시작 - code: {}", authorizationCode);
-        log.info("[KakaoApiService] client-id: {}", clientId);
-        log.info("[KakaoApiService] redirect-uri: {}", redirectUri);
+        log.info("[DEBUG] redirect_uri used for Kakao token request = {}", redirectUri);  // ✅ 추가!
+
 
         try {
+            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+            formData.add("grant_type", "authorization_code");
+            formData.add("client_id", clientId);
+            formData.add("redirect_uri", redirectUri);
+            formData.add("code", authorizationCode);
+
             KakaoTokenDto kakaoTokenDto = kakaoAuthWebClient.post()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/oauth/token")
-                            .queryParam("grant_type", "authorization_code")
-                            .queryParam("client_id", clientId)
-                            .queryParam("redirect_uri", redirectUri)
-                            .queryParam("code", authorizationCode)
-                            .build(true))
+                    .uri("/oauth/token")
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .body(BodyInserters.fromFormData(formData))
                     .retrieve()
                     .bodyToMono(KakaoTokenDto.class)
                     .block();
@@ -48,26 +58,44 @@ public class KakaoApiService {
             Objects.requireNonNull(kakaoTokenDto, "카카오 토큰 응답이 null입니다");
 
             log.info("[KakaoApiService] 카카오 토큰 발급 성공");
-            log.info("[KakaoApiService] access_token: {}", kakaoTokenDto.getAccessToken());
-            log.info("[KakaoApiService] expires_in: {}", kakaoTokenDto.getExpiresIn());
-            log.info("[KakaoApiService] client-id: {}", clientId);
-            log.info("[KakaoApiService] redirect-uri: {}", redirectUri);
-
-            return KakaoTokenResponse.builder()
-                    .accessToken(kakaoTokenDto.getAccessToken())
-                    .refreshToken(kakaoTokenDto.getRefreshToken())
-                    .tokenType(kakaoTokenDto.getTokenType())
-                    .expiresIn(kakaoTokenDto.getExpiresIn())
-                    .build();
+            return kakaoTokenDto.getAccessToken();
 
         } catch (WebClientResponseException e) {
-            log.error("[KakaoApiService] 카카오 API 에러 - Status: {}", e.getStatusCode());
-            log.error("[KakaoApiService] 카카오 API 에러 - Response Body: {}", e.getResponseBodyAsString());
-            log.error("[KakaoApiService] 카카오 API 에러 - Headers: {}", e.getHeaders());
-            throw e;
+            log.error("[KakaoApiService] 카카오 토큰 발급 실패 - Status: {}, Body: {}",
+                    e.getStatusCode(), e.getResponseBodyAsString());
+            throw new UnauthorizedException("카카오 인증에 실패했습니다: 유효하지 않은 인가 코드", e);
         } catch (Exception e) {
-            log.error("[KakaoApiService] 예상치 못한 에러", e);
-            throw e;
+            log.error("[KakaoApiService] 카카오 토큰 발급 중 예상치 못한 에러", e);
+            throw new RuntimeException("카카오 토큰 발급 중 오류가 발생했습니다.", e);
+        }
+    }
+
+    /**
+     * 카카오 액세스 토큰으로 사용자 정보 조회
+     */
+    public KakaoUserInfo getKakaoUserInfo(String accessToken) {
+        log.info("[KakaoApiService] 카카오 사용자 정보 조회 시작");
+
+        try {
+            KakaoUserInfo kakaoUserInfo = kakaoApiWebClient.get()
+                    .uri("/v2/user/me")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .retrieve()
+                    .bodyToMono(KakaoUserInfo.class)
+                    .block();
+
+            Objects.requireNonNull(kakaoUserInfo, "카카오 사용자 정보 응답이 null입니다");
+
+            log.info("[KakaoApiService] 카카오 사용자 정보 조회 성공 - kakaoId: {}", kakaoUserInfo.getId());
+            return kakaoUserInfo;
+
+        } catch (WebClientResponseException e) {
+            log.error("[KakaoApiService] 카카오 사용자 정보 조회 실패 - Status: {}, Body: {}",
+                    e.getStatusCode(), e.getResponseBodyAsString());
+            throw new UnauthorizedException("카카오 사용자 정보 조회에 실패했습니다", e);
+        } catch (Exception e) {
+            log.error("[KakaoApiService] 카카오 사용자 정보 조회 중 예상치 못한 에러", e);
+            throw new RuntimeException("카카오 사용자 정보 조회 중 오류가 발생했습니다.", e);
         }
     }
 

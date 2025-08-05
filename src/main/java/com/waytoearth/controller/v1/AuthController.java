@@ -1,18 +1,23 @@
 package com.waytoearth.controller.v1;
 
+import com.waytoearth.dto.request.auth.KakaoLoginRequest;
+import com.waytoearth.dto.request.auth.OnboardingRequest;
+import com.waytoearth.dto.response.auth.LoginResponse;
+import com.waytoearth.dto.response.auth.OnboardingResponse;
+import com.waytoearth.security.AuthUser;
+import com.waytoearth.security.AuthenticatedUser;
+import com.waytoearth.service.auth.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.waytoearth.dto.request.auth.KakaoLoginRequest;
-import com.waytoearth.dto.response.auth.KakaoTokenResponse;
-import com.waytoearth.service.auth.KakaoApiService;
 
 @Tag(name = "인증 API", description = "카카오 로그인 및 사용자 인증 관련 API")
 @RestController
@@ -21,45 +26,53 @@ import com.waytoearth.service.auth.KakaoApiService;
 @Slf4j
 public class AuthController {
 
-    private final KakaoApiService kakaoApiService;
+    private final AuthService authService;
 
-    @Operation(summary = "카카오 로그인 콜백", description = "카카오에서 리다이렉트된 인가 코드 처리 (브라우저 리다이렉트용)")
+    @Operation(summary = "카카오 로그인", description = "카카오 Authorization Code로 로그인 처리")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "토큰 발급 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 인가 코드"),
-            @ApiResponse(responseCode = "500", description = "서버 오류")
-    })
-    @GetMapping("/kakao")
-    public ResponseEntity<KakaoTokenResponse> kakaoCallback(
-            @Parameter(description = "카카오 인가 코드", required = true, example = "abc123xyz")
-            @RequestParam("code") String code) {
-
-        log.info("[AuthController] 카카오 콜백 받음 - code: {}", code);
-
-        // 카카오에서 토큰 발급받기
-        KakaoTokenResponse response = kakaoApiService.getKakaoTokens(code);
-
-        log.info("[AuthController] 카카오 토큰 발급 완료 (GET)");
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(summary = "카카오 로그인", description = "프론트에서 인가 코드를 직접 전송하여 토큰 발급 (API 호출용)")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "토큰 발급 성공"),
+            @ApiResponse(responseCode = "200", description = "로그인 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 인가 코드"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("/kakao")
-    public ResponseEntity<KakaoTokenResponse> kakaoLogin(
+    public ResponseEntity<LoginResponse> kakaoLogin(
             @Parameter(description = "카카오 로그인 요청", required = true)
             @RequestBody @Valid KakaoLoginRequest request) {
 
-        log.info("[AuthController] 카카오 로그인 요청 - authorizationCode: {}", request.getAuthorizationCode());
+        log.info("[AuthController] 카카오 로그인 요청 - authorizationCode: {}",
+                request.getCode());
 
-        // 카카오에서 토큰 발급받기
-        KakaoTokenResponse response = kakaoApiService.getKakaoTokens(request.getAuthorizationCode());
+        LoginResponse response = authService.loginWithKakaoCode(request.getCode());
 
-        log.info("[AuthController] 카카오 토큰 발급 완료 (POST)");
+        log.info("[AuthController] 카카오 로그인 완료 - userId: {}, isNewUser: {}",
+                response.getUserId(), response.getIsNewUser());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "온보딩 완료",
+            description = "신규 사용자 온보딩 정보 입력",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "온보딩 완료"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
+            @ApiResponse(responseCode = "401", description = "인증 토큰 없음/만료"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    @PostMapping("/onboarding")
+    public ResponseEntity<OnboardingResponse> completeOnboarding(
+            @Parameter(hidden = true) @AuthUser AuthenticatedUser user,
+            @Parameter(description = "온보딩 정보", required = true)
+            @RequestBody @Valid OnboardingRequest request) {
+
+        log.info("[AuthController] 온보딩 완료 요청 - userId: {}, nickname: {}",
+                user.getUserId(), request.getNickname());
+
+        OnboardingResponse response = authService.completeOnboarding(user.getUserId(), request);
+
+        log.info("[AuthController] 온보딩 완료 - userId: {}", response.getUserId());
         return ResponseEntity.ok(response);
     }
 }

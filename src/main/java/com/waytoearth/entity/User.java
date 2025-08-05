@@ -1,0 +1,89 @@
+package com.waytoearth.entity;
+
+import com.waytoearth.entity.enums.AgeGroup;
+import com.waytoearth.entity.enums.Gender;
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "users")
+@EntityListeners(AuditingEntityListener.class)
+@Getter
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private Long id;
+
+    @Column(name = "kakao_id", unique = true, nullable = false)
+    private Long kakaoId;
+
+    @Column(name = "nickname", length = 20, unique = true)
+    private String nickname;
+
+    @Column(name = "residence", length = 100)
+    private String residence;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "age_group")
+    private AgeGroup ageGroup;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender")
+    private Gender gender;
+
+    @Column(name = "weekly_goal_distance", precision = 5, scale = 2)
+    private BigDecimal weeklyGoalDistance;
+
+    @Column(name = "profile_image_url", length = 500)
+    private String profileImageUrl;
+
+    @Column(name = "is_onboarding_completed", nullable = false)
+    @Builder.Default
+    private Boolean isOnboardingCompleted = false;
+
+    // 자동 계산 통계 필드들
+    @Column(name = "total_distance", precision = 8, scale = 2)
+    @Builder.Default
+    private BigDecimal totalDistance = BigDecimal.ZERO;
+
+    @Column(name = "total_running_count")
+    @Builder.Default
+    private Integer totalRunningCount = 0;
+
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    // 온보딩 완료 메서드
+    public void completeOnboarding(String nickname, String residence, AgeGroup ageGroup,
+                                   Gender gender, BigDecimal weeklyGoalDistance, String profileImageUrl) {
+        this.nickname = nickname;
+        this.residence = residence;
+        this.ageGroup = ageGroup;
+        this.gender = gender;
+        this.weeklyGoalDistance = weeklyGoalDistance;
+        this.profileImageUrl = profileImageUrl;
+        this.isOnboardingCompleted = true;
+    }
+
+    // 러닝 통계 업데이트 메서드
+    public void updateRunningStats(BigDecimal distance) {
+        this.totalDistance = this.totalDistance.add(distance);
+        this.totalRunningCount++;
+    }
+}
