@@ -1,15 +1,23 @@
 package com.waytoearth.config;
 
+import com.waytoearth.security.AuthUserArgumentResolver;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.List;
+
 @Configuration
+@RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
+
+    private final AuthUserArgumentResolver authUserArgumentResolver;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -18,6 +26,11 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
+    }
+
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(authUserArgumentResolver);
     }
 
     @Bean
@@ -31,7 +44,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public WebClient kakaoApiWebClient() {
         return WebClient.builder()
-                .baseUrl("https://kapi.kakao.com") // 사용자 정보 조회용 (내일 사용)
+                .baseUrl("https://kapi.kakao.com") // 사용자 정보 조회용
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
