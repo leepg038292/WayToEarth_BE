@@ -23,17 +23,20 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      # ✅ RDS 접속 테스트
-      - name: Install MariaDB client
-        run: sudo apt-get update && sudo apt-get install -y mariadb-client
-
-      - name: Test RDS connection
-        run: |
-          mariadb \
-            -h ${{ secrets.RDS_ENDPOINT }} \
-            -u ${{ secrets.SPRING_DATASOURCE_USERNAME }} \
-            -p${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
-            -e "SELECT NOW();"
+      # ✅ RDS 접속 테스트 (EC2에서 실행)
+      - name: Test RDS connection from EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            sudo apt-get update && sudo apt-get install -y mariadb-client
+            mariadb \
+              -h ${{ secrets.RDS_ENDPOINT }} \
+              -u ${{ secrets.SPRING_DATASOURCE_USERNAME }} \
+              -p${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
+              -e "SELECT NOW();"
 
       - name: 🛠️ Build with Gradle
         env:
