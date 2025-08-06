@@ -25,10 +25,10 @@ spring:
             user-name-attribute: id
 
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: org.mariadb.jdbc.Driver
+    url: ${DB_URL:jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:}
+    driver-class-name: ${DB_DRIVER:org.h2.Driver}
 
   jpa:
     hibernate:
@@ -37,10 +37,10 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.MariaDBDialect
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.H2Dialect}
     open-in-view: false
 
-# 기존 KakaoApiService가 사용하는 설정..
+# 기존 KakaoApiService가 사용하는 설정
 kakao:
   client-id: ${KAKAO_CLIENT_ID}
   redirect-uri: ${KAKAO_REDIRECT_URI}
@@ -48,14 +48,12 @@ kakao:
 # JWT 설정
 jwt:
   secret: ${JWT_SECRET}
-  expiration: 86400000  # 24시간
+  expiration: 86400000
 
-# 서버 설정
 server:
   address: 0.0.0.0
   port: 8080
 
-# Swagger 설정
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -64,7 +62,6 @@ springdoc:
   api-docs:
     path: /v3/api-docs
 
-# 로깅 설정
 logging:
   level:
     org.hibernate.SQL: DEBUG
@@ -72,9 +69,3 @@ logging:
     org.springframework.security: DEBUG
     com.waytoearth: DEBUG
     org.springframework.web.reactive: DEBUG
-
----
-spring:
-  config:
-    activate:
-      on-profile: local
