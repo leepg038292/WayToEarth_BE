@@ -25,10 +25,10 @@ spring:
             user-name-attribute: id
 
   datasource:
-    url: ${DB_URL:jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1}
-    username: ${DB_USERNAME:sa}
-    password: ${DB_PASSWORD:}
-    driver-class-name: ${DB_DRIVER:org.h2.Driver}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.mariadb.jdbc.Driver
 
   jpa:
     hibernate:
@@ -37,7 +37,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.H2Dialect}
+        dialect: org.hibernate.dialect.MariaDBDialect
     open-in-view: false
 
 # 기존 KakaoApiService가 사용하는 설정
@@ -50,10 +50,12 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: 86400000
 
+# 서버 설정
 server:
   address: 0.0.0.0
   port: 8080
 
+# Swagger 설정
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -62,6 +64,7 @@ springdoc:
   api-docs:
     path: /v3/api-docs
 
+# 로깅 설정
 logging:
   level:
     org.hibernate.SQL: DEBUG
