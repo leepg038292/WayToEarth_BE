@@ -1,0 +1,82 @@
+package com.waytoearth.config;
+
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class SwaggerConfig {
+
+    @Bean
+    public OpenAPI openAPI() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("Way to Earth API")
+                        .description("러닝 기반 가상 여정 및 크루 시스템 API")
+                        .version("1.0.0")
+                        .contact(new Contact()
+                                .name("Way to Earth Team")
+                                .email("team@waytoearth.com")))
+                .components(new Components()
+                        .addSecuritySchemes("bearerAuth",
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")))
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
+    }
+
+    @Bean
+    public GroupedOpenApi authApi() {
+        return GroupedOpenApi.builder()
+                .group("1. 인증 API")
+                .pathsToMatch("/v1/auth/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi runningApi() {
+        return GroupedOpenApi.builder()
+                .group("2. 러닝 기록 API")
+                .pathsToMatch("/v1/running/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi virtualCourseApi() {
+        return GroupedOpenApi.builder()
+                .group("3. 가상 코스 API")
+                .pathsToMatch("/v1/virtual-courses/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi feedApi() {
+        return GroupedOpenApi.builder()
+                .group("4. 피드 API")
+                .pathsToMatch("/v1/feeds/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi crewApi() {
+        return GroupedOpenApi.builder()
+                .group("5. 크루 API")
+                .pathsToMatch("/v1/crews/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi userApi() {
+        return GroupedOpenApi.builder()
+                .group("6. 사용자 API")
+                .pathsToMatch("/v1/users/**")
+                .build();
+    }
+}

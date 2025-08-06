@@ -1,0 +1,107 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.4'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.waytoearth'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	querydslVersion = "5.0.0"
+}
+
+dependencies {
+	// QueryDSL
+	implementation "com.querydsl:querydsl-jpa:${querydslVersion}:jakarta"
+	annotationProcessor "com.querydsl:querydsl-apt:${querydslVersion}:jakarta"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+
+	// Spring Boot Starters
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+	// DB
+	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+
+	// Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// JWT
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+	// Swagger / OpenAPI
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
+
+	// JSON
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+	// AWS S3
+	implementation 'software.amazon.awssdk:s3:2.21.29'
+	implementation 'software.amazon.awssdk:sts:2.21.29'
+
+	// Firebase (푸시 알림)
+	implementation 'com.google.firebase:firebase-admin:9.2.0'
+
+	// 이미지 처리
+	implementation 'org.imgscalr:imgscalr-lib:4.2'
+
+	// 유틸리티
+	implementation 'org.apache.commons:commons-lang3:3.13.0'
+	implementation 'commons-io:commons-io:2.11.0'
+
+	// WebClient (카카오 API 호출용)
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+	// Redis (ElastiCache 연동용)
+	//implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	// Actuator (헬스체크용 - ALB/배포 환경에서 필요)
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+	//.env 로더
+	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
+
+	// Test
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+// .env 파일 로드
+tasks.named('bootRun') {
+	doFirst {
+		def envFile = file('.env')
+		if (envFile.exists()) {
+			envFile.readLines().each {
+				def (key, value) = it.tokenize('=')
+				if (key && value) {
+					environment key, value
+				}
+			}
+		}
+	}
+}
