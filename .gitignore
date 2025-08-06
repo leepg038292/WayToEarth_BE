@@ -6,7 +6,7 @@ build/
 !**/src/test/**/build/
 
 # 환경 변수 파일
-src/main/resources/.env
+.env
 
 
 ### STS ###
