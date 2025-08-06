@@ -40,7 +40,7 @@ spring:
         dialect: org.hibernate.dialect.MariaDBDialect
     open-in-view: false
 
-# 기존 KakaoApiService가 사용하는 설정.
+# 기존 KakaoApiService가 사용하는 설정..
 kakao:
   client-id: ${KAKAO_CLIENT_ID}
   redirect-uri: ${KAKAO_REDIRECT_URI}
