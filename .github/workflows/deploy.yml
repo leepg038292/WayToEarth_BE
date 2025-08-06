@@ -23,7 +23,23 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      # ✅ RDS 접속 테스트
+      - name: Install MariaDB client
+        run: sudo apt-get update && sudo apt-get install -y mariadb-client
+
+      - name: Test RDS connection
+        run: |
+          mariadb \
+            -h ${{ secrets.RDS_ENDPOINT }} \
+            -u ${{ secrets.SPRING_DATASOURCE_USERNAME }} \
+            -p${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
+            -e "SELECT NOW();"
+
       - name: 🛠️ Build with Gradle
+        env:
+          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
         run: ./gradlew build --no-daemon
 
       - name: 🐳 Login to Docker Hub
@@ -47,4 +63,8 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/waytoearth:latest
             docker stop waytoearth || true
             docker rm waytoearth || true
-            docker run -d -p 8080:8080 --name waytoearth ${{ secrets.DOCKER_USERNAME }}/waytoearth:latest
+            docker run -d \
+              -p 8080:8080 \
+              --name waytoearth \
+              --env-file /home/ubuntu/.env \
+              ${{ secrets.DOCKER_USERNAME }}/waytoearth:latest
