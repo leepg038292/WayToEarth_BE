@@ -3,6 +3,7 @@ package com.waytoearth.service.auth;
 import com.waytoearth.exception.UnauthorizedException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -14,12 +15,14 @@ import java.util.Date;
 @Slf4j
 public class JwtTokenProvider {
 
+
     private final SecretKey secretKey;
     private final long jwtExpirationMs;
 
     public JwtTokenProvider(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.expiration:86400000}") long expiration) { // 기본값 24시간
+            @Value("${jwt.expiration:86400000}") long expiration) {
+        log.info("Loaded JWT secret: {}", secret);// 기본값 24시간
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
         this.jwtExpirationMs = expiration;
     }
