@@ -10,20 +10,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout Source Code
+      - name:  Checkout Source Code
         uses: actions/checkout@v3
 
-      # ✅ gradlew 실행 권한 부여
+      #  gradlew 실행 권한 부여.
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: ☕ Set up JDK 21 (Temurin)
+      - name:  Set up JDK 21 (Temurin)
         uses: actions/setup-java@v3
         with:
           java-version: '21'
           distribution: 'temurin'
 
-      # ✅ RDS 접속 테스트 (EC2에서 실행)
+      #  RDS 접속 테스트 (EC2에서 실행).
       - name: Test RDS connection from EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -38,26 +38,26 @@ jobs:
               -p${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
               -e "SELECT NOW();"
 
-      # ✅ 테스트 생략하고 빌드만 실행
-      - name: 🛠️ Build with Gradle (Skip Tests)
+      #  테스트 생략하고 빌드만 실행
+      - name: ️ Build with Gradle (Skip Tests)
         env:
           SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
           SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
         run: ./gradlew build -x test --no-daemon
 
-      - name: 🐳 Login to Docker Hub
+      - name:  Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: 📦 Build and Push Docker Image
+      - name:  Build and Push Docker Image
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/waytoearth:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/waytoearth:latest
 
-      - name: 🚀 Deploy on EC2 via SSH
+      - name:  Deploy on EC2 via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}

@@ -64,7 +64,7 @@ springdoc:
   api-docs:
     path: /v3/api-docs
 
-# 로깅 설정
+# 로깅 설정.
 logging:
   level:
     org.hibernate.SQL: DEBUG
