@@ -18,46 +18,33 @@ import java.util.Optional;
 @Repository
 public interface RunningRecordRepository extends JpaRepository<RunningRecord, Long> {
 
-    // 세션 ID로 조회 (진행 중인 세션 관리)
+    // 세션 단건
     Optional<RunningRecord> findBySessionId(String sessionId);
-
-    // 사용자와 ID로 조회 (권한 체크 포함)
     Optional<RunningRecord> findByIdAndUser(Long id, User user);
 
-    // 사용자의 완료된 러닝 기록 페이징 조회
+    // 기본 목록(완료된 기록) - 최신순
     Page<RunningRecord> findByUserAndIsCompletedTrueOrderByStartedAtDesc(User user, Pageable pageable);
 
-    // 사용자의 특정 타입 러닝 기록 페이징 조회
+    // 타입 필터 + 최신순
     Page<RunningRecord> findByUserAndRunningTypeAndIsCompletedTrueOrderByStartedAtDesc(
             User user, RunningType runningType, Pageable pageable);
 
-    // 사용자의 전체 러닝 기록 개수
+    // 진행 중인 세션
+    Optional<RunningRecord> findByUserAndIsCompletedFalse(User user);
+
+    // 누적 개수/거리
     long countByUserAndIsCompletedTrue(User user);
 
-    // 사용자의 총 누적 거리 (완료된 기록 기준)
-    @Query("SELECT COALESCE(SUM(r.distance), 0) FROM RunningRecord r WHERE r.user = :user AND r.isCompleted = true")
+    @Query("SELECT COALESCE(SUM(r.distance), 0) " +
+            "FROM RunningRecord r " +
+            "WHERE r.user = :user AND r.isCompleted = true")
     BigDecimal getTotalDistanceByUser(@Param("user") User user);
 
-    // 특정 기간 동안의 러닝 기록 조회
-    @Query("SELECT r FROM RunningRecord r WHERE r.user = :user AND r.isCompleted = true " +
-            "AND r.startedAt BETWEEN :startDate AND :endDate ORDER BY r.startedAt DESC")
-    List<RunningRecord> findByUserAndPeriod(@Param("user") User user,
-                                            @Param("startDate") LocalDateTime startDate,
-                                            @Param("endDate") LocalDateTime endDate);
+    //  범용 기간 조회 (서비스에서 주/월 계산 후 주입)
+    List<RunningRecord> findCompletedByUserAndStartedAtBetweenOrderByStartedAtDesc(
+            User user, LocalDateTime startDate, LocalDateTime endDate);
 
-    // 주간 통계
-    @Query("SELECT r FROM RunningRecord r WHERE r.user = :user AND r.isCompleted = true " +
-            "AND r.startedAt >= :weekStart ORDER BY r.startedAt")
-    List<RunningRecord> findWeeklyRecords(@Param("user") User user,
-                                          @Param("weekStart") LocalDateTime weekStart);
-
-    // 월간 통계
-    @Query("SELECT r FROM RunningRecord r WHERE r.user = :user AND r.isCompleted = true " +
-            "AND YEAR(r.startedAt) = :year AND MONTH(r.startedAt) = :month ORDER BY r.startedAt")
-    List<RunningRecord> findMonthlyRecords(@Param("user") User user,
-                                           @Param("year") int year,
-                                           @Param("month") int month);
-
-    // 진행 중인 러닝 세션 조회
-    Optional<RunningRecord> findByUserAndIsCompletedFalse(User user);
+    //  타입 + 기간 조회
+    List<RunningRecord> findCompletedByUserAndRunningTypeAndStartedAtBetweenOrderByStartedAtDesc(
+            User user, RunningType runningType, LocalDateTime startDate, LocalDateTime endDate);
 }
