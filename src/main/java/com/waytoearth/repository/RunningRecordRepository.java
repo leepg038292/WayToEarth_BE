@@ -18,33 +18,46 @@ import java.util.Optional;
 @Repository
 public interface RunningRecordRepository extends JpaRepository<RunningRecord, Long> {
 
-    // 세션 단건
+    // ===== 단건 조회 =====
     Optional<RunningRecord> findBySessionId(String sessionId);
     Optional<RunningRecord> findByIdAndUser(Long id, User user);
 
-    // 기본 목록(완료된 기록) - 최신순
+    // 진행 중인 세션(사용자당 0~1개가 정상)
+    Optional<RunningRecord> findByUserAndIsCompletedFalse(User user);
+    boolean existsByUserAndIsCompletedFalse(User user);
+
+    // ===== 목록 조회 (완료된 기록) =====
+    // 기본 목록 - 최신순 페이징
     Page<RunningRecord> findByUserAndIsCompletedTrueOrderByStartedAtDesc(User user, Pageable pageable);
 
-    // 타입 필터 + 최신순
+    // 타입 필터 + 최신순 페이징
     Page<RunningRecord> findByUserAndRunningTypeAndIsCompletedTrueOrderByStartedAtDesc(
             User user, RunningType runningType, Pageable pageable);
 
-    // 진행 중인 세션
-    Optional<RunningRecord> findByUserAndIsCompletedFalse(User user);
-
-    // 누적 개수/거리
-    long countByUserAndIsCompletedTrue(User user);
-
-    @Query("SELECT COALESCE(SUM(r.distance), 0) " +
-            "FROM RunningRecord r " +
-            "WHERE r.user = :user AND r.isCompleted = true")
-    BigDecimal getTotalDistanceByUser(@Param("user") User user);
-
-    //  범용 기간 조회 (서비스에서 주/월 계산 후 주입)
-    List<RunningRecord> findCompletedByUserAndStartedAtBetweenOrderByStartedAtDesc(
+    // 기간 필터 (비페이징, 최신/오름 정렬 각각 제공)
+    List<RunningRecord> findByUserAndIsCompletedTrueAndStartedAtBetweenOrderByStartedAtDesc(
             User user, LocalDateTime startDate, LocalDateTime endDate);
 
-    //  타입 + 기간 조회
-    List<RunningRecord> findCompletedByUserAndRunningTypeAndStartedAtBetweenOrderByStartedAtDesc(
+    List<RunningRecord> findByUserAndRunningTypeAndIsCompletedTrueAndStartedAtBetweenOrderByStartedAtDesc(
             User user, RunningType runningType, LocalDateTime startDate, LocalDateTime endDate);
+
+    List<RunningRecord> findByUserAndIsCompletedTrueAndStartedAtBetweenOrderByStartedAtAsc(
+            User user, LocalDateTime startDate, LocalDateTime endDate);
+
+    // 기간 필터 + 페이징 (필요 시 사용)
+    Page<RunningRecord> findByUserAndIsCompletedTrueAndStartedAtBetweenOrderByStartedAtDesc(
+            User user, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
+
+    Page<RunningRecord> findByUserAndRunningTypeAndIsCompletedTrueAndStartedAtBetweenOrderByStartedAtDesc(
+            User user, RunningType runningType, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
+
+    // ===== 누적/통계 =====
+    long countByUserAndIsCompletedTrue(User user);
+
+    @Query("""
+           select coalesce(sum(r.distance), 0)
+           from RunningRecord r
+           where r.user = :user and r.isCompleted = true
+           """)
+    BigDecimal sumCompletedDistanceByUser(@Param("user") User user);
 }
