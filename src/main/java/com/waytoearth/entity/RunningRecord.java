@@ -2,6 +2,7 @@ package com.waytoearth.entity;
 
 import com.waytoearth.entity.enums.RunningType;
 import com.waytoearth.entity.enums.WeatherCondition;
+import com.waytoearth.entity.enums.RunningStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -52,6 +53,10 @@ public class RunningRecord {
     @Column(name = "virtual_course_id")
     private Long virtualCourseId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20, nullable = false)
+    private RunningStatus status;
+
     /** 총 거리(km) */
     @Column(name = "distance", precision = 10, scale = 2)
     private BigDecimal distance;
@@ -94,6 +99,7 @@ public class RunningRecord {
         this.calories = calories;
         this.endedAt = endedAt;
         this.isCompleted = true;
+        this.status = RunningStatus.COMPLETED;
     }
 
     /** 경로 포인트 추가 */
