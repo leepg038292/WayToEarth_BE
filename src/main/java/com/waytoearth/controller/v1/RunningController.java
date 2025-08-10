@@ -1,8 +1,12 @@
 package com.waytoearth.controller.v1;
 
 import com.waytoearth.dto.request.running.RunningCompleteRequest;
+import com.waytoearth.dto.request.running.RunningPauseRequest;
+import com.waytoearth.dto.request.running.RunningResumeRequest;
 import com.waytoearth.dto.request.running.RunningStartRequest;
 import com.waytoearth.dto.response.running.RunningCompleteResponse;
+import com.waytoearth.dto.response.running.RunningPauseResponse;
+import com.waytoearth.dto.response.running.RunningResumeResponse;
 import com.waytoearth.dto.response.running.RunningStartResponse;
 import com.waytoearth.security.AuthUser;
 import com.waytoearth.security.AuthenticatedUser;
@@ -32,6 +36,28 @@ public class RunningController {
     ) {
         RunningStartResponse response = runningService.startRunning(user.getUserId(), request);
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "러닝 일시정지", description = "현재까지의 거리/시간을 스냅샷으로 저장하고 일시정지 상태로 전환합니다.")
+    @PostMapping("/pause")
+    public ResponseEntity<RunningPauseResponse> pause(
+            @AuthUser AuthenticatedUser user,
+            @Valid @RequestBody RunningPauseRequest request
+    ) {
+        return ResponseEntity.ok(
+                runningService.pauseRunning(user.getUserId(), request)
+        );
+    }
+
+    @Operation(summary = "러닝 재개", description = "일시정지된 세션을 RUNNING 상태로 전환합니다.")
+    @PostMapping("/resume")
+    public ResponseEntity<RunningResumeResponse> resume(
+            @AuthUser AuthenticatedUser user,
+            @Valid @RequestBody RunningResumeRequest request
+    ) {
+        return ResponseEntity.ok(
+                runningService.resumeRunning(user.getUserId(), request)
+        );
     }
 
     @Operation(summary = "러닝 완료", description = "거리, 시간, 경로 데이터를 받아 러닝을 완료합니다.")
