@@ -6,6 +6,6 @@ import com.waytoearth.dto.response.running.RunningCompleteResponse;
 import com.waytoearth.dto.response.running.RunningStartResponse;
 
 public interface RunningService {
-    RunningStartResponse start(String kakaoId, RunningStartRequest req);
-    RunningCompleteResponse complete(String kakaoId, RunningCompleteRequest req);
+    RunningStartResponse startRunning(Long userId, RunningStartRequest request);
+    RunningCompleteResponse completeRunning(Long userId, RunningCompleteRequest request);
 }

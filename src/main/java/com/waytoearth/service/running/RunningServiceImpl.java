@@ -5,132 +5,142 @@ import com.waytoearth.dto.request.running.RunningStartRequest;
 import com.waytoearth.dto.response.running.RunningCompleteResponse;
 import com.waytoearth.dto.response.running.RunningStartResponse;
 import com.waytoearth.entity.RunningRecord;
-import com.waytoearth.entity.RunningRoute;
 import com.waytoearth.entity.User;
-import com.waytoearth.entity.enums.RunningType;
+import com.waytoearth.exception.InvalidParameterException;
+import com.waytoearth.exception.UserNotFoundException;
 import com.waytoearth.repository.RunningRecordRepository;
+import com.waytoearth.repository.UserRepository;
 import com.waytoearth.service.running.RunningService;
-import com.waytoearth.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class RunningServiceImpl implements RunningService {
 
     private final RunningRecordRepository runningRecordRepository;
-    private final UserService userService;
+    private final UserRepository userRepository;
 
     @Override
-    public RunningStartResponse start(String kakaoId, RunningStartRequest req) {
-        User user = userService.getByKakaoId(kakaoId);
+    @Transactional
+    public RunningStartResponse startRunning(Long userId, RunningStartRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
-        // 유저가 이미 진행중이면 예외
-        if (runningRecordRepository.existsByUserAndIsCompletedFalse(user)) {
-            throw new RunningException("이미 진행 중인 러닝 세션이 있습니다.");
+        if (runningRecordRepository.existsBySessionIdAndIsCompletedFalse(request.getSessionId())) {
+            throw new InvalidParameterException("이미 진행 중인 세션입니다. sessionId=" + request.getSessionId());
         }
-
-        String sessionId = Optional.ofNullable(req.getSessionId())
-                .filter(s -> !s.isBlank())
-                .orElse(UUID.randomUUID().toString());
-
-        RunningType type = RunningType.fromCode(req.getRunningType());
 
         RunningRecord record = RunningRecord.builder()
                 .user(user)
-                .sessionId(sessionId)
-                .title((req.getTitle() != null && !req.getTitle().isBlank()) ? req.getTitle() : "러닝 기록")
-                .runningType(type)
-                // weatherCondition 설정 제거 (기록 스냅샷 미사용)
+                .sessionId(request.getSessionId())
+                .runningType(request.getRunningType())
+                .weatherCondition(request.getWeatherCondition())
                 .startedAt(LocalDateTime.now())
                 .isCompleted(false)
                 .build();
 
         runningRecordRepository.save(record);
 
-        return new RunningStartResponse(record.getSessionId(), record.getStartedAt());
+        return RunningStartResponse.builder()
+                .sessionId(record.getSessionId())
+                .startedAt(record.getStartedAt())
+                .build();
     }
 
     @Override
-    public RunningCompleteResponse complete(String kakaoId, RunningCompleteRequest req) {
-        User user = userService.getByKakaoId(kakaoId);
+    @Transactional
+    public RunningCompleteResponse completeRunning(Long userId, RunningCompleteRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
-        RunningRecord record = runningRecordRepository.findBySessionId(req.getSessionId())
-                .filter(r -> r.getUser().getId().equals(user.getId()))
-                .orElseThrow(() -> new RunningException("세션을 찾을 수 없습니다."));
+        RunningRecord record = runningRecordRepository.findBySessionId(request.getSessionId())
+                .orElseThrow(() -> new InvalidParameterException("세션을 찾을 수 없습니다. sessionId=" + request.getSessionId()));
 
+        if (!record.getUser().getId().equals(user.getId())) {
+            throw new InvalidParameterException("해당 세션에 대한 권한이 없습니다.");
+        }
+
+        // 이미 완료된 세션이면 그대로 반환
         if (Boolean.TRUE.equals(record.getIsCompleted())) {
-            throw new RunningException("이미 완료된 세션입니다.");
+            return RunningCompleteResponse.builder()
+                    .runningRecordId(record.getId())
+                    .totalDistanceMeters(kmToMeters(record.getDistance()))
+                    .durationSeconds(record.getDuration())
+                    .averagePaceSeconds(record.getAveragePaceSeconds() == null ? 0 : record.getAveragePaceSeconds())
+                    .calories(record.getCalories() == null ? 0 : record.getCalories())
+                    .endedAt(record.getEndedAt())
+                    .build();
         }
 
-        // 값 반영
-        record.setDistance(req.getDistance());
-        record.setDuration(req.getDuration());
-
-        String pace = req.getAveragePace();
-        if (pace == null || pace.isBlank()) {
-            pace = formatPace(req.getDuration(), req.getDistance());
+        if (request.getDistanceMeters() == null || request.getDistanceMeters() < 0) {
+            throw new InvalidParameterException("distanceMeters는 0 이상이어야 합니다.");
         }
-        record.setAveragePace(pace);
-
-        Integer calories = req.getCalories();
-        if (calories == null) {
-            calories = estimateCalories(req.getDistance());
+        if (request.getDurationSeconds() == null || request.getDurationSeconds() <= 0) {
+            throw new InvalidParameterException("durationSeconds는 0보다 커야 합니다.");
         }
-        record.setCalories(calories);
 
-        record.setEndedAt(LocalDateTime.now());
-        record.setIsCompleted(true);
+        int paceSec = calcPaceSecondsPerKm(request.getDistanceMeters(), request.getDurationSeconds());
+        int calories = (request.getCalories() != null && request.getCalories() >= 0)
+                ? request.getCalories()
+                : estimateCalories(request.getDistanceMeters());
 
-        // 경로 저장
-        if (req.getRoute() != null && !req.getRoute().isEmpty()) {
-            for (var p : req.getRoute()) {
-                RunningRoute route = RunningRoute.builder()
-                        .runningRecord(record)
-                        .latitude(p.getLatitude())
-                        .longitude(p.getLongitude())
-                        .sequence(p.getSequence() == null ? 0 : p.getSequence())
-                        .timestamp(p.getTimestamp())
-                        .build();
-                record.getRouteData().add(route);
-            }
+        // DB 저장 (km/초/초단위페이스/칼로리)
+        record.complete(
+                metersToKm(request.getDistanceMeters()),
+                request.getDurationSeconds(),
+                paceSec,
+                calories,
+                LocalDateTime.now()
+        );
+
+        if (request.getRoutePoints() != null && !request.getRoutePoints().isEmpty()) {
+            request.getRoutePoints().forEach(p ->
+                    record.addRoutePoint(p.getLatitude(), p.getLongitude(), p.getSequence())
+            );
         }
+
+        // 사용자 통계 (엔티티에 맞춰 km 단위로 합산)
+        user.updateRunningStats(record.getDistance());
 
         runningRecordRepository.save(record);
+        userRepository.save(user);
 
-        return new RunningCompleteResponse(
-                record.getId(),
-                record.getDistance(),
-                record.getDuration(),
-                record.getAveragePace(),
-                record.getCalories(),
-                record.getEndedAt()
-        );
+        return RunningCompleteResponse.builder()
+                .runningRecordId(record.getId())
+                .totalDistanceMeters(request.getDistanceMeters())
+                .durationSeconds(request.getDurationSeconds())
+                .averagePaceSeconds(paceSec)
+                .calories(calories)
+                .endedAt(record.getEndedAt())
+                .build();
     }
 
-    private String formatPace(Integer durationSec, BigDecimal distanceKm) {
-        if (durationSec == null || durationSec <= 0 || distanceKm == null || distanceKm.doubleValue() <= 0) {
-            return "00:00";
-        }
-        double paceSecPerKm = durationSec / distanceKm.doubleValue();
-        int minutes = (int) (paceSecPerKm / 60);
-        int seconds = (int) Math.round(paceSecPerKm % 60);
-        if (seconds == 60) {
-            minutes += 1;
-            seconds = 0;
-        }
-        return String.format("%02d:%02d", minutes, seconds);
+    private BigDecimal metersToKm(int meters) {
+        return BigDecimal.valueOf(meters).divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP);
     }
 
-    private int estimateCalories(BigDecimal distanceKm) {
-        if (distanceKm == null) return 0;
-        return (int) Math.round(distanceKm.doubleValue() * 60.0); // km당 60kcal 가정
+    private int kmToMeters(BigDecimal km) {
+        if (km == null) return 0;
+        return km.multiply(BigDecimal.valueOf(1000))
+                .setScale(0, RoundingMode.HALF_UP)
+                .intValue();
+    }
+
+    private int calcPaceSecondsPerKm(int distanceMeters, int durationSeconds) {
+        if (distanceMeters <= 0 || durationSeconds <= 0) return 0;
+        double km = distanceMeters / 1000.0;
+        return (int) Math.round(durationSeconds / km);
+    }
+
+    private int estimateCalories(int distanceMeters) {
+        // 러프값: 60 kcal/km
+        double km = distanceMeters / 1000.0;
+        return (int) Math.round(km * 60.0);
     }
 }
