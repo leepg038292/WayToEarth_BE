@@ -1,33 +1,32 @@
 package com.waytoearth.dto.response.running;
 
-
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Schema(name = "RunningCompleteResponse", description = "러닝 완료 응답 DTO")
-@Getter
+@Schema(description = "러닝 완료 응답")
+@Getter @Setter
+@NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class RunningCompleteResponse {
 
-    @Schema(description = "러닝 기록 ID", example = "123")
+    @Schema(description = "러닝 기록 ID", example = "456")
     private Long runningRecordId;
 
-    @Schema(description = "이동 거리(km)", example = "5.21")
-    private BigDecimal distance;
+    @Schema(description = "총 이동 거리(미터)", example = "5200")
+    private Integer totalDistanceMeters;
 
-    @Schema(description = "소요 시간(초)", example = "1827")
-    private Integer duration;
+    @Schema(description = "총 소요 시간(초)", example = "1800")
+    private Integer durationSeconds;
 
-    @Schema(description = "평균 페이스(분:초/km)", example = "05:51")
-    private String averagePace;
+    @Schema(description = "평균 페이스(초/킬로미터)", example = "347")
+    private Integer averagePaceSeconds;
 
-    @Schema(description = "칼로리(kcal)", example = "312")
+    @Schema(description = "칼로리(kcal)", example = "350")
     private Integer calories;
 
-    @Schema(description = "종료 시각")
+    @Schema(description = "러닝 종료 시각(서버 기준 ISO-8601)", example = "2025-08-10T10:00:00")
     private LocalDateTime endedAt;
 }

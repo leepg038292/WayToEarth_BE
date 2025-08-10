@@ -1,19 +1,20 @@
 package com.waytoearth.dto.response.running;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Schema(name = "RunningStartResponse", description = "러닝 시작 응답 DTO")
-@Getter
+@Schema(description = "러닝 시작 응답")
+@Getter @Setter
+@NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class RunningStartResponse {
 
-    @Schema(description = "세션 ID", example = "2f0a7e9b-3f2b-4c32-8b9a-3d3d7fba8f20")
+    @Schema(description = "러닝 세션 ID", example = "b6b2b8b5-2d8d-4e8f-9a8e-7e6c5d4f3a21")
     private String sessionId;
 
-    @Schema(description = "시작 시각")
+    @Schema(description = "러닝 시작 시각(서버 기준 ISO-8601)", example = "2025-08-10T09:30:00")
     private LocalDateTime startedAt;
 }
