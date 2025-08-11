@@ -1,6 +1,6 @@
 package com.waytoearth.controller.v1;
 
-import com.waytoearth.dto.weather.WeatherCurrentResponse;
+import com.waytoearth.dto.response.weather.WeatherCurrentResponse;
 import com.waytoearth.service.weather.WeatherService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

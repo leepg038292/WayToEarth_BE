@@ -57,4 +57,18 @@ public enum WeatherCondition {
                 return UNKNOWN;
         }
     }
+
+    public String getRecommendation() {
+        switch (this) {
+            case CLEAR: return "맑아요! 모자와 선크림 준비하고 가볍게 달려요.";
+            case PARTLY_CLOUDY: return "구름 조금—달리기 딱 좋아요.";
+            case CLOUDY: return "흐려도 컨디션은 굿! 가벼운 바람막이 추천.";
+            case RAINY: return "비가 와요. 방수 재킷과 미끄럼 주의!";
+            case SNOWY: return "눈길 조심! 트랙션 좋은 신발을 신어주세요.";
+            case FOGGY: return "안개—가시성 주의, 밝은 색 착용 권장.";
+            case THUNDERSTORM: return "뇌우—실내 러닝으로 대체하는 게 안전합니다.";
+            default: return "컨디션 파악 중—몸 상태에 맞춰 무리하지 마세요.";
+        }
+    }
+
 }

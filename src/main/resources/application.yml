@@ -64,6 +64,11 @@ springdoc:
   api-docs:
     path: /v3/api-docs
 
+weather:
+  openweather:
+    api-key: ${OPENWEATHER_API_KEY:}  # 없으면 빈값 -> Fallback 응답
+
+
 # 로깅 설정.
 logging:
   level:
