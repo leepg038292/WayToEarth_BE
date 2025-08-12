@@ -17,12 +17,6 @@ public class WeatherCurrentResponse {
     @Schema(description = "날씨 컨디션", example = "CLEAR")
     private WeatherCondition condition;
 
-    @Schema(description = "기온(°C)", example = "22.7")
-    private Double temperatureC;
-
-    @Schema(description = "습도(%)", example = "63")
-    private Integer humidity;
-
     @Schema(description = "OpenWeather 아이콘 코드(선택)", example = "10d")
     private String iconCode;
 
@@ -35,8 +29,6 @@ public class WeatherCurrentResponse {
     public static WeatherCurrentResponse ofFallback(WeatherCondition c) {
         return WeatherCurrentResponse.builder()
                 .condition(c)
-                .temperatureC(null)
-                .humidity(null)
                 .iconCode(null)
                 .fetchedAt(LocalDateTime.now())
                 .recommendation(c.getRecommendation())

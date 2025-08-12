@@ -41,16 +41,12 @@ public class WeatherServiceImpl implements WeatherService {
 
             // OpenWeather main: "Clear", "Clouds", "Rain", "Snow", "Drizzle", "Thunderstorm", "Mist", ...
             String main = root.path("weather").get(0).path("main").asText("");
-            double temp = root.path("main").path("temp").asDouble(Double.NaN);
-            int humidity = root.path("main").path("humidity").asInt(-1);
             String icon = root.path("weather").get(0).path("icon").asText(""); // e.g. "10d"
 
             WeatherCondition condition = WeatherCondition.fromOpenWeatherMain(main);
 
             return WeatherCurrentResponse.builder()
                     .condition(condition)
-                    .temperatureC(temp)
-                    .humidity(humidity)
                     .iconCode(icon) // 프론트가 자체 아이콘 쓰면 무시해도 OK
                     .fetchedAt(LocalDateTime.now())
                     .recommendation(condition.getRecommendation()) // 아래 DTO 참고
