@@ -18,6 +18,9 @@ import java.util.Optional;
 @Repository
 public interface RunningRecordRepository extends JpaRepository<RunningRecord, Long> {
 
+    // 진행 중 세션 존재 여부(중복 시작 방지)
+    boolean existsBySessionIdAndIsCompletedFalse(String sessionId);
+
     // ===== 단건 조회 =====
     Optional<RunningRecord> findBySessionId(String sessionId);
     Optional<RunningRecord> findByIdAndUser(Long id, User user);
