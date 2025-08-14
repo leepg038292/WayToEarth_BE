@@ -20,6 +20,9 @@ public class WeatherCurrentResponse {
     @Schema(description = "OpenWeather 아이콘 코드(선택)", example = "10d")
     private String iconCode;
 
+    @Schema(description = "날씨 이모지", example = "☁️")
+    private String emoji;
+
     @Schema(description = "조회 시각")
     private LocalDateTime fetchedAt;
 
@@ -29,6 +32,7 @@ public class WeatherCurrentResponse {
     public static WeatherCurrentResponse ofFallback(WeatherCondition c) {
         return WeatherCurrentResponse.builder()
                 .condition(c)
+                .emoji(c.getEmoji())
                 .iconCode(null)
                 .fetchedAt(LocalDateTime.now())
                 .recommendation(c.getRecommendation())
