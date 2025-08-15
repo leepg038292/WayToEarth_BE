@@ -1,12 +1,8 @@
 package com.waytoearth.controller.v1;
 
 import com.waytoearth.dto.request.running.RunningCompleteRequest;
-import com.waytoearth.dto.request.running.RunningPauseRequest;
-import com.waytoearth.dto.request.running.RunningResumeRequest;
 import com.waytoearth.dto.request.running.RunningStartRequest;
 import com.waytoearth.dto.response.running.RunningCompleteResponse;
-import com.waytoearth.dto.response.running.RunningPauseResponse;
-import com.waytoearth.dto.response.running.RunningResumeResponse;
 import com.waytoearth.dto.response.running.RunningStartResponse;
 import com.waytoearth.security.AuthUser;
 import com.waytoearth.security.AuthenticatedUser;
