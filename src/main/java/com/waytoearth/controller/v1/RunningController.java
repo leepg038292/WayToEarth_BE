@@ -1,68 +1,60 @@
 package com.waytoearth.controller.v1;
 
+
 import com.waytoearth.dto.request.running.RunningCompleteRequest;
+import com.waytoearth.dto.request.running.RunningPauseResumeRequest;
 import com.waytoearth.dto.request.running.RunningStartRequest;
+import com.waytoearth.dto.request.running.RunningUpdateRequest;
 import com.waytoearth.dto.response.running.RunningCompleteResponse;
+import com.waytoearth.dto.response.running.RunningPauseResumeResponse;
 import com.waytoearth.dto.response.running.RunningStartResponse;
+import com.waytoearth.dto.response.running.RunningUpdateResponse;
+import com.waytoearth.service.running.RunningService;
 import com.waytoearth.security.AuthUser;
 import com.waytoearth.security.AuthenticatedUser;
-import com.waytoearth.service.running.RunningService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Running", description = "러닝 시작 및 완료 API")
 @RestController
 @RequestMapping("/v1/running")
 @RequiredArgsConstructor
-@Validated
 public class RunningController {
 
     private final RunningService runningService;
 
-    @Operation(summary = "러닝 시작", description = "세션 ID와 타입을 받아 러닝을 시작합니다.")
     @PostMapping("/start")
     public ResponseEntity<RunningStartResponse> startRunning(
             @AuthUser AuthenticatedUser user,
-            @Valid @RequestBody RunningStartRequest request
-    ) {
-        RunningStartResponse response = runningService.startRunning(user.getUserId(), request);
-        return ResponseEntity.ok(response);
+            @RequestBody RunningStartRequest request) {
+        return ResponseEntity.ok(runningService.startRunning(user, request));
     }
 
-    @Operation(summary = "러닝 일시정지", description = "현재까지의 거리/시간을 스냅샷으로 저장하고 일시정지 상태로 전환합니다.")
+    @PostMapping("/update")
+    public ResponseEntity<RunningUpdateResponse> updateRunning(
+            @AuthUser AuthenticatedUser user,
+            @RequestBody RunningUpdateRequest request) {
+        return ResponseEntity.ok(runningService.updateRunning(user, request));
+    }
+
     @PostMapping("/pause")
-    public ResponseEntity<RunningPauseResponse> pause(
+    public ResponseEntity<RunningPauseResumeResponse> pauseRunning(
             @AuthUser AuthenticatedUser user,
-            @Valid @RequestBody RunningPauseRequest request
-    ) {
-        return ResponseEntity.ok(
-                runningService.pauseRunning(user.getUserId(), request)
-        );
+            @RequestBody RunningPauseResumeRequest request) {
+        return ResponseEntity.ok(runningService.pauseRunning(user, request));
     }
 
-    @Operation(summary = "러닝 재개", description = "일시정지된 세션을 RUNNING 상태로 전환합니다.")
     @PostMapping("/resume")
-    public ResponseEntity<RunningResumeResponse> resume(
+    public ResponseEntity<RunningPauseResumeResponse> resumeRunning(
             @AuthUser AuthenticatedUser user,
-            @Valid @RequestBody RunningResumeRequest request
-    ) {
-        return ResponseEntity.ok(
-                runningService.resumeRunning(user.getUserId(), request)
-        );
+            @RequestBody RunningPauseResumeRequest request) {
+        return ResponseEntity.ok(runningService.resumeRunning(user, request));
     }
 
-    @Operation(summary = "러닝 완료", description = "거리, 시간, 경로 데이터를 받아 러닝을 완료합니다.")
     @PostMapping("/complete")
     public ResponseEntity<RunningCompleteResponse> completeRunning(
             @AuthUser AuthenticatedUser user,
-            @Valid @RequestBody RunningCompleteRequest request
-    ) {
-        RunningCompleteResponse response = runningService.completeRunning(user.getUserId(), request);
-        return ResponseEntity.ok(response);
+            @RequestBody RunningCompleteRequest request) {
+        return ResponseEntity.ok(runningService.completeRunning(user, request));
     }
 }
