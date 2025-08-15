@@ -63,7 +63,7 @@ server:
 #      on-profile: postman
 #
 #server:
-#  port: 9090  # ✅ postman 프로필일 때만 9090 포트 사용
+#  port: 9090  #  postman 프로필일 때만 9090 포트 사용
 
 # Swagger 설정
 springdoc:
