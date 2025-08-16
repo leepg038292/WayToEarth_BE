@@ -65,10 +65,10 @@ public interface RunningRecordRepository extends JpaRepository<RunningRecord, Lo
            """)
     BigDecimal sumCompletedDistanceByUser(@Param("user") User user);
 
-    // 사용자 완료 기록 최신순 (기록 탭 하단 카드)
+    // 사용자 완료 기록 최신순 (기록 탭 카드)
     List<RunningRecord> findAllByUserIdAndIsCompletedTrueOrderByStartedAtDesc(Long userId);
 
-    //  상세 조회 시 경로(routes)까지 즉시 로드 (완료 페이지 재표시용)
+    //  상세 조회 시 경로(routes) 즉시 로드
     @EntityGraph(attributePaths = "routes")
     Optional<RunningRecord> findWithRoutesById(Long id);
 }
