@@ -63,4 +63,7 @@ public interface RunningRecordRepository extends JpaRepository<RunningRecord, Lo
            where r.user = :user and r.isCompleted = true
            """)
     BigDecimal sumCompletedDistanceByUser(@Param("user") User user);
+
+    // 사용자 완료 기록 최신순
+    List<RunningRecord> findAllByUserIdAndIsCompletedTrueOrderByStartedAtDesc(Long userId);
 }
