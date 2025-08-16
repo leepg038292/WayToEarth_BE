@@ -28,29 +28,29 @@ public class RunningController {
 
     @Operation(summary = "러닝 중 주기 업데이트")
     @PostMapping("/update")
-    public ResponseEntity<Void> update(
+    public ResponseEntity<RunningUpdateResponse> update(
             @AuthUser AuthenticatedUser user,
             @RequestBody RunningUpdateRequest request) {
         runningService.updateRunning(user, request);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new RunningUpdateResponse(true));
     }
 
     @Operation(summary = "러닝 일시정지")
     @PostMapping("/pause")
-    public ResponseEntity<Void> pause(
+    public ResponseEntity<RunningPauseResumeResponse> pause(
             @AuthUser AuthenticatedUser user,
-            @RequestBody RunningPauseResumeRequest request) { // ✅ 공용 DTO
+            @RequestBody RunningPauseResumeRequest request) {
         runningService.pauseRunning(user, request);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new RunningPauseResumeResponse(true, "PAUSED"));
     }
 
     @Operation(summary = "러닝 재개")
     @PostMapping("/resume")
-    public ResponseEntity<Void> resume(
+    public ResponseEntity<RunningPauseResumeResponse> resume(
             @AuthUser AuthenticatedUser user,
-            @RequestBody RunningPauseResumeRequest request) { // ✅ 공용 DTO
+            @RequestBody RunningPauseResumeRequest request) {
         runningService.resumeRunning(user, request);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new RunningPauseResumeResponse(true, "RUNNING"));
     }
 
     @Operation(summary = "러닝 완료")
