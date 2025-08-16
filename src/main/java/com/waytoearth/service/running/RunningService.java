@@ -1,17 +1,19 @@
 package com.waytoearth.service.running;
 
 import com.waytoearth.dto.request.running.RunningCompleteRequest;
-import com.waytoearth.dto.request.running.RunningPauseRequest;
-import com.waytoearth.dto.request.running.RunningResumeRequest;
+import com.waytoearth.dto.request.running.RunningPauseResumeRequest;
 import com.waytoearth.dto.request.running.RunningStartRequest;
-import com.waytoearth.dto.response.running.RunningCompleteResponse;
-import com.waytoearth.dto.response.running.RunningPauseResponse;
-import com.waytoearth.dto.response.running.RunningResumeResponse;
-import com.waytoearth.dto.response.running.RunningStartResponse;
+import com.waytoearth.dto.request.running.RunningUpdateRequest;
+import com.waytoearth.dto.response.running.*;
+import com.waytoearth.security.AuthenticatedUser;
+
+import java.util.List;
 
 public interface RunningService {
-    RunningStartResponse startRunning(Long userId, RunningStartRequest request);
-    RunningPauseResponse pauseRunning(Long userId, RunningPauseRequest request);
-    RunningResumeResponse resumeRunning(Long userId, RunningResumeRequest request);
-    RunningCompleteResponse completeRunning(Long userId, RunningCompleteRequest request);
+    RunningStartResponse startRunning(AuthenticatedUser user, RunningStartRequest request);
+    RunningUpdateResponse updateRunning(AuthenticatedUser user, RunningUpdateRequest request);
+    RunningPauseResumeResponse pauseRunning(AuthenticatedUser user, RunningPauseResumeRequest request);
+    RunningPauseResumeResponse resumeRunning(AuthenticatedUser user, RunningPauseResumeRequest request);
+    RunningCompleteResponse completeRunning(AuthenticatedUser user, RunningCompleteRequest request);
+    List<RunningRecordSummaryResponse> getRecords(AuthenticatedUser user);
 }
