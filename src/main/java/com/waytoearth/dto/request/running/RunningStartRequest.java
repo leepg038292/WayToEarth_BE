@@ -23,9 +23,6 @@ public class RunningStartRequest {
     @NotNull(message = "runningType은 필수입니다.")
     private RunningType runningType;
 
-    @Schema(description = "날씨 컨디션 (메인 화면/푸시 노출용, 선택)", example = "CLEAR")
-    private WeatherCondition weatherCondition;
-
     @Schema(description = "가상 러닝 코스 ID (가상 러닝일 경우에만 사용)", example = "123")
     private Long virtualCourseId;
 }
