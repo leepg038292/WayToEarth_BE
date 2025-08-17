@@ -3,6 +3,7 @@ package com.waytoearth.repository;
 import com.waytoearth.entity.RunningRecord;
 import com.waytoearth.entity.User;
 import com.waytoearth.entity.enums.RunningType;
+import com.waytoearth.repository.statistics.StatisticsRepositoryCustom;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface RunningRecordRepository extends JpaRepository<RunningRecord, Long> {
+public interface RunningRecordRepository extends JpaRepository<RunningRecord, Long>, StatisticsRepositoryCustom {
 
     // 진행 중 세션 존재 여부(중복 시작 방지)
     boolean existsBySessionIdAndIsCompletedFalse(String sessionId);
