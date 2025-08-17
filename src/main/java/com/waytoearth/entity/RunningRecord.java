@@ -26,8 +26,7 @@ import java.util.List;
 @Builder
 public class RunningRecord {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /** 러닝 소유 사용자 */
@@ -53,6 +52,10 @@ public class RunningRecord {
     @Column(name = "virtual_course_id")
     private Long virtualCourseId;
 
+    @Column(length = 100)
+    private String title;
+
+    /** 러닝 상태*/
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
     private RunningStatus status;

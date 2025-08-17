@@ -45,7 +45,7 @@ public class MockAuthFilter extends OncePerRequestFilter {
                     .map(Long::valueOf)
                     .orElse(1L);
 
-            // ✅ AuthenticatedUser는 userId 하나만 받음
+            //  AuthenticatedUser는 userId 하나만 받음
             AuthenticatedUser principal = new AuthenticatedUser(userId);
 
             UsernamePasswordAuthenticationToken auth =

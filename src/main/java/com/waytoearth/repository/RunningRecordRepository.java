@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.EntityGraph;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -64,6 +65,10 @@ public interface RunningRecordRepository extends JpaRepository<RunningRecord, Lo
            """)
     BigDecimal sumCompletedDistanceByUser(@Param("user") User user);
 
-    // 사용자 완료 기록 최신순
+    // 사용자 완료 기록 최신순 (기록 탭 카드)
     List<RunningRecord> findAllByUserIdAndIsCompletedTrueOrderByStartedAtDesc(Long userId);
+
+    //  상세 조회 시 경로(routes) 즉시 로드
+    @EntityGraph(attributePaths = "routes")
+    Optional<RunningRecord> findWithRoutesById(Long id);
 }
