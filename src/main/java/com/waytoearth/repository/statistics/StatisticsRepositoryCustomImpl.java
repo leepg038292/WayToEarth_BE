@@ -1,6 +1,7 @@
 package com.waytoearth.repository.statistics;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.waytoearth.dto.response.statistics.RunningWeeklyStatsResponse;
 import com.waytoearth.entity.QRunningRecord;
@@ -9,12 +10,12 @@ import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class StatisticsRepositoryImpl implements StatisticsRepositoryCustom {
+public class StatisticsRepositoryCustomImpl implements StatisticsRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
     private final QRunningRecord record = QRunningRecord.runningRecord;
 
-    public StatisticsRepositoryImpl(EntityManager em) {
+    public StatisticsRepositoryCustomImpl(EntityManager em) {
         this.queryFactory = new JPAQueryFactory(em);
     }
 
@@ -23,10 +24,11 @@ public class StatisticsRepositoryImpl implements StatisticsRepositoryCustom {
         return queryFactory
                 .select(Projections.constructor(
                         WeeklyStatsDto.class,
-                        record.distance.sum(),
-                        record.duration.sum(),
-                        record.averagePaceSeconds.avg(), // ← 엔티티 필드명에 맞춤
-                        record.calories.sum()
+                        //  타입 명시적 캐스팅
+                        record.distance.sum().doubleValue(),           // BigDecimal → Double
+                        record.duration.sum().longValue(),             // Integer → Long
+                        record.averagePaceSeconds.avg(),               // Double (그대로)
+                        record.calories.sum().intValue()               // Integer (그대로, 명시적 표현)
                 ))
                 .from(record)
                 .where(
@@ -58,7 +60,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepositoryCustom {
                 .stream()
                 .map(tuple -> new RunningWeeklyStatsResponse.DailyDistance(
                         mapDayOfWeek(tuple.get(dayExp)),
-                        safeDouble(tuple.get(distExp))     // 이미 Double이라 경고 없음
+                        safeDouble(tuple.get(distExp))
                 ))
                 .toList();
     }
