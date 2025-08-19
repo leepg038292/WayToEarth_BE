@@ -1,3 +1,80 @@
+#spring:
+#  application:
+#    name: waytoearth-backend
+#
+#  config:
+#    import: optional:dotenv:.env
+#
+#  security:
+#    oauth2:
+#      client:
+#        registration:
+#          kakao:
+#            client-id: ${KAKAO_CLIENT_ID}
+#            redirect-uri: ${KAKAO_REDIRECT_URI}
+#            authorization-grant-type: authorization_code
+#            client-authentication-method: POST
+#            scope:
+#              - profile_nickname
+#              - account_email
+#        provider:
+#          kakao:
+#            authorization-uri: https://kauth.kakao.com/oauth/authorize
+#            token-uri: ${KAKAO_TOKEN_URI}
+#            user-info-uri: ${KAKAO_USER_INFO_URI}
+#            user-name-attribute: id
+#
+#  datasource:
+#    url: ${DB_URL}
+#    username: ${DB_USERNAME}
+#    password: ${DB_PASSWORD}
+#    driver-class-name: org.mariadb.jdbc.Driver
+#
+#  jpa:
+#    hibernate:
+#      ddl-auto:
+#    show-sql: true
+#    properties:
+#      hibernate:
+#        format_sql: true
+#        dialect: org.hibernate.dialect.MariaDBDialect
+#    open-in-view: false
+#
+## 기존 KakaoApiService가 사용하는 설정.
+#kakao:
+#  client-id: ${KAKAO_CLIENT_ID}
+#  redirect-uri: ${KAKAO_REDIRECT_URI}
+#
+## JWT 설정
+#jwt:
+#  secret: ${JWT_SECRET}
+#  expiration: 86400000
+#
+## 서버 설정
+#server:
+#  address: 0.0.0.0
+#  port: 8080
+#
+## Swagger 설정
+#springdoc:
+#  swagger-ui:
+#    path: /swagger-ui.html
+#    tags-sorter: alpha
+#    operations-sorter: alpha
+#  api-docs:
+#    path: /v3/api-docs
+#
+## 로깅 설정.
+#logging:
+#  level:
+#    org.hibernate.SQL: DEBUG
+#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+#    org.springframework.security: DEBUG
+#    com.waytoearth: DEBUG
+#    org.springframework.web.reactive: DEBUG
+
+
+
 spring:
   application:
     name: waytoearth-backend
@@ -32,7 +109,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -40,7 +117,7 @@ spring:
         dialect: org.hibernate.dialect.MariaDBDialect
     open-in-view: false
 
-# 기존 KakaoApiService가 사용하는 설정.
+# KakaoApiService 설정
 kakao:
   client-id: ${KAKAO_CLIENT_ID}
   redirect-uri: ${KAKAO_REDIRECT_URI}
@@ -49,6 +126,13 @@ kakao:
 jwt:
   secret: ${JWT_SECRET}
   expiration: 86400000
+
+# AWS S3 설정 (추가)
+cloud:
+  aws:
+    region: ${AWS_REGION:ap-northeast-2}
+    s3:
+      bucket: ${S3_BUCKET:waytoearth-assets}
 
 # 서버 설정
 server:
@@ -64,7 +148,7 @@ springdoc:
   api-docs:
     path: /v3/api-docs
 
-# 로깅 설정.
+# 로깅 설정
 logging:
   level:
     org.hibernate.SQL: DEBUG

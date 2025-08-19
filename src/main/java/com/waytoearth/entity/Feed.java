@@ -1,0 +1,47 @@
+package com.waytoearth.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.Instant;
+
+@Entity
+@Table(name = "feeds")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Feed {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    // 작성자
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    // 연관 러닝 기록
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "running_record_id")
+    private RunningRecord runningRecord;
+
+    @Column(nullable = false, length = 500)
+    private String content;
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Column(name = "like_count", nullable = false)
+    private int likeCount = 0;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @PrePersist
+    public void onCreate() {
+        this.createdAt = Instant.now();
+    }
+}
