@@ -37,7 +37,6 @@ public class RunningServiceImpl implements RunningService {
                 .sessionId(request.getSessionId()) // ✅ 요청에서 받은 sessionId 사용
                 .user(runner)
                 .runningType(request.getRunningType() != null ? request.getRunningType() : RunningType.SINGLE)
-                .weatherCondition(request.getWeatherCondition())
                 .virtualCourseId(request.getVirtualCourseId())
                 .status(RunningStatus.RUNNING)
                 .startedAt(LocalDateTime.now())

@@ -79,4 +79,13 @@ public class SwaggerConfig {
                 .pathsToMatch("/v1/users/**")
                 .build();
     }
+
+    @Bean
+    public GroupedOpenApi statisticsApi() {
+        return GroupedOpenApi.builder()
+                .group("7. 통계 API")
+                .pathsToMatch("/v1/statistics/**")
+                .build();
+    }
+
 }
