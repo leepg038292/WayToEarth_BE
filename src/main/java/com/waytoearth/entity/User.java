@@ -28,9 +28,11 @@ public class User {
     @Column(name = "kakao_id", unique = true, nullable = false)
     private Long kakaoId;
 
+    @Setter
     @Column(name = "nickname", length = 20, unique = true)
     private String nickname;
 
+    @Setter
     @Column(name = "residence", length = 100)
     private String residence;
 
@@ -42,9 +44,11 @@ public class User {
     @Column(name = "gender")
     private Gender gender;
 
+    @Setter
     @Column(name = "weekly_goal_distance", precision = 5, scale = 2)
     private BigDecimal weeklyGoalDistance;
 
+    @Setter
     @Column(name = "profile_image_url", length = 500)
     private String profileImageUrl;
 
@@ -65,6 +69,7 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Setter
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
@@ -86,4 +91,6 @@ public class User {
         this.totalDistance = this.totalDistance.add(distance);
         this.totalRunningCount++;
     }
+
+
 }
