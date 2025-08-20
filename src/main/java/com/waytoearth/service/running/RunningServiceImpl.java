@@ -10,6 +10,7 @@ import com.waytoearth.repository.RunningRecordRepository;
 import com.waytoearth.repository.RunningRouteRepository;
 import com.waytoearth.repository.UserRepository;
 import com.waytoearth.security.AuthenticatedUser;
+import com.waytoearth.service.emblem.EmblemService;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,9 +27,15 @@ public class RunningServiceImpl implements RunningService {
     private final RunningRecordRepository runningRecordRepository;
     private final RunningRouteRepository runningRouteRepository;
     private final UserRepository userRepository;
+    private final EmblemService emblemService;
 
     @Override
     public RunningStartResponse startRunning(AuthenticatedUser authUser, RunningStartRequest request) {
+        //sessionId가 null이거나 빈 값인 경우 오류 발생
+        if (request.getSessionId() == null || request.getSessionId().isBlank()) {
+            throw new IllegalArgumentException("sessionId는 필수입니다.");
+        }
+
         User runner = userRepository.findById(authUser.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
@@ -142,6 +149,8 @@ public class RunningServiceImpl implements RunningService {
         // 저장 후 응답 구성
         runningRecordRepository.save(record);
 
+        var awardResult = emblemService.scanAndAward(user.getId(), "Distance");
+
         return new RunningCompleteResponse(
                 record.getId(),
                 record.getTitle(), // 제목은 PATCH로 수정 가능
@@ -154,7 +163,8 @@ public class RunningServiceImpl implements RunningService {
                         .map(rt -> new RunningCompleteResponse.RoutePoint(
                                 rt.getLatitude(), rt.getLongitude(), rt.getSequence()
                         ))
-                        .collect(Collectors.toList())
+                        .collect(Collectors.toList()),
+                awardResult
         );
     }
 
@@ -183,20 +193,23 @@ public class RunningServiceImpl implements RunningService {
             throw new IllegalArgumentException("해당 기록에 대한 권한이 없습니다.");
         }
 
-        return new RunningCompleteResponse(
-                r.getId(),
-                r.getTitle(),
-                r.getDistance() != null ? r.getDistance().doubleValue() : 0.0,
-                formatPace(r.getAveragePaceSeconds()),
-                r.getCalories(),
-                r.getStartedAt() != null ? r.getStartedAt().toString() : null,
-                r.getEndedAt() != null ? r.getEndedAt().toString() : null,
-                r.getRoutes().stream()
-                        .map(rt -> new RunningCompleteResponse.RoutePoint(
-                                rt.getLatitude(), rt.getLongitude(), rt.getSequence()
-                        ))
-                        .collect(Collectors.toList())
-        );
+        return RunningCompleteResponse.builder()
+                .runningRecordId(r.getId())
+                .title(r.getTitle())
+                .totalDistanceKm(r.getDistance() != null ? r.getDistance().doubleValue() : 0.0)
+                .averagePace(formatPace(r.getAveragePaceSeconds()))
+                .calories(r.getCalories())
+                .startedAt(r.getStartedAt() != null ? r.getStartedAt().toString() : null)
+                .endedAt(r.getEndedAt() != null ? r.getEndedAt().toString() : null)
+                .routePoints(
+                        r.getRoutes().stream()
+                                .map(rt -> new RunningCompleteResponse.RoutePoint(
+                                        rt.getLatitude(), rt.getLongitude(), rt.getSequence()
+                                ))
+                                .collect(Collectors.toList())
+                )
+                .emblemAwardResult(null) // 상세조회에서는 지급 결과 없음
+                .build();
     }
 
     private String formatPace(Integer paceSeconds) {

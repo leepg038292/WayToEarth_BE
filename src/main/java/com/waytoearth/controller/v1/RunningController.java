@@ -7,6 +7,7 @@ import com.waytoearth.service.running.RunningService;
 import com.waytoearth.security.AuthUser;
 import com.waytoearth.security.AuthenticatedUser;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class RunningController {
     @PostMapping("/start")
     public ResponseEntity<RunningStartResponse> start(
             @AuthUser AuthenticatedUser user,
-            @RequestBody RunningStartRequest request) {
+            @RequestBody @Valid RunningStartRequest request) {
         return ResponseEntity.ok(runningService.startRunning(user, request));
     }
 
