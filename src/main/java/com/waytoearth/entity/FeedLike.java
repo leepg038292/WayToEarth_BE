@@ -1,16 +1,13 @@
 package com.waytoearth.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder   // ✅ 추가
+@Builder   //  추가
 @Table(name = "feed_likes", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"feed_id", "user_id"})
 })

@@ -36,7 +36,6 @@ public class SecurityConfigPostman {
                         // 컨트롤러에서 @AuthUser를 쓰므로 인증 객체는 필요 -> authenticated()
                         .anyRequest().authenticated()
                 )
-                // ✅ JWT 필터는 여기서 절대 추가하지 않음
                 .addFilterBefore(mockAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

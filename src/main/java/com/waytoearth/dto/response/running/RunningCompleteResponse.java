@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder   // 추가
 public class RunningCompleteResponse {
 
     @Schema(description = "러닝 기록 ID")
@@ -36,6 +36,7 @@ public class RunningCompleteResponse {
     @Schema(description = "러닝 경로 좌표 목록")
     private List<RoutePoint> routePoints;
 
+    //  추가된 필드
     @Schema(description = "엠블럼 지급 결과")
     private EmblemAwardResult emblemAwardResult;
 

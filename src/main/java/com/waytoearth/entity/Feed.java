@@ -35,7 +35,7 @@ public class Feed {
     private String imageUrl;
 
     @Column(name = "like_count", nullable = false)
-    private int likeCount;
+    private int likeCount = 0;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

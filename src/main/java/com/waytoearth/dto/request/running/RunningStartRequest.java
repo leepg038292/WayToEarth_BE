@@ -1,7 +1,6 @@
 package com.waytoearth.dto.request.running;
 
 import com.waytoearth.entity.enums.RunningType;
-import com.waytoearth.entity.enums.WeatherCondition;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -1,7 +1,6 @@
 package com.waytoearth.repository.statistics;
 
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.waytoearth.dto.response.statistics.RunningWeeklyStatsResponse;
 import com.waytoearth.entity.QRunningRecord;

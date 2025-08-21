@@ -1,5 +1,5 @@
 package com.waytoearth.service.user;
-
+import java.math.RoundingMode;
 import com.waytoearth.dto.request.auth.OnboardingRequest;
 import com.waytoearth.dto.request.user.UserUpdateRequest;
 import com.waytoearth.dto.response.user.UserInfoResponse;
@@ -15,9 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.RoundingMode;
-import java.time.Instant;
 import java.time.ZoneOffset;
+
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +26,7 @@ import java.time.ZoneOffset;
 public class UserService {
 
     private final UserRepository userRepository;
+    // 엠블럼 요약 계산용 리포지토리 주입
     private final UserEmblemRepository userEmblemRepository;
     private final EmblemRepository emblemRepository;
 
@@ -33,8 +34,7 @@ public class UserService {
      * 카카오 ID로 사용자 조회
      */
     public User findByKakaoId(Long kakaoId) {
-        return userRepository.findByKakaoId(kakaoId)
-                .orElse(null);
+        return userRepository.findByKakaoId(kakaoId).orElse(null);
     }
 
     /**
@@ -91,7 +91,7 @@ public class UserService {
     }
 
     // =========================
-    //  여기부터 추가된 구현
+    // 👇 여기부터 추가된 구현
     // =========================
 
     /**

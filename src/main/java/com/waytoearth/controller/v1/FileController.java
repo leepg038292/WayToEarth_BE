@@ -3,18 +3,15 @@ package com.waytoearth.controller.v1;
 
 import com.waytoearth.dto.request.file.PresignRequest;
 import com.waytoearth.dto.response.file.PresignResponse;
-import com.waytoearth.security.AuthUser;
 import com.waytoearth.security.AuthenticatedUser;
+import com.waytoearth.security.AuthUser;
 import com.waytoearth.service.file.FileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "파일 업로드", description = "S3 Presigned URL 기반 파일 업로드 API")
 @RestController

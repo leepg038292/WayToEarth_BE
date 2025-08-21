@@ -30,7 +30,7 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
-    private final UserService userService;
+    private final UserService userService; // 닉네임 중복 확인용
 
     @Operation(summary = "카카오 로그인", description = "카카오 Authorization Code로 로그인 처리")
     @ApiResponses({
@@ -43,8 +43,7 @@ public class AuthController {
             @Parameter(description = "카카오 로그인 요청", required = true)
             @RequestBody @Valid KakaoLoginRequest request) {
 
-        log.info("[AuthController] 카카오 로그인 요청 - authorizationCode: {}",
-                request.getCode());
+        log.info("[AuthController] 카카오 로그인 요청 - authorizationCode: {}", request.getCode());
 
         LoginResponse response = authService.loginWithKakaoCode(request.getCode());
 
@@ -80,6 +79,9 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    // ===============================
+    //  닉네임 중복 확인 (추가)
+    // ===============================
     @Operation(
             summary = "닉네임 중복 확인",
             description = "닉네임 사용 가능 여부를 확인합니다. (무인증)",
