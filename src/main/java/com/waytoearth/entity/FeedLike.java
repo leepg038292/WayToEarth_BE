@@ -7,7 +7,7 @@ import lombok.*;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder   // ✅ 추가
+@Builder   //  추가
 @Table(name = "feed_likes", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"feed_id", "user_id"})
 })

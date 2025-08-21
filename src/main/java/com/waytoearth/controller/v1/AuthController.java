@@ -30,7 +30,7 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
-    private final UserService userService; // ✅ 닉네임 중복 확인용
+    private final UserService userService; // 닉네임 중복 확인용
 
     @Operation(summary = "카카오 로그인", description = "카카오 Authorization Code로 로그인 처리")
     @ApiResponses({

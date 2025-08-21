@@ -26,7 +26,7 @@ import java.time.Instant;
 public class UserService {
 
     private final UserRepository userRepository;
-    // ✅ 엠블럼 요약 계산용 리포지토리 주입
+    // 엠블럼 요약 계산용 리포지토리 주입
     private final UserEmblemRepository userEmblemRepository;
     private final EmblemRepository emblemRepository;
 
