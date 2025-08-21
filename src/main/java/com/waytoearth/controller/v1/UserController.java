@@ -6,6 +6,7 @@ import com.waytoearth.dto.response.user.UserSummaryResponse;
 import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.security.AuthUser;
 import com.waytoearth.service.user.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,24 +21,25 @@ import java.util.Map;
 @RestController
 @RequestMapping("/v1/users")
 @RequiredArgsConstructor
+@Tag(name = "사용자 API", description = "사용자 정보 조회 및 관리 관련 API")
 public class UserController {
 
     private final UserService userService;
 
-    /**
-     * 닉네임 중복 확인
-     * (기존 엔드포인트 유지: /v1/users/check-nickname)
-     */
+
     @GetMapping("/check-nickname")
-    public ResponseEntity<Map<String, Object>> checkNicknameDuplicate(@RequestParam String nickname) {
-        log.info("[NicknameCheck] 닉네임 중복 확인 요청 - nickname: {}", nickname);
+    public ResponseEntity<Map<String, Object>> checkNicknameDuplicate(
+            @Parameter(description = "중복 확인할 닉네임", example = "runner_kim", required = true)
+            @RequestParam String nickname
+    ) {
+        log.info("[UserController] 닉네임 중복 확인 요청 - nickname: {}", nickname);
 
         boolean isDuplicate = userService.existsByNickname(nickname);
         Map<String, Object> response = new HashMap<>();
         response.put("isDuplicate", isDuplicate);
         response.put("message", isDuplicate ? "이미 사용 중인 닉네임입니다." : "사용 가능한 닉네임입니다.");
 
-        log.info("[NicknameCheck] 결과 - nickname: {}, isDuplicate: {}", nickname, isDuplicate);
+log.info("[NicknameCheck] 결과 - nickname: {}, isDuplicate: {}", nickname, isDuplicate);
         return ResponseEntity.ok(response);
     }
 

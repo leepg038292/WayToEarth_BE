@@ -24,6 +24,7 @@ public class RunningController {
             @AuthUser AuthenticatedUser user,
             @RequestBody RunningStartRequest request) {
         return ResponseEntity.ok(runningService.startRunning(user, request));
+        return ResponseEntity.ok(runningService.startRunning(user, request));
     }
 
     @Operation(summary = "러닝 중 주기 업데이트")
