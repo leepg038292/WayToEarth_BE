@@ -75,8 +75,8 @@ class PostmanProfileSmokeTest {
         String sessionId = UUID.randomUUID().toString();
         System.out.println("🆔 SessionId: " + sessionId);
 
-        // 1️⃣ 러닝 시작
-        System.out.println("\n1️⃣ 러닝 시작");
+        //  러닝 시작
+        System.out.println("\n 러닝 시작");
         mockMvc.perform(
                         post(PATH_RUNNING_START)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -91,10 +91,10 @@ class PostmanProfileSmokeTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        System.out.println("✅ 러닝 시작 성공");
+        System.out.println(" 러닝 시작 성공");
 
         // 2️⃣ 실시간 업데이트 #1
-        System.out.println("\n2️⃣ 실시간 업데이트 #1 (500m, 3분)");
+        System.out.println("\n 실시간 업데이트 #1 (500m, 3분)");
         mockMvc.perform(
                         post(PATH_RUNNING_UPDATE)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -110,9 +110,9 @@ class PostmanProfileSmokeTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        System.out.println("✅ 1차 업데이트 성공");
+        System.out.println(" 1차 업데이트 성공");
 
-        // 3️⃣ 실시간 업데이트 #2
+        //  실시간 업데이트 #2
         System.out.println("\n3️⃣ 실시간 업데이트 #2 (1.2km, 7분)");
         mockMvc.perform(
                         post(PATH_RUNNING_UPDATE)
@@ -129,10 +129,10 @@ class PostmanProfileSmokeTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        System.out.println("✅ 2차 업데이트 성공");
+        System.out.println(" 2차 업데이트 성공");
 
-        // 4️⃣ 일시정지
-        System.out.println("\n4️⃣ 일시정지 (휴식)");
+        //  일시정지
+        System.out.println("\n 일시정지 (휴식)");
         mockMvc.perform(
                         post(PATH_RUNNING_PAUSE)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -144,10 +144,10 @@ class PostmanProfileSmokeTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        System.out.println("⏸️ 일시정지 성공");
+        System.out.println(" 일시정지 성공");
 
-        // 5️⃣ 재개
-        System.out.println("\n5️⃣ 재개");
+        //  재개
+        System.out.println("\n 재개");
         mockMvc.perform(
                         post(PATH_RUNNING_RESUME)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -158,10 +158,10 @@ class PostmanProfileSmokeTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        System.out.println("▶️ 재개 성공");
+        System.out.println(" 재개 성공");
 
-        // 6️⃣ 재개 후 업데이트
-        System.out.println("\n6️⃣ 재개 후 업데이트 (2.5km, 15분)");
+        // 재개 후 업데이트
+        System.out.println("\n 재개 후 업데이트 (2.5km, 15분)");
         mockMvc.perform(
                         post(PATH_RUNNING_UPDATE)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -177,10 +177,10 @@ class PostmanProfileSmokeTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        System.out.println("✅ 재개 후 업데이트 성공");
+        System.out.println(" 재개 후 업데이트 성공");
 
-        // 7️⃣ 완료
-        System.out.println("\n7️⃣ 러닝 완료");
+        // 7️ 완료
+        System.out.println("\n 러닝 완료");
         MvcResult completeResult = mockMvc.perform(
                         post(PATH_RUNNING_COMPLETE)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -202,10 +202,10 @@ class PostmanProfileSmokeTest {
                 .andReturn();
 
         String completeJson = completeResult.getResponse().getContentAsString();
-        System.out.println("🏁 완료 응답: " + completeJson);
+        System.out.println(" 완료 응답: " + completeJson);
 
-        // 8️⃣ 통계 즉시 반영 확인
-        System.out.println("\n8️⃣ 통계 업데이트 확인");
+        //  통계 즉시 반영 확인
+        System.out.println("\n 통계 업데이트 확인");
         MvcResult statsResult = mockMvc.perform(
                         get(PATH_STATISTICS_WEEKLY)
                 )
@@ -214,33 +214,33 @@ class PostmanProfileSmokeTest {
                 .andReturn();
 
         String statsJson = statsResult.getResponse().getContentAsString();
-        System.out.println("📊 업데이트된 통계: " + statsJson);
+        System.out.println(" 업데이트된 통계: " + statsJson);
 
         if (!statsJson.isEmpty()) {
             JsonNode statsRoot = objectMapper.readTree(statsJson);
             double totalDistance = statsRoot.path("totalDistance").asDouble();
             long totalDuration = statsRoot.path("totalDuration").asLong();
 
-            System.out.println("📈 새로운 총 거리: " + totalDistance + "km");
-            System.out.println("⏱️ 새로운 총 시간: " + totalDuration + "초");
+            System.out.println(" 새로운 총 거리: " + totalDistance + "km");
+            System.out.println(" 새로운 총 시간: " + totalDuration + "초");
 
             Assertions.assertTrue(totalDistance >= 3.0, "완료된 3km가 통계에 반영되어야 함");
             Assertions.assertTrue(totalDuration >= 1080, "완료된 시간이 통계에 반영되어야 함");
         }
 
-        System.out.println("\n🎉 === 완전한 러닝 플로우 테스트 완료 ===");
+        System.out.println("\n === 완전한 러닝 플로우 테스트 완료 ===");
     }
 
     @Test
-    @DisplayName("🎯 통합 사용자 플로우 테스트 (러닝 → 엠블럼 → 피드 → 파일)")
+    @DisplayName(" 통합 사용자 플로우 테스트 (러닝 → 엠블럼 → 피드 → 파일)")
     void integrated_user_flow_test() throws Exception {
-        System.out.println("🚀 === 통합 사용자 플로우 테스트 시작 ===");
+        System.out.println(" === 통합 사용자 플로우 테스트 시작 ===");
 
         String sessionId = UUID.randomUUID().toString();
-        System.out.println("🆔 SessionId: " + sessionId);
+        System.out.println(" SessionId: " + sessionId);
 
-        // 1️⃣ 러닝 시작 → 완료 (간단 버전)
-        System.out.println("\n1️⃣ 빠른 러닝 완료");
+        // 러닝 시작 → 완료 (간단 버전)
+        System.out.println("\n 빠른 러닝 완료");
 
         // 러닝 시작
         mockMvc.perform(
@@ -285,10 +285,10 @@ class PostmanProfileSmokeTest {
             System.out.println("🏃‍♂️ 러닝 기록 ID: " + runningRecordId);
         }
 
-        System.out.println("✅ 러닝 완료");
+        System.out.println(" 러닝 완료");
 
-        // 2️⃣ 엠블럼 스캔 및 지급
-        System.out.println("\n2️⃣ 엠블럼 스캔 지급 (러닝 완료로 새 엠블럼 획득 가능)");
+        //  엠블럼 스캔 및 지급
+        System.out.println("\n 엠블럼 스캔 지급 (러닝 완료로 새 엠블럼 획득 가능)");
         MvcResult emblemScanResult = mockMvc.perform(
                         post(PATH_EMBLEM_SCAN_AWARD)
                                 .param("scope", "DISTANCE")
@@ -304,8 +304,8 @@ class PostmanProfileSmokeTest {
             System.out.println("🏆 새로 획득한 엠블럼: " + awardedCount + "개");
         }
 
-        // 3️⃣ 엠블럼 요약 확인
-        System.out.println("\n3️⃣ 엠블럼 요약 확인");
+        //  엠블럼 요약 확인
+        System.out.println("\n 엠블럼 요약 확인");
         MvcResult emblemSummaryResult = mockMvc.perform(
                         get(PATH_EMBLEM_SUMMARY)
                 )
@@ -320,12 +320,12 @@ class PostmanProfileSmokeTest {
             int total = summaryRoot.path("total").asInt();
             double completionRate = summaryRoot.path("completion_rate").asDouble();
 
-            System.out.println("🎖️ 현재 보유 엠블럼: " + owned + "/" + total);
-            System.out.println("📊 완성도: " + (completionRate * 100) + "%");
+            System.out.println(" 현재 보유 엠블럼: " + owned + "/" + total);
+            System.out.println(" 완성도: " + (completionRate * 100) + "%");
         }
 
-        // 4️⃣ 피드 이미지 Presigned URL 발급
-        System.out.println("\n4️⃣ 피드 이미지 업로드 준비");
+        //  피드 이미지 Presigned URL 발급
+        System.out.println("\n 피드 이미지 업로드 준비");
         MvcResult presignResult = mockMvc.perform(
                         post(PATH_FILE_PRESIGN_FEED)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -346,14 +346,14 @@ class PostmanProfileSmokeTest {
             System.out.println("🔗 업로드 URL 생성: " + imageUrl);
         }
 
-        // 5️⃣ 피드 작성 (러닝 기록 연동)
-        System.out.println("\n5️⃣ 피드 작성 (러닝 기록 + 엠블럼 자랑)");
+        //  피드 작성 (러닝 기록 연동)
+        System.out.println("\n피드 작성 (러닝 기록 + 엠블럼 자랑)");
         MvcResult feedCreateResult = mockMvc.perform(
                         post(PATH_FEED_CREATE)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(Map.of(
                                         "runningRecordId", runningRecordId != null ? runningRecordId : 123L,
-                                        "content", "오늘 5km 완주! 🏃‍♂️ 새로운 엠블럼도 획득했어요! 💪",
+                                        "content", "오늘 5km 완주! 🏃‍♂️ 새로운 엠블럼도 획득했어요! ",
                                         "imageUrl", imageUrl
                                 )))
                 )
@@ -366,11 +366,11 @@ class PostmanProfileSmokeTest {
         if (!feedCreateJson.isEmpty()) {
             JsonNode feedRoot = objectMapper.readTree(feedCreateJson);
             feedId = feedRoot.path("id").asLong();
-            System.out.println("📝 생성된 피드 ID: " + feedId);
+            System.out.println(" 생성된 피드 ID: " + feedId);
         }
 
-        // 6️⃣ 피드 목록에서 확인
-        System.out.println("\n6️⃣ 피드 목록 확인");
+        //  피드 목록에서 확인
+        System.out.println("\n 피드 목록 확인");
         MvcResult feedListResult = mockMvc.perform(
                         get(PATH_FEED_LIST)
                                 .param("offset", "0")
@@ -384,7 +384,7 @@ class PostmanProfileSmokeTest {
         if (!feedListJson.isEmpty()) {
             JsonNode feedArray = objectMapper.readTree(feedListJson);
             if (feedArray.isArray()) {
-                System.out.println("📋 총 피드 개수: " + feedArray.size());
+                System.out.println(" 총 피드 개수: " + feedArray.size());
 
                 for (JsonNode feed : feedArray) {
                     String content = feed.path("content").asText();
@@ -394,9 +394,9 @@ class PostmanProfileSmokeTest {
             }
         }
 
-        // 7️⃣ 피드 좋아요
+        //  피드 좋아요
         if (feedId != null) {
-            System.out.println("\n7️⃣ 피드 좋아요 토글");
+            System.out.println("\n 피드 좋아요 토글");
             MvcResult likeResult = mockMvc.perform(
                             post(PATH_FEED_LIKE, feedId)
                     )
@@ -415,8 +415,8 @@ class PostmanProfileSmokeTest {
             }
         }
 
-        // 8️⃣ 최종 통계 확인
-        System.out.println("\n8️⃣ 최종 통계 확인");
+        //  최종 통계 확인
+        System.out.println("\n 최종 통계 확인");
         MvcResult finalStatsResult = mockMvc.perform(
                         get(PATH_STATISTICS_WEEKLY)
                 )
@@ -430,22 +430,22 @@ class PostmanProfileSmokeTest {
             double totalDistance = statsRoot.path("totalDistance").asDouble();
             long totalDuration = statsRoot.path("totalDuration").asLong();
 
-            System.out.println("📈 최종 누적 거리: " + totalDistance + "km");
-            System.out.println("⏱️ 최종 누적 시간: " + totalDuration + "초");
+            System.out.println(" 최종 누적 거리: " + totalDistance + "km");
+            System.out.println(" 최종 누적 시간: " + totalDuration + "초");
 
             // 검증
             Assertions.assertTrue(totalDistance >= 5.0, "완료된 5km가 통계에 반영되어야 함");
             Assertions.assertTrue(totalDuration >= 1800, "완료된 시간이 통계에 반영되어야 함");
         }
 
-        System.out.println("\n🎉 === 통합 사용자 플로우 테스트 완료 ===");
-        System.out.println("✨ 러닝 → 엠블럼 획득 → 피드 공유 → 좋아요 → 통계 업데이트 완료!");
+        System.out.println("\n === 통합 사용자 플로우 테스트 완료 ===");
+        System.out.println(" 러닝 → 엠블럼 획득 → 피드 공유 → 좋아요 → 통계 업데이트 완료!");
     }
 
     @Test
-    @DisplayName("🌤️ 날씨 API 테스트")
+    @DisplayName(" 날씨 API 테스트")
     void weather_api_test() throws Exception {
-        System.out.println("🌤️ 날씨 API 테스트");
+        System.out.println(" 날씨 API 테스트");
 
         MvcResult result = mockMvc.perform(
                         get(PATH_WEATHER_CURRENT)
@@ -461,14 +461,14 @@ class PostmanProfileSmokeTest {
 
         if (!weatherJson.isEmpty()) {
             JsonNode weatherRoot = objectMapper.readTree(weatherJson);
-            System.out.println("✅ 날씨 API 테스트 성공");
+            System.out.println(" 날씨 API 테스트 성공");
         }
     }
 
     @Test
-    @DisplayName("📊 통계 API 독립 테스트")
+    @DisplayName(" 통계 API 독립 테스트")
     void statistics_only_test() throws Exception {
-        System.out.println("📊 통계 API 독립 테스트");
+        System.out.println(" 통계 API 독립 테스트");
 
         // 먼저 테스트 데이터 1개 생성
         String sessionId = UUID.randomUUID().toString();
@@ -508,7 +508,7 @@ class PostmanProfileSmokeTest {
                 .andReturn();
 
         String statsJson = statsResult.getResponse().getContentAsString();
-        System.out.println("📈 통계 결과: " + statsJson);
+        System.out.println(" 통계 결과: " + statsJson);
 
         if (!statsJson.isEmpty()) {
             JsonNode statsRoot = objectMapper.readTree(statsJson);
@@ -517,10 +517,10 @@ class PostmanProfileSmokeTest {
             String averagePace = statsRoot.path("averagePace").asText();
             int totalCalories = statsRoot.path("totalCalories").asInt();
 
-            System.out.println("📏 총 거리: " + totalDistance + "km");
-            System.out.println("⏱️ 총 시간: " + totalDuration + "초");
-            System.out.println("🏃‍♂️ 평균 페이스: " + averagePace);
-            System.out.println("🔥 총 칼로리: " + totalCalories);
+            System.out.println(" 총 거리: " + totalDistance + "km");
+            System.out.println(" 총 시간: " + totalDuration + "초");
+            System.out.println(" 평균 페이스: " + averagePace);
+            System.out.println(" 총 칼로리: " + totalCalories);
 
             // 검증
             Assertions.assertTrue(totalDistance > 0, "총 거리가 0보다 커야 함");
@@ -533,14 +533,14 @@ class PostmanProfileSmokeTest {
             Assertions.assertTrue(dailyDistances.isArray(), "dailyDistances는 배열이어야 함");
             Assertions.assertEquals(7, dailyDistances.size(), "7개 요일이 모두 있어야 함");
 
-            System.out.println("✅ 통계 API 모든 검증 통과!");
+            System.out.println(" 통계 API 모든 검증 통과!");
         }
     }
 
     @Test
-    @DisplayName("🏆 엠블럼 API 독립 테스트")
+    @DisplayName(" 엠블럼 API 독립 테스트")
     void emblem_only_test() throws Exception {
-        System.out.println("🏆 엠블럼 API 독립 테스트");
+        System.out.println(" 엠블럼 API 독립 테스트");
 
         // 요약 → 카탈로그 → 상세 → 지급 순서로 테스트
 
@@ -574,17 +574,17 @@ class PostmanProfileSmokeTest {
             JsonNode scanRoot = objectMapper.readTree(scanJson);
             int awardedCount = scanRoot.path("awarded_count").asInt();
 
-            System.out.println("🎁 일괄 스캔으로 지급된 엠블럼: " + awardedCount + "개");
+            System.out.println(" 일괄 스캔으로 지급된 엠블럼: " + awardedCount + "개");
 
             // 검증
             Assertions.assertTrue(awardedCount >= 0, "지급된 엠블럼 수는 0 이상이어야 함");
         }
 
-        System.out.println("✅ 엠블럼 API 모든 검증 통과!");
+        System.out.println(" 엠블럼 API 모든 검증 통과!");
     }
 
     @Test
-    @DisplayName("📱 피드 API 독립 테스트")
+    @DisplayName(" 피드 API 독립 테스트")
     void feed_only_test() throws Exception {
         System.out.println("📱 피드 API 독립 테스트");
 
@@ -607,7 +607,7 @@ class PostmanProfileSmokeTest {
         if (!createJson.isEmpty()) {
             JsonNode createRoot = objectMapper.readTree(createJson);
             feedId = createRoot.path("id").asLong();
-            System.out.println("📝 생성된 피드 ID: " + feedId);
+            System.out.println(" 생성된 피드 ID: " + feedId);
         }
 
         // 2. 피드 목록 조회
@@ -641,13 +641,13 @@ class PostmanProfileSmokeTest {
             }
         }
 
-        System.out.println("✅ 피드 API 모든 검증 통과!");
+        System.out.println(" 피드 API 모든 검증 통과!");
     }
 
     @Test
-    @DisplayName("📁 파일 업로드 API 독립 테스트")
+    @DisplayName(" 파일 업로드 API 독립 테스트")
     void file_upload_test() throws Exception {
-        System.out.println("📁 파일 업로드 API 독립 테스트");
+        System.out.println(" 파일 업로드 API 독립 테스트");
 
         // 프로필 이미지 Presigned URL
         MvcResult profileResult = mockMvc.perform(
@@ -689,16 +689,16 @@ class PostmanProfileSmokeTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        System.out.println("✅ 파일 업로드 API 모든 검증 통과!");
+        System.out.println(" 파일 업로드 API 모든 검증 통과!");
     }
 
     @Test
-    @DisplayName("🚨 에러 시나리오 테스트")
+    @DisplayName(" 에러 시나리오 테스트")
     void error_scenarios_test() throws Exception {
-        System.out.println("🚨 에러 시나리오 테스트");
+        System.out.println(" 에러 시나리오 테스트");
 
         // 기존 러닝 에러 케이스
-        System.out.println("❌ 잘못된 세션 ID로 업데이트 시도");
+        System.out.println(" 잘못된 세션 ID로 업데이트 시도");
         mockMvc.perform(
                         post(PATH_RUNNING_UPDATE)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -711,15 +711,15 @@ class PostmanProfileSmokeTest {
                 .andDo(print());
 
         // 새로운 API 에러 케이스들
-        System.out.println("❌ 존재하지 않는 엠블럼 조회 시도");
+        System.out.println(" 존재하지 않는 엠블럼 조회 시도");
         mockMvc.perform(get(PATH_EMBLEM_DETAIL, 99999L))
                 .andDo(print());
 
-        System.out.println("❌ 존재하지 않는 피드 좋아요 시도");
+        System.out.println(" 존재하지 않는 피드 좋아요 시도");
         mockMvc.perform(post(PATH_FEED_LIKE, 99999L))
                 .andDo(print());
 
-        System.out.println("❌ 잘못된 파일 크기로 Presigned URL 요청");
+        System.out.println(" 잘못된 파일 크기로 Presigned URL 요청");
         mockMvc.perform(
                         post(PATH_FILE_PRESIGN_PROFILE)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -730,7 +730,7 @@ class PostmanProfileSmokeTest {
                 )
                 .andDo(print());
 
-        System.out.println("⚠️ 에러 시나리오 테스트 완료");
+        System.out.println(" 에러 시나리오 테스트 완료");
     }
 
     private static String textOrEmpty(JsonNode node, String field) {
