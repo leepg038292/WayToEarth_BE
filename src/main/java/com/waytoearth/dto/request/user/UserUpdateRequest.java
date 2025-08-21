@@ -32,7 +32,6 @@ public class UserUpdateRequest {
         private String residence;
 
         @JsonProperty("weekly_goal_distance")
-        @JsonAlias({"weeklyGoalDistance"})
         @DecimalMin(value = "0.01")
         @DecimalMax(value = "999.99")
         private BigDecimal weeklyGoalDistance;
