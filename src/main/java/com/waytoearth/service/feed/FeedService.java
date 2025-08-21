@@ -112,8 +112,8 @@ public class FeedService {
                 .map(existingLike -> {
                     // 좋아요 취소
                     feedLikeRepository.delete(existingLike);
-                    feed.setLikeCount(feed.getLikeCount() - 1); // ✅ DB 필드 업데이트
-                    feedRepository.save(feed); // ✅ 변경사항 반영
+                    feed.setLikeCount(feed.getLikeCount() - 1); //  DB 필드 업데이트
+                    feedRepository.save(feed); //  변경사항 반영
                     return new FeedLikeResponse(feed.getId(), feed.getLikeCount(), false);
                 })
                 .orElseGet(() -> {
@@ -124,8 +124,8 @@ public class FeedService {
                             .build();
                     feedLikeRepository.save(like);
 
-                    feed.setLikeCount(feed.getLikeCount() + 1); // ✅ DB 필드 업데이트
-                    feedRepository.save(feed); // ✅ 변경사항 반영
+                    feed.setLikeCount(feed.getLikeCount() + 1); //  DB 필드 업데이트
+                    feedRepository.save(feed); //  변경사항 반영
                     return new FeedLikeResponse(feed.getId(), feed.getLikeCount(), true);
                 });
     }

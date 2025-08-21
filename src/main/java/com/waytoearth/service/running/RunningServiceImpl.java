@@ -35,15 +35,15 @@ public class RunningServiceImpl implements RunningService {
         User runner = userRepository.findById(authUser.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        // ✅ Builder 패턴으로 안전하게 생성
+        //  Builder 패턴으로 안전하게 생성
         RunningRecord record = RunningRecord.builder()
-                .sessionId(request.getSessionId()) // ✅ 요청에서 받은 sessionId 사용
+                .sessionId(request.getSessionId()) //  요청에서 받은 sessionId 사용
                 .user(runner)
                 .runningType(request.getRunningType() != null ? request.getRunningType() : RunningType.SINGLE)
                 .virtualCourseId(request.getVirtualCourseId())
                 .status(RunningStatus.RUNNING)
                 .startedAt(LocalDateTime.now())
-                .isCompleted(false) // ✅ 필수 필드 명시적 설정
+                .isCompleted(false) //  필수 필드 명시적 설정
                 .build();
 
         runningRecordRepository.save(record);
@@ -74,7 +74,7 @@ public class RunningServiceImpl implements RunningService {
             );
         }
 
-        runningRecordRepository.save(record); // ✅ 저장 추가
+        runningRecordRepository.save(record); //  저장 추가
     }
 
     @Override
@@ -88,7 +88,7 @@ public class RunningServiceImpl implements RunningService {
         }
 
         record.setStatus(RunningStatus.PAUSED);
-        runningRecordRepository.save(record); // ✅ 저장 추가
+        runningRecordRepository.save(record); //  저장 추가
     }
 
     @Override
@@ -177,7 +177,7 @@ public class RunningServiceImpl implements RunningService {
         }
 
         record.setTitle(request.getTitle());
-        runningRecordRepository.save(record); // ✅ 저장 추가
+        runningRecordRepository.save(record); //  저장 추가
     }
 
     @Override

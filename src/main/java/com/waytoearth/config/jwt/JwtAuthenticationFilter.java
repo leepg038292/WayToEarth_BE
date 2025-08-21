@@ -43,9 +43,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(authenticatedUser, null, null);
                 SecurityContextHolder.getContext().setAuthentication(authToken);
 
-                log.debug("✅ 인증 성공: userId = {}", userId);
+                log.debug(" 인증 성공: userId = {}", userId);
             } else {
-                log.warn("❌ JWT 토큰에서 사용자 ID를 추출할 수 없습니다");
+                log.warn(" JWT 토큰에서 사용자 ID를 추출할 수 없습니다");
             }
         }
 
