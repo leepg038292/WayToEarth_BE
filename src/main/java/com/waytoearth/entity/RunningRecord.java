@@ -86,6 +86,7 @@ public class RunningRecord {
     /** 경로 데이터 */
     @OneToMany(mappedBy = "runningRecord", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sequence ASC")
+    @Builder.Default
     private List<RunningRoute> routes = new ArrayList<>();
 
     /** 러닝 완료 처리 */
