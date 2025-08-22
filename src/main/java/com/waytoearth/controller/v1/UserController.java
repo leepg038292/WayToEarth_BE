@@ -6,6 +6,7 @@ import com.waytoearth.dto.response.user.UserSummaryResponse;
 import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.security.AuthUser;
 import com.waytoearth.service.user.UserService;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
