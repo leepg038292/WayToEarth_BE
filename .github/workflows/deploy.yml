@@ -102,7 +102,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build & Test with Gradle
-        run: ./gradlew clean build   #  테스트 포함 빌드
+        run: ./gradlew clean build   # ✅ PR 단계 → 테스트 포함 빌드
 
   deploy:
     runs-on: ubuntu-latest
@@ -121,7 +121,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build with Gradle (Skip Tests)
-        run: ./gradlew build -x test   #  테스트 스킵, DB env 제거
+        run: ./gradlew build -x test   # ✅ 배포 단계 → 빌드만 수행
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -149,3 +149,8 @@ jobs:
               --name waytoearth \
               --env-file /home/ubuntu/.env \
               ${{ secrets.DOCKER_USERNAME }}/waytoearth:latest
+
+            #  배포 후 health check
+            echo "⏳ Waiting for app to start..."
+            sleep 15
+            curl -f http://localhost:8080/actuator/health
