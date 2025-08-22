@@ -3,10 +3,7 @@ package com.waytoearth.dto.request.user;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,7 +21,6 @@ public class UserUpdateRequest {
         private String nickname;
 
         @JsonProperty("profile_image_url")
-        @JsonAlias({"profileImageUrl"})
         @Pattern(regexp = "^https?://.*$", message = "유효한 URL이어야 합니다.")
         private String profileImageUrl;
 

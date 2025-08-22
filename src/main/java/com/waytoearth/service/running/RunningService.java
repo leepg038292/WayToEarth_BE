@@ -4,8 +4,6 @@ import com.waytoearth.dto.request.running.*;
 import com.waytoearth.dto.response.running.*;
 import com.waytoearth.security.AuthenticatedUser;
 
-import java.util.List;
-
 public interface RunningService {
 
     RunningStartResponse startRunning(AuthenticatedUser user, RunningStartRequest request);

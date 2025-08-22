@@ -1,16 +1,16 @@
 package com.waytoearth.service.feed;
 
 import com.waytoearth.dto.request.feed.FeedCreateRequest;
-import com.waytoearth.dto.response.feed.FeedLikeResponse;
 import com.waytoearth.dto.response.feed.FeedResponse;
+import com.waytoearth.dto.response.feed.FeedLikeResponse;
 import com.waytoearth.entity.Feed;
 import com.waytoearth.entity.FeedLike;
 import com.waytoearth.entity.RunningRecord;
 import com.waytoearth.entity.User;
 import com.waytoearth.repository.FeedLikeRepository;
 import com.waytoearth.repository.FeedRepository;
-import com.waytoearth.repository.RunningRecordRepository;
 import com.waytoearth.repository.UserRepository;
+import com.waytoearth.repository.RunningRecordRepository;
 import com.waytoearth.security.AuthenticatedUser;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -112,8 +112,8 @@ public class FeedService {
                 .map(existingLike -> {
                     // 좋아요 취소
                     feedLikeRepository.delete(existingLike);
-                    feed.setLikeCount(feed.getLikeCount() - 1); // ✅ DB 필드 업데이트
-                    feedRepository.save(feed); // ✅ 변경사항 반영
+                    feed.setLikeCount(feed.getLikeCount() - 1); //  DB 필드 업데이트
+                    feedRepository.save(feed); //  변경사항 반영
                     return new FeedLikeResponse(feed.getId(), feed.getLikeCount(), false);
                 })
                 .orElseGet(() -> {
@@ -124,8 +124,8 @@ public class FeedService {
                             .build();
                     feedLikeRepository.save(like);
 
-                    feed.setLikeCount(feed.getLikeCount() + 1); // ✅ DB 필드 업데이트
-                    feedRepository.save(feed); // ✅ 변경사항 반영
+                    feed.setLikeCount(feed.getLikeCount() + 1); //  DB 필드 업데이트
+                    feedRepository.save(feed); //  변경사항 반영
                     return new FeedLikeResponse(feed.getId(), feed.getLikeCount(), true);
                 });
     }

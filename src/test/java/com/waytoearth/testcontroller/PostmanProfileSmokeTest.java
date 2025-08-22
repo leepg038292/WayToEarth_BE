@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * 🎯 완전한 러닝 플로우 + 엠블럼 + 피드 + 파일 업로드 시나리오
+ *  완전한 러닝 플로우 + 엠블럼 + 피드 + 파일 업로드 시나리오
  * 기존 러닝 API + 새로운 API들 통합 테스트
  */
 @SpringBootTest
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("postman")
 class PostmanProfileSmokeTest {
 
-    // 📍 기존 러닝 API 경로
+    //  기존 러닝 API 경로
     private static final String PATH_RUNNING_START = "/v1/running/start";
     private static final String PATH_RUNNING_UPDATE = "/v1/running/update";
     private static final String PATH_RUNNING_PAUSE = "/v1/running/pause";
@@ -41,21 +41,21 @@ class PostmanProfileSmokeTest {
     private static final String PATH_WEATHER_CURRENT = "/v1/weather/current";
     private static final String PATH_STATISTICS_WEEKLY = "/v1/statistics/weekly";
 
-    // 🏆 새로운 엠블럼 API 경로
+    //  새로운 엠블럼 API 경로
     private static final String PATH_EMBLEM_SUMMARY = "/v1/emblems/me/summary";
     private static final String PATH_EMBLEM_CATALOG = "/v1/emblems/catalog";
     private static final String PATH_EMBLEM_DETAIL = "/v1/emblems/{id}";
     private static final String PATH_EMBLEM_AWARD_ONE = "/v1/emblems/{id}/award";
     private static final String PATH_EMBLEM_SCAN_AWARD = "/v1/emblems/award/scan";
 
-    // 📱 새로운 피드 API 경로
+    //  새로운 피드 API 경로
     private static final String PATH_FEED_CREATE = "/v1/feeds";
     private static final String PATH_FEED_LIST = "/v1/feeds";
     private static final String PATH_FEED_DETAIL = "/v1/feeds/{feedId}";
     private static final String PATH_FEED_LIKE = "/v1/feeds/{feedId}/like";
     private static final String PATH_FEED_DELETE = "/v1/feeds/{feedId}";
 
-    // 📁 새로운 파일 업로드 API 경로
+    //  새로운 파일 업로드 API 경로
     private static final String PATH_FILE_PRESIGN_PROFILE = "/v1/files/presign/profile";
     private static final String PATH_FILE_PRESIGN_FEED = "/v1/files/presign/feed";
 
@@ -68,15 +68,15 @@ class PostmanProfileSmokeTest {
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Test
-    @DisplayName("🏃‍♂️ 완전한 러닝 플로우 테스트 (모든 API 검증)")
+    @DisplayName("완전한 러닝 플로우 테스트 (모든 API 검증)")
     void complete_running_flow_test() throws Exception {
-        System.out.println("🚀 === 완전한 러닝 플로우 테스트 시작 ===");
+        System.out.println(" === 완전한 러닝 플로우 테스트 시작 ===");
 
         String sessionId = UUID.randomUUID().toString();
-        System.out.println("🆔 SessionId: " + sessionId);
+        System.out.println(" SessionId: " + sessionId);
 
-        //  러닝 시작
-        System.out.println("\n 러닝 시작");
+        // 1️ 러닝 시작
+        System.out.println("\n러닝 시작");
         mockMvc.perform(
                         post(PATH_RUNNING_START)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -93,8 +93,8 @@ class PostmanProfileSmokeTest {
 
         System.out.println(" 러닝 시작 성공");
 
-        // 2️⃣ 실시간 업데이트 #1
-        System.out.println("\n 실시간 업데이트 #1 (500m, 3분)");
+        // 실시간 업데이트 #1
+        System.out.println("\n실시간 업데이트 #1 (500m, 3분)");
         mockMvc.perform(
                         post(PATH_RUNNING_UPDATE)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -112,8 +112,8 @@ class PostmanProfileSmokeTest {
 
         System.out.println(" 1차 업데이트 성공");
 
-        //  실시간 업데이트 #2
-        System.out.println("\n3️⃣ 실시간 업데이트 #2 (1.2km, 7분)");
+        // 실시간 업데이트 #2
+        System.out.println("\n실시간 업데이트 #2 (1.2km, 7분)");
         mockMvc.perform(
                         post(PATH_RUNNING_UPDATE)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -147,7 +147,7 @@ class PostmanProfileSmokeTest {
         System.out.println(" 일시정지 성공");
 
         //  재개
-        System.out.println("\n 재개");
+        System.out.println("\n재개");
         mockMvc.perform(
                         post(PATH_RUNNING_RESUME)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -161,7 +161,7 @@ class PostmanProfileSmokeTest {
         System.out.println(" 재개 성공");
 
         // 재개 후 업데이트
-        System.out.println("\n 재개 후 업데이트 (2.5km, 15분)");
+        System.out.println("\n재개 후 업데이트 (2.5km, 15분)");
         mockMvc.perform(
                         post(PATH_RUNNING_UPDATE)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -179,7 +179,7 @@ class PostmanProfileSmokeTest {
 
         System.out.println(" 재개 후 업데이트 성공");
 
-        // 7️ 완료
+        //  완료
         System.out.println("\n 러닝 완료");
         MvcResult completeResult = mockMvc.perform(
                         post(PATH_RUNNING_COMPLETE)
@@ -202,7 +202,7 @@ class PostmanProfileSmokeTest {
                 .andReturn();
 
         String completeJson = completeResult.getResponse().getContentAsString();
-        System.out.println(" 완료 응답: " + completeJson);
+        System.out.println("완료 응답: " + completeJson);
 
         //  통계 즉시 반영 확인
         System.out.println("\n 통계 업데이트 확인");
@@ -214,7 +214,7 @@ class PostmanProfileSmokeTest {
                 .andReturn();
 
         String statsJson = statsResult.getResponse().getContentAsString();
-        System.out.println(" 업데이트된 통계: " + statsJson);
+        System.out.println("업데이트된 통계: " + statsJson);
 
         if (!statsJson.isEmpty()) {
             JsonNode statsRoot = objectMapper.readTree(statsJson);
@@ -234,13 +234,13 @@ class PostmanProfileSmokeTest {
     @Test
     @DisplayName(" 통합 사용자 플로우 테스트 (러닝 → 엠블럼 → 피드 → 파일)")
     void integrated_user_flow_test() throws Exception {
-        System.out.println(" === 통합 사용자 플로우 테스트 시작 ===");
+        System.out.println("=== 통합 사용자 플로우 테스트 시작 ===");
 
         String sessionId = UUID.randomUUID().toString();
         System.out.println(" SessionId: " + sessionId);
 
-        // 러닝 시작 → 완료 (간단 버전)
-        System.out.println("\n 빠른 러닝 완료");
+        //  러닝 시작 → 완료 (간단 버전)
+        System.out.println("\n빠른 러닝 완료");
 
         // 러닝 시작
         mockMvc.perform(
@@ -282,7 +282,7 @@ class PostmanProfileSmokeTest {
         if (!runningCompleteJson.isEmpty()) {
             JsonNode runningRoot = objectMapper.readTree(runningCompleteJson);
             runningRecordId = runningRoot.path("runningRecordId").asLong();
-            System.out.println("🏃‍♂️ 러닝 기록 ID: " + runningRecordId);
+            System.out.println("러닝 기록 ID: " + runningRecordId);
         }
 
         System.out.println(" 러닝 완료");
@@ -301,7 +301,7 @@ class PostmanProfileSmokeTest {
         if (!emblemScanJson.isEmpty()) {
             JsonNode emblemRoot = objectMapper.readTree(emblemScanJson);
             int awardedCount = emblemRoot.path("awarded_count").asInt();
-            System.out.println("🏆 새로 획득한 엠블럼: " + awardedCount + "개");
+            System.out.println(" 새로 획득한 엠블럼: " + awardedCount + "개");
         }
 
         //  엠블럼 요약 확인
@@ -324,7 +324,7 @@ class PostmanProfileSmokeTest {
             System.out.println(" 완성도: " + (completionRate * 100) + "%");
         }
 
-        //  피드 이미지 Presigned URL 발급
+        // 피드 이미지 Presigned URL 발급
         System.out.println("\n 피드 이미지 업로드 준비");
         MvcResult presignResult = mockMvc.perform(
                         post(PATH_FILE_PRESIGN_FEED)
@@ -343,17 +343,17 @@ class PostmanProfileSmokeTest {
         if (!presignJson.isEmpty()) {
             JsonNode presignRoot = objectMapper.readTree(presignJson);
             imageUrl = presignRoot.path("public_url").asText();
-            System.out.println("🔗 업로드 URL 생성: " + imageUrl);
+            System.out.println(" 업로드 URL 생성: " + imageUrl);
         }
 
         //  피드 작성 (러닝 기록 연동)
-        System.out.println("\n피드 작성 (러닝 기록 + 엠블럼 자랑)");
+        System.out.println("\n 피드 작성 (러닝 기록 + 엠블럼 자랑)");
         MvcResult feedCreateResult = mockMvc.perform(
                         post(PATH_FEED_CREATE)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(Map.of(
                                         "runningRecordId", runningRecordId != null ? runningRecordId : 123L,
-                                        "content", "오늘 5km 완주! 🏃‍♂️ 새로운 엠블럼도 획득했어요! ",
+                                        "content", "오늘 5km 완주! 새로운 엠블럼도 획득했어요! ",
                                         "imageUrl", imageUrl
                                 )))
                 )
@@ -389,8 +389,31 @@ class PostmanProfileSmokeTest {
                 for (JsonNode feed : feedArray) {
                     String content = feed.path("content").asText();
                     Double distance = feed.path("distance").asDouble();
-                    System.out.println("💬 " + content + (distance > 0 ? " (거리: " + distance + "km)" : ""));
+                    System.out.println("" + content + (distance > 0 ? " (거리: " + distance + "km)" : ""));
                 }
+            }
+        }
+
+        //  피드 상세 조회 (새로 추가)
+        if (feedId != null) {
+            System.out.println("\n 피드 상세 조회");
+            MvcResult feedDetailResult = mockMvc.perform(
+                            get(PATH_FEED_DETAIL, feedId)
+                    )
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn();
+
+            String feedDetailJson = feedDetailResult.getResponse().getContentAsString();
+            if (!feedDetailJson.isEmpty()) {
+                JsonNode detailRoot = objectMapper.readTree(feedDetailJson);
+                String detailContent = detailRoot.path("content").asText();
+                String author = detailRoot.path("author").path("nickname").asText();
+                String createdAt = detailRoot.path("createdAt").asText();
+
+                System.out.println(" 피드 작성자: " + author);
+                System.out.println(" 내용: " + detailContent);
+                System.out.println(" 작성일: " + createdAt);
             }
         }
 
@@ -410,8 +433,8 @@ class PostmanProfileSmokeTest {
                 int likeCount = likeRoot.path("likeCount").asInt();
                 boolean liked = likeRoot.path("liked").asBoolean();
 
-                System.out.println("❤️ 좋아요 상태: " + (liked ? "활성" : "비활성"));
-                System.out.println("📊 총 좋아요 수: " + likeCount);
+                System.out.println(" 좋아요 상태: " + (liked ? "활성" : "비활성"));
+                System.out.println(" 총 좋아요 수: " + likeCount);
             }
         }
 
@@ -431,7 +454,7 @@ class PostmanProfileSmokeTest {
             long totalDuration = statsRoot.path("totalDuration").asLong();
 
             System.out.println(" 최종 누적 거리: " + totalDistance + "km");
-            System.out.println(" 최종 누적 시간: " + totalDuration + "초");
+            System.out.println("️ 최종 누적 시간: " + totalDuration + "초");
 
             // 검증
             Assertions.assertTrue(totalDistance >= 5.0, "완료된 5km가 통계에 반영되어야 함");
@@ -457,7 +480,7 @@ class PostmanProfileSmokeTest {
                 .andReturn();
 
         String weatherJson = result.getResponse().getContentAsString();
-        System.out.println("🌡️ 날씨 응답: " + weatherJson);
+        System.out.println(" 날씨 응답: " + weatherJson);
 
         if (!weatherJson.isEmpty()) {
             JsonNode weatherRoot = objectMapper.readTree(weatherJson);
@@ -466,7 +489,7 @@ class PostmanProfileSmokeTest {
     }
 
     @Test
-    @DisplayName(" 통계 API 독립 테스트")
+    @DisplayName("통계 API 독립 테스트")
     void statistics_only_test() throws Exception {
         System.out.println(" 통계 API 독립 테스트");
 
@@ -518,8 +541,8 @@ class PostmanProfileSmokeTest {
             int totalCalories = statsRoot.path("totalCalories").asInt();
 
             System.out.println(" 총 거리: " + totalDistance + "km");
-            System.out.println(" 총 시간: " + totalDuration + "초");
-            System.out.println(" 평균 페이스: " + averagePace);
+            System.out.println("️ 총 시간: " + totalDuration + "초");
+            System.out.println("️ 평균 페이스: " + averagePace);
             System.out.println(" 총 칼로리: " + totalCalories);
 
             // 검증
@@ -560,6 +583,26 @@ class PostmanProfileSmokeTest {
                 .andDo(print())
                 .andReturn();
 
+        // 엠블럼 상세 조회 (새로 추가)
+        System.out.println("\n 엠블럼 상세 조회 테스트");
+        mockMvc.perform(get(PATH_EMBLEM_DETAIL, 1L))
+                .andDo(print());
+
+        // 개별 엠블럼 지급 테스트 (새로 추가)
+        System.out.println("\n 개별 엠블럼 지급 테스트");
+        MvcResult awardResult = mockMvc.perform(
+                        post(PATH_EMBLEM_AWARD_ONE, 1L)
+                )
+                .andDo(print())
+                .andReturn();
+
+        String awardJson = awardResult.getResponse().getContentAsString();
+        if (!awardJson.isEmpty()) {
+            JsonNode awardRoot = objectMapper.readTree(awardJson);
+            boolean awarded = awardRoot.path("awarded").asBoolean();
+            System.out.println(" 엠블럼 지급 결과: " + (awarded ? "성공" : "이미 보유 중"));
+        }
+
         // 일괄 스캔 지급 테스트
         MvcResult scanAllResult = mockMvc.perform(
                         post(PATH_EMBLEM_SCAN_AWARD)
@@ -580,20 +623,20 @@ class PostmanProfileSmokeTest {
             Assertions.assertTrue(awardedCount >= 0, "지급된 엠블럼 수는 0 이상이어야 함");
         }
 
-        System.out.println(" 엠블럼 API 모든 검증 통과!");
+        System.out.println("엠블럼 API 모든 검증 통과!");
     }
 
     @Test
     @DisplayName(" 피드 API 독립 테스트")
     void feed_only_test() throws Exception {
-        System.out.println("📱 피드 API 독립 테스트");
+        System.out.println(" 피드 API 독립 테스트");
 
         // 1. 피드 작성
         MvcResult createResult = mockMvc.perform(
                         post(PATH_FEED_CREATE)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(Map.of(
-                                        "content", "테스트 피드입니다! 🏃‍♀️",
+                                        "content", "테스트 피드입니다!",
                                         "imageUrl", "https://example.com/test.jpg"
                                 )))
                 )
@@ -619,7 +662,27 @@ class PostmanProfileSmokeTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        // 3. 피드 좋아요 (생성된 피드가 있을 때만)
+        // 3. 피드 상세 조회 (새로 추가)
+        if (feedId != null) {
+            System.out.println("\n 피드 상세 조회");
+            MvcResult detailResult = mockMvc.perform(
+                            get(PATH_FEED_DETAIL, feedId)
+                    )
+                    .andDo(print())
+                    .andReturn();
+
+            String detailJson = detailResult.getResponse().getContentAsString();
+            if (!detailJson.isEmpty()) {
+                JsonNode detailRoot = objectMapper.readTree(detailJson);
+                String content = detailRoot.path("content").asText();
+                System.out.println(" 상세 조회 내용: " + content);
+
+                // 검증
+                Assertions.assertFalse(content.isEmpty(), "피드 내용이 존재해야 함");
+            }
+        }
+
+        // 4. 피드 좋아요 (생성된 피드가 있을 때만)
         if (feedId != null) {
             MvcResult likeResult = mockMvc.perform(
                             post(PATH_FEED_LIKE, feedId)
@@ -634,11 +697,22 @@ class PostmanProfileSmokeTest {
                 boolean liked = likeRoot.path("liked").asBoolean();
                 int likeCount = likeRoot.path("likeCount").asInt();
 
-                System.out.println("❤️ 좋아요 상태: " + liked + ", 개수: " + likeCount);
+                System.out.println("좋아요 상태: " + liked + ", 개수: " + likeCount);
 
                 // 검증
                 Assertions.assertTrue(likeCount >= 0, "좋아요 수는 0 이상이어야 함");
             }
+        }
+
+        // 5. 피드 삭제 (새로 추가)
+        if (feedId != null) {
+            System.out.println("\n 피드 삭제");
+            mockMvc.perform(
+                            delete(PATH_FEED_DELETE, feedId)
+                    )
+                    .andDo(print());
+
+            System.out.println(" 피드 삭제 완료");
         }
 
         System.out.println(" 피드 API 모든 검증 통과!");
@@ -669,7 +743,7 @@ class PostmanProfileSmokeTest {
             String publicUrl = profileRoot.path("public_url").asText();
             int expiresIn = profileRoot.path("expires_in").asInt();
 
-            System.out.println("🔗 업로드 URL 생성됨 (만료: " + expiresIn + "초)");
+            System.out.println(" 업로드 URL 생성됨 (만료: " + expiresIn + "초)");
 
             // 검증
             Assertions.assertFalse(uploadUrl.isEmpty(), "업로드 URL이 생성되어야 함");
@@ -689,16 +763,189 @@ class PostmanProfileSmokeTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        System.out.println(" 파일 업로드 API 모든 검증 통과!");
+        System.out.println("파일 업로드 API 모든 검증 통과!");
     }
 
     @Test
-    @DisplayName(" 에러 시나리오 테스트")
+    @DisplayName("엠블럼 및 피드 개별 API 완전 테스트")
+    void emblem_and_feed_complete_test() throws Exception {
+        System.out.println("=== 엠블럼 및 피드 개별 API 완전 테스트 시작 ===");
+
+        // 1. 엠블럼 카탈로그에서 첫 번째 엠블럼 ID 가져오기
+        System.out.println("\n 엠블럼 카탈로그 조회");
+        MvcResult catalogResult = mockMvc.perform(
+                        get(PATH_EMBLEM_CATALOG)
+                                .param("filter", "ALL")
+                                .param("size", "1")
+                )
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        Long emblemId = 1L; // 기본값
+        String catalogJson = catalogResult.getResponse().getContentAsString();
+        if (!catalogJson.isEmpty()) {
+            JsonNode catalogRoot = objectMapper.readTree(catalogJson);
+            if (catalogRoot.isArray() && catalogRoot.size() > 0) {
+                emblemId = catalogRoot.get(0).path("id").asLong();
+                System.out.println(" 테스트할 엠블럼 ID: " + emblemId);
+            }
+        }
+
+        // 2. 엠블럼 상세 조회 테스트
+        System.out.println("\n 엠블럼 상세 조회");
+        MvcResult emblemDetailResult = mockMvc.perform(
+                        get(PATH_EMBLEM_DETAIL, emblemId)
+                )
+                .andDo(print())
+                .andReturn();
+
+        String emblemDetailJson = emblemDetailResult.getResponse().getContentAsString();
+        if (!emblemDetailJson.isEmpty()) {
+            JsonNode emblemRoot = objectMapper.readTree(emblemDetailJson);
+            String emblemName = emblemRoot.path("name").asText();
+            String description = emblemRoot.path("description").asText();
+            boolean isOwned = emblemRoot.path("isOwned").asBoolean();
+
+            System.out.println(" 엠블럼명: " + emblemName);
+            System.out.println(" 설명: " + description);
+            System.out.println(" 보유 여부: " + (isOwned ? "보유 중" : "미보유"));
+        }
+
+        // 3. 개별 엠블럼 지급 시도
+        System.out.println("\n 개별 엠블럼 지급 시도");
+        MvcResult awardResult = mockMvc.perform(
+                        post(PATH_EMBLEM_AWARD_ONE, emblemId)
+                )
+                .andDo(print())
+                .andReturn();
+
+        String awardJson = awardResult.getResponse().getContentAsString();
+        if (!awardJson.isEmpty()) {
+            JsonNode awardRoot = objectMapper.readTree(awardJson);
+            boolean awarded = awardRoot.path("awarded").asBoolean();
+            String message = awardRoot.path("message").asText();
+
+            System.out.println(" 지급 결과: " + (awarded ? "성공" : "실패"));
+            System.out.println(" 메시지: " + message);
+        }
+
+        // 4. 피드 작성
+        System.out.println("\n 테스트 피드 작성");
+        MvcResult feedCreateResult = mockMvc.perform(
+                        post(PATH_FEED_CREATE)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(Map.of(
+                                        "content", "완전 테스트용 피드입니다. 모든 API를 검증합니다.",
+                                        "imageUrl", "https://example.com/complete_test.jpg"
+                                )))
+                )
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        Long feedId = null;
+        String feedCreateJson = feedCreateResult.getResponse().getContentAsString();
+        if (!feedCreateJson.isEmpty()) {
+            JsonNode feedRoot = objectMapper.readTree(feedCreateJson);
+            feedId = feedRoot.path("id").asLong();
+            System.out.println(" 생성된 피드 ID: " + feedId);
+        }
+
+        if (feedId != null) {
+            // 5. 피드 상세 조회
+            System.out.println("\n 피드 상세 조회");
+            MvcResult feedDetailResult = mockMvc.perform(
+                            get(PATH_FEED_DETAIL, feedId)
+                    )
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn();
+
+            String feedDetailJson = feedDetailResult.getResponse().getContentAsString();
+            if (!feedDetailJson.isEmpty()) {
+                JsonNode detailRoot = objectMapper.readTree(feedDetailJson);
+                String content = detailRoot.path("content").asText();
+                String imageUrl = detailRoot.path("imageUrl").asText();
+                String createdAt = detailRoot.path("createdAt").asText();
+                int likeCount = detailRoot.path("likeCount").asInt();
+
+                System.out.println(" 상세 내용: " + content);
+                System.out.println(" 이미지 URL: " + imageUrl);
+                System.out.println(" 작성 시각: " + createdAt);
+                System.out.println(" 현재 좋아요 수: " + likeCount);
+
+                // 검증
+                Assertions.assertTrue(content.contains("완전 테스트용"), "작성한 내용이 포함되어야 함");
+                Assertions.assertTrue(likeCount >= 0, "좋아요 수는 0 이상이어야 함");
+            }
+
+            // 6. 피드 좋아요 토글 (2번 실행해서 on/off 확인)
+            System.out.println("\n 피드 좋아요 토글 테스트 (ON)");
+            MvcResult likeOnResult = mockMvc.perform(
+                            post(PATH_FEED_LIKE, feedId)
+                    )
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn();
+
+            String likeOnJson = likeOnResult.getResponse().getContentAsString();
+            boolean firstLikeState = false;
+            if (!likeOnJson.isEmpty()) {
+                JsonNode likeRoot = objectMapper.readTree(likeOnJson);
+                firstLikeState = likeRoot.path("liked").asBoolean();
+                int likeCount = likeRoot.path("likeCount").asInt();
+
+                System.out.println(" 첫 번째 토글 결과 - 좋아요: " + firstLikeState + ", 개수: " + likeCount);
+            }
+
+            System.out.println("\n 피드 좋아요 토글 테스트 (OFF)");
+            MvcResult likeOffResult = mockMvc.perform(
+                            post(PATH_FEED_LIKE, feedId)
+                    )
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn();
+
+            String likeOffJson = likeOffResult.getResponse().getContentAsString();
+            if (!likeOffJson.isEmpty()) {
+                JsonNode likeRoot = objectMapper.readTree(likeOffJson);
+                boolean secondLikeState = likeRoot.path("liked").asBoolean();
+                int likeCount = likeRoot.path("likeCount").asInt();
+
+                System.out.println(" 두 번째 토글 결과 - 좋아요: " + secondLikeState + ", 개수: " + likeCount);
+
+                // 검증 (토글되었는지 확인)
+                Assertions.assertNotEquals(firstLikeState, secondLikeState, "좋아요가 토글되어야 함");
+            }
+
+            // 7. 피드 삭제
+            System.out.println("\n 피드 삭제");
+            mockMvc.perform(
+                            delete(PATH_FEED_DELETE, feedId)
+                    )
+                    .andDo(print());
+
+            // 8. 삭제 확인 (404 에러가 나와야 함)
+            System.out.println("\n 삭제된 피드 조회 (404 확인)");
+            mockMvc.perform(
+                            get(PATH_FEED_DETAIL, feedId)
+                    )
+                    .andDo(print());
+
+            System.out.println(" 피드 삭제 및 확인 완료");
+        }
+
+        System.out.println("\n=== 엠블럼 및 피드 개별 API 완전 테스트 완료 ===");
+    }
+
+    @Test
+    @DisplayName("에러 시나리오 테스트")
     void error_scenarios_test() throws Exception {
-        System.out.println(" 에러 시나리오 테스트");
+        System.out.println("에러 시나리오 테스트");
 
         // 기존 러닝 에러 케이스
-        System.out.println(" 잘못된 세션 ID로 업데이트 시도");
+        System.out.println("잘못된 세션 ID로 업데이트 시도");
         mockMvc.perform(
                         post(PATH_RUNNING_UPDATE)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -711,15 +958,27 @@ class PostmanProfileSmokeTest {
                 .andDo(print());
 
         // 새로운 API 에러 케이스들
-        System.out.println(" 존재하지 않는 엠블럼 조회 시도");
+        System.out.println("존재하지 않는 엠블럼 조회 시도");
         mockMvc.perform(get(PATH_EMBLEM_DETAIL, 99999L))
                 .andDo(print());
 
-        System.out.println(" 존재하지 않는 피드 좋아요 시도");
+        System.out.println("존재하지 않는 엠블럼 지급 시도");
+        mockMvc.perform(post(PATH_EMBLEM_AWARD_ONE, 99999L))
+                .andDo(print());
+
+        System.out.println("존재하지 않는 피드 상세 조회 시도");
+        mockMvc.perform(get(PATH_FEED_DETAIL, 99999L))
+                .andDo(print());
+
+        System.out.println("존재하지 않는 피드 좋아요 시도");
         mockMvc.perform(post(PATH_FEED_LIKE, 99999L))
                 .andDo(print());
 
-        System.out.println(" 잘못된 파일 크기로 Presigned URL 요청");
+        System.out.println("존재하지 않는 피드 삭제 시도");
+        mockMvc.perform(delete(PATH_FEED_DELETE, 99999L))
+                .andDo(print());
+
+        System.out.println("잘못된 파일 크기로 Presigned URL 요청");
         mockMvc.perform(
                         post(PATH_FILE_PRESIGN_PROFILE)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -730,7 +989,7 @@ class PostmanProfileSmokeTest {
                 )
                 .andDo(print());
 
-        System.out.println(" 에러 시나리오 테스트 완료");
+        System.out.println("에러 시나리오 테스트 완료");
     }
 
     private static String textOrEmpty(JsonNode node, String field) {

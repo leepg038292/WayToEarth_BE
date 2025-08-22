@@ -27,27 +27,23 @@ public class RunningServiceImpl implements RunningService {
     private final RunningRecordRepository runningRecordRepository;
     private final RunningRouteRepository runningRouteRepository;
     private final UserRepository userRepository;
-    private final EmblemService emblemService;
+    private final EmblemService emblemService;  //엠블럼 자동 지급을 위한 의존성 주입
+
 
     @Override
     public RunningStartResponse startRunning(AuthenticatedUser authUser, RunningStartRequest request) {
-        //sessionId가 null이거나 빈 값인 경우 오류 발생
-        if (request.getSessionId() == null || request.getSessionId().isBlank()) {
-            throw new IllegalArgumentException("sessionId는 필수입니다.");
-        }
-
         User runner = userRepository.findById(authUser.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        // ✅ Builder 패턴으로 안전하게 생성
+        //  Builder 패턴으로 안전하게 생성
         RunningRecord record = RunningRecord.builder()
-                .sessionId(request.getSessionId()) // ✅ 요청에서 받은 sessionId 사용
+                .sessionId(request.getSessionId()) //  요청에서 받은 sessionId 사용
                 .user(runner)
                 .runningType(request.getRunningType() != null ? request.getRunningType() : RunningType.SINGLE)
                 .virtualCourseId(request.getVirtualCourseId())
                 .status(RunningStatus.RUNNING)
                 .startedAt(LocalDateTime.now())
-                .isCompleted(false) // ✅ 필수 필드 명시적 설정
+                .isCompleted(false) //  필수 필드 명시적 설정
                 .build();
 
         runningRecordRepository.save(record);
@@ -78,7 +74,7 @@ public class RunningServiceImpl implements RunningService {
             );
         }
 
-        runningRecordRepository.save(record); // ✅ 저장 추가
+        runningRecordRepository.save(record); //  저장 추가
     }
 
     @Override
@@ -92,7 +88,7 @@ public class RunningServiceImpl implements RunningService {
         }
 
         record.setStatus(RunningStatus.PAUSED);
-        runningRecordRepository.save(record); // ✅ 저장 추가
+        runningRecordRepository.save(record); //  저장 추가
     }
 
     @Override
@@ -149,7 +145,8 @@ public class RunningServiceImpl implements RunningService {
         // 저장 후 응답 구성
         runningRecordRepository.save(record);
 
-        var awardResult = emblemService.scanAndAward(user.getId(), "Distance");
+        // 엠블럼 자동 지급
+        var awardResult = emblemService.scanAndAward(user.getId(), "DISTANCE");
 
         return new RunningCompleteResponse(
                 record.getId(),
@@ -167,6 +164,7 @@ public class RunningServiceImpl implements RunningService {
 
                 awardResult
         );
+
     }
 
     @Override
@@ -180,7 +178,7 @@ public class RunningServiceImpl implements RunningService {
         }
 
         record.setTitle(request.getTitle());
-        runningRecordRepository.save(record); // ✅ 저장 추가
+        runningRecordRepository.save(record); //  저장 추가
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.waytoearth.config;
 
 import com.waytoearth.config.jwt.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,8 +17,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@Profile("!postman")  // postman 프로필이 아닐 때만 활성화
 @EnableWebSecurity
+@RequiredArgsConstructor
+@Profile("!postman")
 public class SecurityConfig {
 
     //  @Autowired(required = false)로 Bean이 없어도 에러 안나게 처리

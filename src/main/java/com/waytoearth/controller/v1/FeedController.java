@@ -4,7 +4,6 @@ import com.waytoearth.dto.request.feed.FeedCreateRequest;
 import com.waytoearth.dto.request.file.PresignRequest;
 import com.waytoearth.dto.response.feed.FeedLikeResponse;
 import com.waytoearth.dto.response.feed.FeedResponse;
-import com.waytoearth.dto.response.feed.MessageResponse;
 import com.waytoearth.dto.response.file.PresignResponse;
 import com.waytoearth.security.AuthUser;
 import com.waytoearth.security.AuthenticatedUser;
@@ -62,7 +61,7 @@ public class FeedController {
             @PathVariable Long feedId
     ) {
         feedService.deleteFeed(user, feedId);
-        return ResponseEntity.ok().body(new MessageResponse("피드가 삭제되었습니다."));
+        return ResponseEntity.ok().body("{\"message\":\"피드가 삭제되었습니다.\"}");
     }
 
     @Operation(summary = "피드 좋아요 (토글)")
