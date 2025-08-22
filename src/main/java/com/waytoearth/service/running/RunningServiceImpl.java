@@ -164,6 +164,7 @@ public class RunningServiceImpl implements RunningService {
                                 rt.getLatitude(), rt.getLongitude(), rt.getSequence()
                         ))
                         .collect(Collectors.toList()),
+
                 awardResult
         );
     }
