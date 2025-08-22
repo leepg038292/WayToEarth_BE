@@ -1,6 +1,6 @@
 spring:
   application:
-    name: waytoearth-backend
+    name: postman
 
   config:
     import: optional:dotenv:.env
@@ -32,7 +32,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -50,10 +50,27 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: 86400000
 
+# AWS S3 설정 (추가)
+cloud:
+  aws:
+    region: ${AWS_REGION:ap-northeast-2}
+    s3:
+      bucket: ${S3_BUCKET:waytoearth-assets}
+
 # 서버 설정
 server:
   address: 0.0.0.0
-  port: 8080
+  port: 8080  # 기본 포트는 그대로
+
+### #Profile별 포트 설정
+#---
+#spring:
+#  config:
+#    activate:
+#      on-profile: postman
+#
+#server:
+#  port: 9090  # postman 프로필일 때만 9090 포트 사용
 
 # Swagger 설정
 springdoc:
@@ -63,6 +80,10 @@ springdoc:
     operations-sorter: alpha
   api-docs:
     path: /v3/api-docs
+
+weather:
+  openweather:
+    api-key: ${OPENWEATHER_API_KEY:}  # 없으면 빈값 -> Fallback 응답
 
 # 로깅 설정.
 logging:

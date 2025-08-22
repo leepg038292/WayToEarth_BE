@@ -41,9 +41,17 @@ public class SwaggerConfig {
     }
 
     @Bean
+    public GroupedOpenApi userApi() {
+        return GroupedOpenApi.builder()
+                .group("2. 사용자 API")
+                .pathsToMatch("/v1/users/**")
+                .build();
+    }
+
+    @Bean
     public GroupedOpenApi runningApi() {
         return GroupedOpenApi.builder()
-                .group("2. 러닝 기록 API")
+                .group("3. 러닝 기록 API")
                 .pathsToMatch("/v1/running/**")
                 .build();
     }
@@ -51,7 +59,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi virtualCourseApi() {
         return GroupedOpenApi.builder()
-                .group("3. 가상 코스 API")
+                .group("4. 가상 코스 API")
                 .pathsToMatch("/v1/virtual-courses/**")
                 .build();
     }
@@ -59,7 +67,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi feedApi() {
         return GroupedOpenApi.builder()
-                .group("4. 피드 API")
+                .group("5. 피드 API")
                 .pathsToMatch("/v1/feeds/**")
                 .build();
     }
@@ -67,16 +75,40 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi crewApi() {
         return GroupedOpenApi.builder()
-                .group("5. 크루 API")
+                .group("6. 크루 API")
                 .pathsToMatch("/v1/crews/**")
                 .build();
     }
 
     @Bean
-    public GroupedOpenApi userApi() {
+    public GroupedOpenApi statisticsApi() {
         return GroupedOpenApi.builder()
-                .group("6. 사용자 API")
-                .pathsToMatch("/v1/users/**")
+                .group("7. 통계 API")
+                .pathsToMatch("/v1/statistics/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi fileApi() {
+        return GroupedOpenApi.builder()
+                .group("8. 파일 업로드 API")
+                .pathsToMatch("/v1/files/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi weatherApi() {
+        return GroupedOpenApi.builder()
+                .group("9. 날씨 API")
+                .pathsToMatch("/v1/weather/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi emblemApi() {
+        return GroupedOpenApi.builder()
+                .group("10. 엠블럼 API")
+                .pathsToMatch("/v1/emblems/**")
                 .build();
     }
 }
