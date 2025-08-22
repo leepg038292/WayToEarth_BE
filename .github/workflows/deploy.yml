@@ -23,7 +23,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      #  RDS 접속 테스트 (EC2에서 실행).
+      #  RDS 접속 테스트 (EC2에서 실행)..
       - name: Test RDS connection from EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
