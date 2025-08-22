@@ -153,4 +153,4 @@ jobs:
             #  배포 후 health check
             echo "⏳ Waiting for app to start..."
             sleep 15
-            curl -f http://localhost:8080/actuator/health
+            curl -f http://127.0.0.1:8080/actuator/health
