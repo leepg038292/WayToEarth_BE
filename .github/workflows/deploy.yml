@@ -102,7 +102,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build & Test with Gradle
-        run: ./gradlew clean build -x test   # PR 단계에서도 테스트 스킵
+        run: ./gradlew clean build -x test   # PR 단계에서도 테스트 스킵.
 
   deploy:
     runs-on: ubuntu-latest
