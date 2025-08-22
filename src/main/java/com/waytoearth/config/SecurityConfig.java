@@ -1,6 +1,7 @@
 package com.waytoearth.config;
 
 import com.waytoearth.config.jwt.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +15,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import lombok.RequiredArgsConstructor; //2025-08-22 코드 병합 후 임포트
 
 
 @Configuration
@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor; //2025-08-22 코드 병합 후 임포트
 @Profile("!postman")
 public class SecurityConfig {
 
-    //  @Autowired(required = false)로 Bean이 없어도 에러 안나게 처리
+    //  @Autowired(required = false)로 Bean이 없어도 에러 안나게 처리.
     @Autowired(required = false)
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
