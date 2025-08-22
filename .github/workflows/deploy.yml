@@ -102,7 +102,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build & Test with Gradle
-      run: ./gradlew clean build   # ✅ PR 단계 → 테스트 포함 빌드.
+        run: ./gradlew clean build   # ✅ PR 단계 → 테스트 포함 빌드.
 
   deploy:
     runs-on: ubuntu-latest
@@ -153,4 +153,4 @@ jobs:
             #  배포 후 health check
             echo "⏳ Waiting for app to start..."
             sleep 15
-            curl -f http://127.0.0.1:8080/actuator/health
+            curl -f http://127.0.0.1:8080/actuator/health || (echo "❌ Health check failed" && exit 1)
