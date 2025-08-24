@@ -63,7 +63,7 @@ public class UserInfoResponse {
         this.totalDistance = totalDistance;
         this.totalRunningCount = totalRunningCount;
         this.createdAt = createdAt;
-        this.profileImageKey = profileImageKey;
+        this.profileImageKey = profileImageKey; //추가
     }
 
 }
