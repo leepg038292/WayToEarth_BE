@@ -1,4 +1,3 @@
-// com/waytoearth/service/file/FileService.java
 package com.waytoearth.service.file;
 
 import com.waytoearth.dto.request.file.PresignRequest;
@@ -7,6 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -30,26 +32,19 @@ public class FileService {
     @Value("${cloud.aws.s3.bucket}") private String bucket;
     @Value("${cloud.aws.region}")    private String region;
 
+    //  프로필 이미지 Presign
     public PresignResponse presignProfile(Long userId, PresignRequest req) {
-        if (userId == null || userId <= 0) {
-            throw new IllegalArgumentException("유효하지 않은 사용자 ID");
-        }
-        if (req == null) {
-            throw new IllegalArgumentException("요청이 비어 있습니다.");
-        }
+        if (userId == null || userId <= 0) throw new IllegalArgumentException("유효하지 않은 사용자 ID");
+        if (req == null) throw new IllegalArgumentException("요청이 비어 있습니다.");
 
         final String contentType = safeLower(req.getContentType());
         final long size = req.getSize();
 
-        // 1) 타입/사이즈 검증
-        if (contentType == null || !contentType.matches("^image/(jpeg|png|webp)$")) {
+        if (contentType == null || !contentType.matches("^image/(jpeg|png|webp)$"))
             throw new IllegalArgumentException("허용되지 않는 Content-Type");
-        }
-        if (size <= 0 || size > MAX_SIZE) {
+        if (size <= 0 || size > MAX_SIZE)
             throw new IllegalArgumentException("파일 크기 초과(최대 5MB)");
-        }
 
-        // 2) 확장자는 contentType 기준으로 신뢰 (fileName의 확장자는 참고하지 않음)
         final String ext = switch (contentType) {
             case "image/jpeg" -> "jpg";
             case "image/png"  -> "png";
@@ -57,20 +52,14 @@ public class FileService {
             default -> "bin";
         };
 
-        // 3) 오브젝트 키 생성 (연/월/일/유저ID/UUID.ext)
-        LocalDate today = LocalDate.now();
-        String key = String.format(
-                "profiles/%d/%02d/%02d/%d/%s.%s",
-                today.getYear(), today.getMonthValue(), today.getDayOfMonth(),
-                userId, UUID.randomUUID(), ext
-        );
+        //  항상 userId 기반 고정 key 사용 → 중복 방지
+        String key = String.format("profiles/%d/profile.%s", userId, ext);
 
-        // 4) PutObject 요청 및 프리사인
         PutObjectRequest put = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
                 .contentType(contentType)
-                .contentLength(size)
+//                .contentLength(size)
                 .build();
 
         PutObjectPresignRequest presignReq = PutObjectPresignRequest.builder()
@@ -80,35 +69,22 @@ public class FileService {
 
         URL signedUrl = presigner.presignPutObject(presignReq).url();
 
-        // 5) 퍼블릭 접근 URL(버킷 퍼블릭/정책에 따라 접근 가능 여부 달라짐)
-        String publicUrl = String.format(
-                Locale.ROOT,
-                "https://%s.s3.%s.amazonaws.com/%s",
-                bucket, region, key
-        );
+        String publicUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, region, key);
 
-        log.info("[S3 Presign] userId={}, key={}, contentType={}, size={}", userId, key, contentType, size);
+        log.info("[S3 Presign Profile] bucket={}, region={}, userId={}, key={}, uploadUrl={}, publicUrl={}",
+                bucket, region, userId, key, signedUrl, publicUrl);
+
         return new PresignResponse(signedUrl.toString(), publicUrl, key, (int) EXPIRES_IN.getSeconds());
     }
 
-    private static String safeLower(String v) {
-        return v == null ? null : v.toLowerCase(Locale.ROOT).trim();
-    }
-
-    // com/waytoearth/service/file/FileService.java
-
+    //  피드 이미지 Presign
     public PresignResponse presignFeed(Long userId, PresignRequest req) {
         if (!req.getContentType().matches("^image/(jpeg|png|webp)$"))
             throw new IllegalArgumentException("허용되지 않는 Content-Type");
-        if (req.getSize() > 5 * 1024 * 1024) // 피드 이미지라면 용량 제한 ↑
+        if (req.getSize() > 10 * 1024 * 1024)
             throw new IllegalArgumentException("파일 용량 초과 (최대 10MB)");
 
-        String key = String.format(
-                "feeds/%s/%s/%s",
-                LocalDate.now(),
-                userId,
-                UUID.randomUUID()
-        );
+        String key = String.format("feeds/%s/%s/%s", LocalDate.now(), userId, UUID.randomUUID());
 
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
@@ -117,7 +93,7 @@ public class FileService {
                 .build();
 
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(5))
+                .signatureDuration(EXPIRES_IN)
                 .putObjectRequest(objectRequest)
                 .build();
 
@@ -127,8 +103,23 @@ public class FileService {
                 url.toString(),
                 String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, region, key),
                 key,
-                300  // Presigned URL 만료 시간 (예: 300초)
+                (int) EXPIRES_IN.getSeconds()
         );
     }
 
+    //  S3 삭제
+    public void deleteObject(String key) {
+        if (key == null || key.isBlank()) return;
+        try (S3Client s3 = S3Client.builder().region(Region.of(region)).build()) {
+            s3.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .build());
+            log.info("[S3 Delete] key={}", key);
+        }
+    }
+
+    private static String safeLower(String v) {
+        return v == null ? null : v.toLowerCase(Locale.ROOT).trim();
+    }
 }

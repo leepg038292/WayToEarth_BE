@@ -1,17 +1,18 @@
 package com.waytoearth.service.feed;
 
 import com.waytoearth.dto.request.feed.FeedCreateRequest;
-import com.waytoearth.dto.response.feed.FeedResponse;
 import com.waytoearth.dto.response.feed.FeedLikeResponse;
+import com.waytoearth.dto.response.feed.FeedResponse;
 import com.waytoearth.entity.Feed;
 import com.waytoearth.entity.FeedLike;
 import com.waytoearth.entity.RunningRecord;
 import com.waytoearth.entity.User;
 import com.waytoearth.repository.FeedLikeRepository;
 import com.waytoearth.repository.FeedRepository;
-import com.waytoearth.repository.UserRepository;
 import com.waytoearth.repository.RunningRecordRepository;
+import com.waytoearth.repository.UserRepository;
 import com.waytoearth.security.AuthenticatedUser;
+import com.waytoearth.service.file.FileService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +29,7 @@ public class FeedService {
     private final FeedLikeRepository feedLikeRepository;
     private final UserRepository userRepository;
     private final RunningRecordRepository runningRecordRepository;
+    private final FileService fileService;
 
     /**
      * 피드 작성
@@ -93,6 +95,11 @@ public class FeedService {
 
         if (!feed.getUser().getId().equals(authUser.getUserId())) {
             throw new IllegalStateException("본인이 작성한 피드만 삭제할 수 있습니다.");
+        }
+
+        // ✅ S3 삭제
+        if (feed.getImageKey() != null) {
+            fileService.deleteObject(feed.getImageKey());
         }
 
         feedRepository.delete(feed);
