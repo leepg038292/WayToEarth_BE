@@ -3,13 +3,17 @@ package com.waytoearth.testcontroller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waytoearth.config.jwt.JwtAuthenticationFilter;
+import com.waytoearth.security.AuthenticatedUser;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,6 +26,7 @@ import java.util.UUID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 
 /**
  *  완전한 러닝 플로우 + 엠블럼 + 피드 + 파일 업로드 시나리오
@@ -66,6 +71,15 @@ class PostmanProfileSmokeTest {
 
     @MockitoBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+
+    @BeforeEach
+    void setupSecurity() {
+        AuthenticatedUser fakeUser = new AuthenticatedUser(1L);
+        var auth = new UsernamePasswordAuthenticationToken(fakeUser, null, List.of());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+    }
+
 
     @Test
     @DisplayName("완전한 러닝 플로우 테스트 (모든 API 검증)")
@@ -938,6 +952,114 @@ class PostmanProfileSmokeTest {
 
         System.out.println("\n=== 엠블럼 및 피드 개별 API 완전 테스트 완료 ===");
     }
+
+
+    @Test
+    @DisplayName("프로필 이미지 교체 및 삭제 테스트")
+    void profile_image_replace_and_delete_test() throws Exception {
+        System.out.println("=== 프로필 이미지 교체 및 삭제 테스트 시작 ===");
+
+        // 1. Presigned URL 발급 (테스트 전용 엔드포인트 사용)
+        MvcResult presignResult = mockMvc.perform(
+                        post("/v1/files/presign/profile/test")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(Map.of(
+                                        "contentType", "image/png",
+                                        "size", 512000
+                                ))))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        JsonNode presignJson = objectMapper.readTree(presignResult.getResponse().getContentAsString());
+
+        String newUrl = presignJson.path("public_url").asText();
+        String newKey = presignJson.path("key").asText();
+
+        Assertions.assertFalse(newUrl.isEmpty(), "발급된 public_url은 비어있으면 안됨");
+        Assertions.assertFalse(newKey.isEmpty(), "발급된 key는 비어있으면 안됨");
+
+        // 2. updateProfile 호출 (교체)
+        mockMvc.perform(
+                        put("/v1/users/me")
+                                .requestAttr("me", new AuthenticatedUser(1L)) // ✅ 인증 유저 주입
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(Map.of(
+                                        "nickname", "newNick",
+                                        "profile_image_url", newUrl,
+                                        "profile_image_key", newKey
+                                ))))
+                .andExpect(status().isOk())
+                .andDo(print());
+
+        // 3. 프로필 삭제 API 호출
+        mockMvc.perform(
+                        delete("/v1/files/profile")
+                                .requestAttr("me", new AuthenticatedUser(1L)) // ✅ 인증 유저 주입
+                )
+                .andExpect(status().isNoContent())
+                .andDo(print());
+
+        System.out.println("프로필 이미지 교체 및 삭제 테스트 완료");
+    }
+
+    @Test
+    @DisplayName("피드 삭제 시 S3 이미지도 함께 삭제되는지 테스트")
+    void feed_delete_should_also_delete_s3_object() throws Exception {
+        System.out.println("=== 피드 삭제 S3 동기화 테스트 시작 ===");
+
+        // 1. Presigned URL 발급 (테스트 전용 엔드포인트 사용)
+        MvcResult presignResult = mockMvc.perform(
+                        post("/v1/files/presign/feed/test")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(Map.of(
+                                        "contentType", "image/jpeg",
+                                        "size", 1024000
+                                ))))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        JsonNode presignJson = objectMapper.readTree(presignResult.getResponse().getContentAsString());
+
+        String imageUrl = presignJson.path("public_url").asText();
+        String imageKey = presignJson.path("key").asText();
+
+        Assertions.assertFalse(imageUrl.isEmpty(), "발급된 public_url은 비어있으면 안됨");
+        Assertions.assertFalse(imageKey.isEmpty(), "발급된 key는 비어있으면 안됨");
+
+        // 2. 피드 생성
+        MvcResult createResult = mockMvc.perform(
+                        post(PATH_FEED_CREATE)
+                                .requestAttr("me", new AuthenticatedUser(1L)) // ✅ 인증 유저 주입
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(Map.of(
+                                        "content", "S3 삭제 테스트 피드",
+                                        "imageUrl", imageUrl,
+                                        "imageKey", imageKey
+                                ))))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        Long feedId = objectMapper.readTree(createResult.getResponse().getContentAsString()).path("id").asLong();
+        Assertions.assertNotNull(feedId, "피드 생성 후 ID가 있어야 함");
+
+        // 3. 피드 삭제
+        mockMvc.perform(
+                        delete(PATH_FEED_DELETE, feedId)
+                                .requestAttr("me", new AuthenticatedUser(1L)) // ✅ 인증 유저 주입
+                )
+                .andExpect(status().isOk())
+                .andDo(print());
+
+        System.out.println("피드 삭제 S3 동기화 테스트 완료")
+        ;
+    }
+
+
+
+
 
     @Test
     @DisplayName("에러 시나리오 테스트")
