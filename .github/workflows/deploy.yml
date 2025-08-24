@@ -77,10 +77,10 @@
 name: Deploy WayToEarth Backend to EC2 using Docker
 
 on:
-  pull_request:   # PR 생성/업데이트 → 빌드만 실행
+  pull_request:   # PR 생성/업데이트 → 빌드만 실행.
     branches:
       - dev
-  push:           # dev 브랜치에 머지되었을 때 → 배포 실행.
+  push:           # dev 브랜치에 머지되었을 때 → 배포 실행
     branches:
       - dev
 
@@ -102,7 +102,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build & Test with Gradle
-        run: ./gradlew clean build -x test   # PR 단계에서도 테스트 스킵.
+        run: ./gradlew clean build -x test   # PR 단계에서도 테스트 스킵
 
   deploy:
     runs-on: ubuntu-latest
@@ -121,7 +121,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build with Gradle (Skip Tests)
-        run: ./gradlew build -x test   # 배포 단계에서도 테스트 스킵
+        run: ./gradlew build -x test
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -131,8 +131,11 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/waytoearth:latest .
-          docker push ${{ secrets.DOCKER_USERNAME }}/waytoearth:latest
+          IMAGE_NAME=docker.io/${{ secrets.DOCKER_USERNAME }}/waytoearth:latest
+          docker build -t $IMAGE_NAME .
+          for i in 1 2 3; do
+            docker push $IMAGE_NAME && break || (echo "Retrying push ($i/3)..." && sleep 15)
+          done
 
       - name: Deploy on EC2 via SSH
         uses: appleboy/ssh-action@v1.0.0
@@ -141,23 +144,26 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/waytoearth:latest
+            IMAGE_NAME=docker.io/${{ secrets.DOCKER_USERNAME }}/waytoearth:latest
+            for i in 1 2 3; do
+              docker pull $IMAGE_NAME && break || (echo "Retrying pull ($i/3)..." && sleep 15)
+            done
             docker stop waytoearth || true
             docker rm waytoearth || true
             docker run -d \
               -p 8080:8080 \
               --name waytoearth \
               --env-file /home/ubuntu/.env \
-              ${{ secrets.DOCKER_USERNAME }}/waytoearth:latest
+              $IMAGE_NAME
 
             echo "⏳ Waiting for app to start (max 50s)..."
             for i in {1..10}; do
               if curl -s http://127.0.0.1:8080/actuator/health | grep '"status":"UP"' > /dev/null; then
-                echo "App is healthy!"
+                echo "✅ App is healthy!"
                 exit 0
               fi
               echo "⏳ Still starting... ($i/10)"
               sleep 5
             done
-            echo "App failed to start within 50s"
+            echo "❌ App failed to start within 50s"
             exit 1
