@@ -34,6 +34,10 @@ public class Feed {
     @Column(name = "image_url")
     private String imageUrl;
 
+    // S3 삭제를 위해 Key 보관
+    @Column(name = "image_key")
+    private String imageKey;
+
     @Column(name = "like_count", nullable = false)
     private int likeCount = 0;
 
