@@ -119,7 +119,8 @@ public class UserService {
                 u.getWeeklyGoalDistance(),
                 u.getTotalDistance(),
                 u.getTotalRunningCount(),
-                created
+                created,
+                u.getProfileImageKey()
         );
     }
     /**

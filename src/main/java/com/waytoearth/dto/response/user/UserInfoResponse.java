@@ -45,11 +45,14 @@ public class UserInfoResponse {
     @Schema(description = "가입 일시(UTC)", example = "2025-01-15T10:00:00Z")
     private Instant createdAt;
 
+    @Schema(description = "프로필 이미지 Key (S3 오브젝트 키)", example = "profiles/1/profile.png")
+    private String profileImageKey;
+
     public UserInfoResponse() { }
 
     public UserInfoResponse(Long id, String nickname, String profileImageUrl, String residence,
                             String ageGroup, String gender, BigDecimal weeklyGoalDistance,
-                            BigDecimal totalDistance, Integer totalRunningCount, Instant createdAt) {
+                            BigDecimal totalDistance, Integer totalRunningCount, Instant createdAt, String profileImageKey) {
         this.id = id;
         this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;
@@ -60,6 +63,7 @@ public class UserInfoResponse {
         this.totalDistance = totalDistance;
         this.totalRunningCount = totalRunningCount;
         this.createdAt = createdAt;
+        this.profileImageKey = profileImageKey; //추가
     }
 
 }
