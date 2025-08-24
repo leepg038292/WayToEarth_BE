@@ -59,7 +59,7 @@ public class FileService {
                 .bucket(bucket)
                 .key(key)
                 .contentType(contentType)
-                .contentLength(size)
+//                .contentLength(size)
                 .build();
 
         PutObjectPresignRequest presignReq = PutObjectPresignRequest.builder()
@@ -71,7 +71,9 @@ public class FileService {
 
         String publicUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, region, key);
 
-        log.info("[S3 Presign Profile] userId={}, key={}, contentType={}, size={}", userId, key, contentType, size);
+        log.info("[S3 Presign Profile] bucket={}, region={}, userId={}, key={}, uploadUrl={}, publicUrl={}",
+                bucket, region, userId, key, signedUrl, publicUrl);
+
         return new PresignResponse(signedUrl.toString(), publicUrl, key, (int) EXPIRES_IN.getSeconds());
     }
 

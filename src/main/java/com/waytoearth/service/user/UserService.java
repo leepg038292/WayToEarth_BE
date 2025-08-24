@@ -160,20 +160,21 @@ public class UserService {
             }
         }
 
-        // 🔹 프로필 이미지 (URL + Key)
+// 🔹 프로필 이미지 (URL + Key)
         if (req.getProfileImageUrl() != null && req.getProfileImageKey() != null) {
             String newUrl = req.getProfileImageUrl().trim();
             String newKey = req.getProfileImageKey().trim();
 
             if (!newUrl.isEmpty() && !newKey.isEmpty()) {
-                // ✅ 기존 프로필 이미지 있으면 삭제
-                if (u.getProfileImageKey() != null) {
-                    fileService.deleteObject(u.getProfileImageKey());
-                }
+                // ❌ 고정 키 방식에서는 굳이 삭제할 필요 없음
+                // if (u.getProfileImageKey() != null) {
+                //     fileService.deleteObject(u.getProfileImageKey());
+                // }
                 u.setProfileImageUrl(newUrl);
                 u.setProfileImageKey(newKey);
             }
         }
+
 
         // 🔹 거주지
         if (req.getResidence() != null) {
