@@ -1,5 +1,5 @@
 package com.waytoearth.service.user;
-import java.math.RoundingMode;
+
 import com.waytoearth.dto.request.auth.OnboardingRequest;
 import com.waytoearth.dto.request.user.UserUpdateRequest;
 import com.waytoearth.dto.response.user.UserInfoResponse;
@@ -10,14 +10,15 @@ import com.waytoearth.exception.UserNotFoundException;
 import com.waytoearth.repository.EmblemRepository;
 import com.waytoearth.repository.UserEmblemRepository;
 import com.waytoearth.repository.UserRepository;
+import com.waytoearth.service.file.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.ZoneOffset;
-
+import java.math.RoundingMode;
 import java.time.Instant;
+import java.time.ZoneOffset;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +30,8 @@ public class UserService {
     // 엠블럼 요약 계산용 리포지토리 주입
     private final UserEmblemRepository userEmblemRepository;
     private final EmblemRepository emblemRepository;
+
+    private final FileService fileService; // ✅ 주입 추가
 
     /**
      * 카카오 ID로 사용자 조회
@@ -145,7 +148,7 @@ public class UserService {
     public void updateProfile(Long userId, UserUpdateRequest req) {
         User u = findById(userId);
 
-        // 닉네임
+        // 🔹 닉네임
         if (req.getNickname() != null) {
             String newNickname = req.getNickname().trim();
             if (!newNickname.isEmpty() && !newNickname.equals(u.getNickname())) {
@@ -156,15 +159,22 @@ public class UserService {
             }
         }
 
-        // 프로필 이미지 URL
-        if (req.getProfileImageUrl() != null) {
-            String url = req.getProfileImageUrl().trim();
-            if (!url.isEmpty()) {
-                u.setProfileImageUrl(url);
+        // 🔹 프로필 이미지 (URL + Key)
+        if (req.getProfileImageUrl() != null && req.getProfileImageKey() != null) {
+            String newUrl = req.getProfileImageUrl().trim();
+            String newKey = req.getProfileImageKey().trim();
+
+            if (!newUrl.isEmpty() && !newKey.isEmpty()) {
+                // ✅ 기존 프로필 이미지 있으면 삭제
+                if (u.getProfileImageKey() != null) {
+                    fileService.deleteObject(u.getProfileImageKey());
+                }
+                u.setProfileImageUrl(newUrl);
+                u.setProfileImageKey(newKey);
             }
         }
 
-        // 거주지
+        // 🔹 거주지
         if (req.getResidence() != null) {
             String resi = req.getResidence().trim();
             if (!resi.isEmpty()) {
@@ -172,7 +182,7 @@ public class UserService {
             }
         }
 
-        // 주간 목표 거리
+        // 🔹 주간 목표 거리
         if (req.getWeeklyGoalDistance() != null) {
             var normalized = req.getWeeklyGoalDistance().setScale(2, RoundingMode.HALF_UP);
             u.setWeeklyGoalDistance(normalized);
@@ -180,7 +190,20 @@ public class UserService {
 
         userRepository.save(u);
 
-        log.info("[Users:Update] userId={}, nickname={}, residence={}, weeklyGoalDistance={}",
-                u.getId(), u.getNickname(), u.getResidence(), u.getWeeklyGoalDistance());
+        log.info("[Users:Update] userId={}, nickname={}, residence={}, weeklyGoalDistance={}, profileImageKey={}",
+                u.getId(), u.getNickname(), u.getResidence(), u.getWeeklyGoalDistance(), u.getProfileImageKey());
     }
+
+
+    @Transactional
+    public void removeProfileImage(Long userId) {
+        User u = findById(userId);
+        if (u.getProfileImageKey() != null) {
+            fileService.deleteObject(u.getProfileImageKey());
+            u.setProfileImageKey(null);
+            u.setProfileImageUrl(null); // 기본이미지 처리 가능
+        }
+        userRepository.save(u);
+    }
+
 }

@@ -1,9 +1,11 @@
 // com/waytoearth/dto/request/user/UserUpdateRequest.java
 package com.waytoearth.dto.request.user;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,4 +33,8 @@ public class UserUpdateRequest {
         @DecimalMin(value = "0.01")
         @DecimalMax(value = "999.99")
         private BigDecimal weeklyGoalDistance;
+
+        //  S3 key도 함께 전달 (삭제/교체 시 필요)
+        @JsonProperty("profile_image_key")
+        private String profileImageKey;
 }
