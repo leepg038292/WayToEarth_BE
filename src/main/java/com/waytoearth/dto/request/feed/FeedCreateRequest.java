@@ -14,4 +14,7 @@ public class FeedCreateRequest {
 
     @Schema(description = "이미지 URL (S3 업로드 후 경로)", example = "https://example.com/running_photo.jpg")
     private String imageUrl;
+
+    @Schema(description = "이미지 Key (S3 삭제 시 필요)", example = "feeds/2025-08-24/1/uuid1234")
+    private String imageKey; // ✅ 추가
 }

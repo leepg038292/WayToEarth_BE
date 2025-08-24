@@ -47,6 +47,7 @@ public class FeedService {
                 .runningRecord(record)
                 .content(req.getContent())
                 .imageUrl(req.getImageUrl())
+                .imageKey(req.getImageKey())
                 .build();
 
         feedRepository.save(feed);
