@@ -1,8 +1,7 @@
 package com.waytoearth.entity;
 
-import com.waytoearth.entity.enums.RunningType;
-import com.waytoearth.entity.enums.WeatherCondition;
 import com.waytoearth.entity.enums.RunningStatus;
+import com.waytoearth.entity.enums.RunningType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -72,8 +71,9 @@ public class RunningRecord {
     private Integer calories;
 
     /** 완료 여부 */
-    @Column(name = "is_completed", nullable = false)
+    @Column(name = "is_completed", columnDefinition = "TINYINT(1)", nullable = false) //columnDefinition 변경
     private Boolean isCompleted;
+
 
     /** 시작 시각 */
     @Column(name = "started_at", nullable = false)

@@ -3,9 +3,11 @@ package com.waytoearth.dto.response.running;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor; //추가
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor //추가
 public class RunningRecordSummaryResponse {
     @Schema(example = "456")
     private Long id;
