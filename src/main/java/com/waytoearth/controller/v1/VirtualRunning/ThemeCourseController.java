@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/theme-courses")
+@RequestMapping("/v1/theme-courses")
 @RequiredArgsConstructor
 @Tag(name = "ThemeCourse", description = "운영자 제공 테마 코스 API")
 public class ThemeCourseController {

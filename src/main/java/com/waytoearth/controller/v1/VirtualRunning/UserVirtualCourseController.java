@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/user-courses")
+@RequestMapping("/v1/user-virtual-courses")
 @RequiredArgsConstructor
 @Tag(name = "UserVirtualCourse", description = "사용자 가상 코스 진행 API")
 public class UserVirtualCourseController {

@@ -34,6 +34,6 @@ public class ThemeCourseEntity {
     @Schema(description = "생성일시")
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "themeCourse", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CourseSegmentEntity> segments;
 }

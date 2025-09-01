@@ -6,12 +6,21 @@ import com.waytoearth.dto.response.Virtual.CourseSegmentSummaryResponse;
 
 import java.util.List;
 
-/**
- * 세그먼트 관리 서비스
- */
+
+
 public interface CourseSegmentService {
-    CourseSegmentDetailResponse addSegment(Long courseId, CourseSegmentCreateRequest request);
-    List<CourseSegmentSummaryResponse> getSegments(Long courseId);
+
+    // 테마 코스
+    CourseSegmentDetailResponse addSegmentToThemeCourse(Long themeCourseId, CourseSegmentCreateRequest request);
+    List<CourseSegmentSummaryResponse> getSegmentsByThemeCourse(Long themeCourseId);
+
+    // 커스텀 코스
+    CourseSegmentDetailResponse addSegmentToCustomCourse(Long customCourseId, CourseSegmentCreateRequest request);
+    List<CourseSegmentSummaryResponse> getSegmentsByCustomCourse(Long customCourseId);
+
+    // 공통
     CourseSegmentDetailResponse getSegmentDetail(Long segmentId);
     void deleteSegment(Long segmentId);
 }
+
+

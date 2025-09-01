@@ -9,5 +9,10 @@ import java.util.List;
  * 코스 세그먼트 Repository
  */
 public interface CourseSegmentRepository extends JpaRepository<CourseSegmentEntity, Long> {
-    List<CourseSegmentEntity> findByCourseIdOrderByOrderIndex(Long courseId);
+
+    // 테마 코스 기준 조회
+    List<CourseSegmentEntity> findByThemeCourseIdOrderByOrderIndex(Long themeCourseId);
+
+    // 커스텀 코스 기준 조회
+    List<CourseSegmentEntity> findByCustomCourseIdOrderByOrderIndex(Long customCourseId);
 }

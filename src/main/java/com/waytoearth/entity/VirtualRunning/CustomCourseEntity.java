@@ -34,6 +34,7 @@ public class CustomCourseEntity {
     @Schema(description = "생성일시")
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "customCourse", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CourseSegmentEntity> segments;
+
 }

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/custom-courses")
+@RequestMapping("/v1/custom-courses")
 @RequiredArgsConstructor
 @Tag(name = "CustomCourse", description = "사용자 커스텀 코스 API")
 public class CustomCourseController {

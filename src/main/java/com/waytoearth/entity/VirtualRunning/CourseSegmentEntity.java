@@ -20,9 +20,15 @@ public class CourseSegmentEntity {
     @Schema(description = "세그먼트 ID", example = "100")
     private Long id;
 
+    // ✅ ThemeCourse와 연결
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id")
-    private CustomCourseEntity course;  // 테마/커스텀 모두 연결 가능 (추후 상속 구조 확장 가능)
+    @JoinColumn(name = "theme_course_id")
+    private ThemeCourseEntity themeCourse;
+
+    // ✅ CustomCourse와 연결
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "custom_course_id")
+    private CustomCourseEntity customCourse;
 
     @Enumerated(EnumType.STRING)
     @Schema(description = "세그먼트 타입", example = "DOMESTIC")
