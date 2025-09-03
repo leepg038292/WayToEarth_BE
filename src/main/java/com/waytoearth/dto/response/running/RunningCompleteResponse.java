@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder   // 추가
+@Builder
 public class RunningCompleteResponse {
 
     @Schema(description = "러닝 기록 ID")
@@ -36,9 +36,15 @@ public class RunningCompleteResponse {
     @Schema(description = "러닝 경로 좌표 목록")
     private List<RoutePoint> routePoints;
 
-    //  추가된 필드
     @Schema(description = "엠블럼 지급 결과")
     private EmblemAwardResult emblemAwardResult;
+
+    // ✅ 추가
+    @Schema(description = "러닝 타입 (SINGLE / VIRTUAL)")
+    private String runningType;
+
+    @Schema(description = "가상 코스 ID (Virtual일 경우만 세팅됨)")
+    private Long virtualCourseId;
 
     @Data
     @NoArgsConstructor

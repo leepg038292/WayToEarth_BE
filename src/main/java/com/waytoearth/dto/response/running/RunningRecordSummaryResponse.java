@@ -3,12 +3,13 @@ package com.waytoearth.dto.response.running;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor; //추가
+import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor //추가
+@NoArgsConstructor
 public class RunningRecordSummaryResponse {
+
     @Schema(example = "456")
     private Long id;
 
@@ -29,4 +30,11 @@ public class RunningRecordSummaryResponse {
 
     @Schema(description = "시작 시각(ISO-8601)", example = "2025-08-14T09:30:00")
     private String startedAt;
+
+    // ✅ 추가
+    @Schema(description = "러닝 타입 (SINGLE / VIRTUAL)")
+    private String runningType;
+
+    @Schema(description = "가상 코스 ID (Virtual일 경우만 세팅됨)")
+    private Long virtualCourseId;
 }

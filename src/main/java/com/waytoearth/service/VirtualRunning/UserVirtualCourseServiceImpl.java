@@ -5,16 +5,23 @@ import com.waytoearth.dto.request.Virtual.VirtualCourseProgressUpdateRequest;
 import com.waytoearth.dto.response.Virtual.SegmentProgressResponse;
 import com.waytoearth.dto.response.Virtual.UserVirtualCourseResponse;
 import com.waytoearth.dto.response.Virtual.VirtualCourseProgressResponse;
+import com.waytoearth.entity.RunningRecord;
+import com.waytoearth.entity.User;
 import com.waytoearth.entity.VirtualRunning.UserVirtualCourseEntity;
 import com.waytoearth.entity.VirtualRunning.CourseSegmentEntity;
 import com.waytoearth.entity.VirtualRunning.SegmentProgressEntity;
+import com.waytoearth.entity.enums.RunningStatus;
+import com.waytoearth.entity.enums.RunningType;
 import com.waytoearth.entity.enums.VirtualCourseStatus;
+import com.waytoearth.repository.RunningRecordRepository;
+import com.waytoearth.repository.UserRepository;
 import com.waytoearth.repository.VirtualRunning.*;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -27,6 +34,10 @@ public class UserVirtualCourseServiceImpl implements UserVirtualCourseService {
     private final ThemeCourseRepository themeCourseRepository;
     private final CustomCourseRepository customCourseRepository;
     private final CourseSegmentRepository courseSegmentRepository;
+
+    // ✅ 추가
+    private final RunningRecordRepository runningRecordRepository;
+    private final UserRepository userRepository;
 
     /**
      * ✅ 진행률 업데이트
@@ -51,7 +62,6 @@ public class UserVirtualCourseServiceImpl implements UserVirtualCourseService {
         if (updatedDistance >= segmentEntity.getDistanceKm()) {
             segmentProgress.setStatus(VirtualCourseStatus.COMPLETED);
         }
-
         segmentProgressRepository.save(segmentProgress);
 
         // 전체 코스 진행률 업데이트
@@ -63,6 +73,27 @@ public class UserVirtualCourseServiceImpl implements UserVirtualCourseService {
         double courseTotal = getCourseTotalDistance(userCourse);
         if (newTotal >= courseTotal) {
             userCourse.setStatus(VirtualCourseStatus.COMPLETED);
+
+            // ✅ RunningRecord 저장
+            User user = userRepository.findById(userCourse.getUserId())
+                    .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+            RunningRecord record = RunningRecord.builder()
+                    .user(user)
+                    .runningType(RunningType.VIRTUAL)
+                    .virtualCourseId(userCourse.getId())
+                    .distance(BigDecimal.valueOf(courseTotal))
+                    .status(RunningStatus.COMPLETED)
+                    .isCompleted(true)
+                    .startedAt(LocalDateTime.now().minusDays(1)) // TODO: 실제 시작 시간 연동 필요
+                    .endedAt(LocalDateTime.now())
+                    .build();
+
+            runningRecordRepository.save(record);
+
+            // ✅ 유저 통계 업데이트
+            user.updateRunningStats(BigDecimal.valueOf(courseTotal));
+            userRepository.save(user);
         }
 
         userVirtualCourseRepository.save(userCourse);
@@ -153,7 +184,6 @@ public class UserVirtualCourseServiceImpl implements UserVirtualCourseService {
                 savedCourse.getStatus().name()
         );
     }
-
 
     /**
      * ✅ 진행률 계산
