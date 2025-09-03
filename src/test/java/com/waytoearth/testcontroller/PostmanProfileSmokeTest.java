@@ -1060,6 +1060,100 @@ class PostmanProfileSmokeTest {
     }
 
 
+
+    @Test
+    @DisplayName("가상 러닝 플로우 테스트 (테마 코스 + 세그먼트 + 진행률)")
+    void virtual_running_flow_test() throws Exception {
+        System.out.println("=== 가상 러닝 플로우 테스트 시작 ===");
+
+        // 1️⃣ 테마 코스 조회
+        System.out.println("\n 테마 코스 목록 조회");
+        MvcResult themeResult = mockMvc.perform(
+                        get("/v1/virtual-courses/theme")
+                )
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        String themeJson = themeResult.getResponse().getContentAsString();
+        System.out.println("테마 코스 응답: " + themeJson);
+
+        // 2️⃣ 커스텀 코스 생성
+        System.out.println("\n 커스텀 코스 생성");
+        MvcResult customResult = mockMvc.perform(
+                        post("/v1/virtual-courses/custom")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(Map.of(
+                                        "userId", 1,
+                                        "title", "춘천 → 강릉 러닝",
+                                        "segments", List.of(
+                                                Map.of(
+                                                        "type", "DOMESTIC",
+                                                        "orderIndex", 1,
+                                                        "startLat", 37.8813,
+                                                        "startLng", 127.7302,
+                                                        "endLat", 37.7519,
+                                                        "endLng", 128.8761,
+                                                        "distanceKm", 95.5
+                                                )
+                                        )
+                                ))))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        Long customCourseId = null;
+        String customJson = customResult.getResponse().getContentAsString();
+        if (!customJson.isEmpty()) {
+            JsonNode customRoot = objectMapper.readTree(customJson);
+            customCourseId = customRoot.path("id").asLong();
+            System.out.println(" 생성된 커스텀 코스 ID: " + customCourseId);
+        }
+
+        // 3️⃣ 세그먼트 추가
+        if (customCourseId != null) {
+            System.out.println("\n 커스텀 코스 세그먼트 추가");
+            mockMvc.perform(
+                            post("/v1/course-segments/custom/{courseId}", customCourseId)
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(Map.of(
+                                            "type", "DOMESTIC",
+                                            "orderIndex", 2,
+                                            "startLat", 37.7519,
+                                            "startLng", 128.8761,
+                                            "endLat", 37.5665,
+                                            "endLng", 126.9780,
+                                            "distanceKm", 200.3
+                                    ))))
+                    .andExpect(status().isOk())
+                    .andDo(print());
+        }
+
+        // 4️⃣ 사용자 가상 코스 진행률 업데이트
+        System.out.println("\n 가상 코스 진행률 업데이트");
+        mockMvc.perform(
+                        post("/v1/user-virtual-courses/{userId}/progress", 1L)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(Map.of(
+                                        "segmentId", 1,
+                                        "distanceAccumulated", 20.5
+                                ))))
+                .andExpect(status().isOk())
+                .andDo(print());
+
+        // 5️⃣ 진행률 조회
+        System.out.println("\n 가상 코스 진행률 조회");
+        mockMvc.perform(
+                        get("/v1/user-virtual-courses/{userId}/progress", 1L)
+                )
+                .andExpect(status().isOk())
+                .andDo(print());
+
+        System.out.println("=== 가상 러닝 플로우 테스트 완료 ===");
+    }
+
+
+
     //운동 기록 조회 테스트
 
     @Test

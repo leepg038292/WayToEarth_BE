@@ -1,10 +1,16 @@
 package com.waytoearth.service.VirtualRunning;
 
+import com.waytoearth.dto.request.Virtual.UserVirtualCourseCreateRequest;
 import com.waytoearth.dto.request.Virtual.VirtualCourseProgressUpdateRequest;
 import com.waytoearth.dto.response.Virtual.SegmentProgressResponse;
+import com.waytoearth.dto.response.Virtual.UserVirtualCourseResponse;
 import com.waytoearth.dto.response.Virtual.VirtualCourseProgressResponse;
-import com.waytoearth.repository.VirtualRunning.SegmentProgressRepository;
-import com.waytoearth.repository.VirtualRunning.UserVirtualCourseRepository;
+import com.waytoearth.entity.VirtualRunning.UserVirtualCourseEntity;
+import com.waytoearth.entity.VirtualRunning.CourseSegmentEntity;
+import com.waytoearth.entity.VirtualRunning.SegmentProgressEntity;
+import com.waytoearth.entity.enums.VirtualCourseStatus;
+import com.waytoearth.repository.VirtualRunning.*;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +24,13 @@ public class UserVirtualCourseServiceImpl implements UserVirtualCourseService {
 
     private final UserVirtualCourseRepository userVirtualCourseRepository;
     private final SegmentProgressRepository segmentProgressRepository;
+    private final ThemeCourseRepository themeCourseRepository;
+    private final CustomCourseRepository customCourseRepository;
+    private final CourseSegmentRepository courseSegmentRepository;
 
+    /**
+     * ✅ 진행률 업데이트
+     */
     @Override
     public VirtualCourseProgressResponse updateProgress(Long userVirtualCourseId, VirtualCourseProgressUpdateRequest request) {
         var userCourse = userVirtualCourseRepository.findById(userVirtualCourseId)
@@ -30,15 +42,28 @@ public class UserVirtualCourseServiceImpl implements UserVirtualCourseService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("세그먼트 진행 데이터를 찾을 수 없습니다."));
 
-        segmentProgress.setDistanceAccumulated(
-                segmentProgress.getDistanceAccumulated() + request.getDistanceKm()
-        );
+        double updatedDistance = segmentProgress.getDistanceAccumulated() + request.getDistanceKm();
+        segmentProgress.setDistanceAccumulated(updatedDistance);
+
+        // 세그먼트 완료 여부 체크
+        var segmentEntity = courseSegmentRepository.findById(request.getSegmentId())
+                .orElseThrow(() -> new IllegalArgumentException("세그먼트를 찾을 수 없습니다."));
+        if (updatedDistance >= segmentEntity.getDistanceKm()) {
+            segmentProgress.setStatus(VirtualCourseStatus.COMPLETED);
+        }
+
         segmentProgressRepository.save(segmentProgress);
 
         // 전체 코스 진행률 업데이트
         double newTotal = userCourse.getTotalDistanceAccumulated() + request.getDistanceKm();
         userCourse.setTotalDistanceAccumulated(newTotal);
-        userCourse.setProgressPercent(calculateProgressPercent(userCourse.getCourseId(), newTotal));
+        userCourse.setProgressPercent(calculateProgressPercent(userCourse, newTotal));
+
+        // 코스 완료 체크
+        double courseTotal = getCourseTotalDistance(userCourse);
+        if (newTotal >= courseTotal) {
+            userCourse.setStatus(VirtualCourseStatus.COMPLETED);
+        }
 
         userVirtualCourseRepository.save(userCourse);
 
@@ -49,6 +74,9 @@ public class UserVirtualCourseServiceImpl implements UserVirtualCourseService {
         );
     }
 
+    /**
+     * ✅ 전체 진행률 조회
+     */
     @Override
     public VirtualCourseProgressResponse getProgress(Long userVirtualCourseId) {
         var userCourse = userVirtualCourseRepository.findById(userVirtualCourseId)
@@ -61,6 +89,9 @@ public class UserVirtualCourseServiceImpl implements UserVirtualCourseService {
         );
     }
 
+    /**
+     * ✅ 세그먼트별 진행률 조회
+     */
     @Override
     public List<SegmentProgressResponse> getSegmentProgress(Long userVirtualCourseId) {
         return segmentProgressRepository.findByUserVirtualCourseId(userVirtualCourseId)
@@ -73,9 +104,76 @@ public class UserVirtualCourseServiceImpl implements UserVirtualCourseService {
                 .toList();
     }
 
-    private double calculateProgressPercent(Long courseId, double totalDistance) {
-        // TODO: 실제 CourseRepository에서 총 거리 가져와 계산
-        double courseTotal = 100.0; // 임시 값
+    /**
+     * ✅ 사용자 가상 코스 생성 + 세그먼트 진행률 초기화
+     */
+    @Override
+    public UserVirtualCourseResponse createUserVirtualCourse(UserVirtualCourseCreateRequest request) {
+        // 1. UserVirtualCourseEntity 저장
+        var userCourse = UserVirtualCourseEntity.builder()
+                .userId(request.userId())
+                .courseId(request.courseId())
+                .courseType(UserVirtualCourseEntity.CourseType.valueOf(request.courseType()))
+                .totalDistanceAccumulated(0.0)
+                .progressPercent(0.0)
+                .status(VirtualCourseStatus.ACTIVE)
+                .build();
+
+        var savedCourse = userVirtualCourseRepository.save(userCourse);
+
+        // 2. 해당 코스의 세그먼트 목록 가져오기
+        List<CourseSegmentEntity> segments;
+        if (savedCourse.getCourseType() == UserVirtualCourseEntity.CourseType.CUSTOM) {
+            segments = courseSegmentRepository.findByCustomCourseIdOrderByOrderIndex(savedCourse.getCourseId());
+        } else {
+            segments = courseSegmentRepository.findByThemeCourseIdOrderByOrderIndex(savedCourse.getCourseId());
+        }
+
+        // 3. 세그먼트별 SegmentProgressEntity 초기화
+        List<SegmentProgressEntity> progressList = segments.stream()
+                .map(seg -> SegmentProgressEntity.builder()
+                        .userVirtualCourse(savedCourse)
+                        .segmentId(seg.getId())
+                        .distanceAccumulated(0.0)
+                        .status(VirtualCourseStatus.ACTIVE)
+                        .build()
+                )
+                .toList();
+
+        segmentProgressRepository.saveAll(progressList);
+
+        // 4. 응답 반환
+        return new UserVirtualCourseResponse(
+                savedCourse.getId(),
+                savedCourse.getUserId(),
+                savedCourse.getCourseId(),
+                savedCourse.getCourseType().name(),
+                savedCourse.getTotalDistanceAccumulated(),
+                savedCourse.getProgressPercent(),
+                savedCourse.getStatus().name()
+        );
+    }
+
+
+    /**
+     * ✅ 진행률 계산
+     */
+    private double calculateProgressPercent(UserVirtualCourseEntity userCourse, double totalDistance) {
+        double courseTotal = getCourseTotalDistance(userCourse);
         return Math.min(100.0, (totalDistance / courseTotal) * 100);
+    }
+
+    /**
+     * ✅ 코스 총 거리 조회
+     */
+    private double getCourseTotalDistance(UserVirtualCourseEntity userCourse) {
+        return switch (userCourse.getCourseType()) {
+            case THEME -> themeCourseRepository.findById(userCourse.getCourseId())
+                    .orElseThrow(() -> new IllegalArgumentException("테마 코스를 찾을 수 없습니다."))
+                    .getTotalDistanceKm();
+            case CUSTOM -> customCourseRepository.findById(userCourse.getCourseId())
+                    .orElseThrow(() -> new IllegalArgumentException("커스텀 코스를 찾을 수 없습니다."))
+                    .getTotalDistanceKm();
+        };
     }
 }

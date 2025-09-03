@@ -26,6 +26,10 @@ public class UserVirtualCourseEntity {
     @Schema(description = "코스 ID", example = "10")
     private Long courseId;
 
+    @Enumerated(EnumType.STRING)
+    @Schema(description = "코스 타입 (CUSTOM, THEME)", example = "CUSTOM")
+    private CourseType courseType;   // ✅ 추가
+
     @Schema(description = "진행률 (%)", example = "35.7")
     private Double progressPercent;
 
@@ -35,4 +39,9 @@ public class UserVirtualCourseEntity {
     @Enumerated(EnumType.STRING)
     @Schema(description = "진행 상태", example = "ACTIVE")
     private VirtualCourseStatus status;
+
+    // ✅ Enum 정의 (내부 또는 별도 파일로 관리 가능)
+    public enum CourseType {
+        CUSTOM, THEME
+    }
 }

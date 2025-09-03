@@ -1,5 +1,6 @@
 package com.waytoearth.controller.v1.VirtualRunning;
 
+import com.waytoearth.dto.request.Virtual.UserVirtualCourseCreateRequest;
 import com.waytoearth.dto.request.Virtual.VirtualCourseProgressUpdateRequest;
 import com.waytoearth.dto.response.Virtual.*;
 import com.waytoearth.service.VirtualRunning.SegmentEmblemService;
@@ -85,4 +86,15 @@ public class UserVirtualCourseController {
     ) {
         return ResponseEntity.ok(segmentEmblemService.checkEmblem(userVirtualCourseId, segmentId, distance));
     }
+
+
+    @Operation(summary = "사용자 가상 코스 등록", description = "사용자가 특정 코스를 선택하여 가상 러닝 코스를 시작합니다.")
+    @ApiResponse(responseCode = "200", description = "등록 성공")
+    @PostMapping
+    public ResponseEntity<UserVirtualCourseResponse> createUserVirtualCourse(
+            @Valid @RequestBody UserVirtualCourseCreateRequest request
+    ) {
+        return ResponseEntity.ok(userVirtualCourseService.createUserVirtualCourse(request));
+    }
+
 }

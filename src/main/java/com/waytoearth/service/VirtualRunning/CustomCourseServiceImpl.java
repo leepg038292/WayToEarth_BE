@@ -1,16 +1,16 @@
 package com.waytoearth.service.VirtualRunning;
 
+import com.waytoearth.dto.request.Virtual.CourseSegmentCreateRequest;
 import com.waytoearth.dto.request.Virtual.CustomCourseCreateRequest;
 import com.waytoearth.dto.response.Virtual.CourseSegmentDetailResponse;
 import com.waytoearth.dto.response.Virtual.CustomCourseDetailResponse;
 import com.waytoearth.dto.response.Virtual.CustomCourseSummaryResponse;
+import com.waytoearth.entity.VirtualRunning.CourseSegmentEntity;
 import com.waytoearth.entity.VirtualRunning.CustomCourseEntity;
 import com.waytoearth.repository.VirtualRunning.CustomCourseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.waytoearth.dto.request.Virtual.CourseSegmentCreateRequest;
-
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,15 +33,42 @@ public class CustomCourseServiceImpl implements CustomCourseService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
+        // ✅ 세그먼트 생성 및 course와 연관관계 주입
+        List<CourseSegmentEntity> segments = request.getSegments().stream()
+                .map(segReq -> CourseSegmentEntity.builder()
+                        .customCourse(course)  // FK 주입 필수
+                        .type(segReq.getType())
+                        .orderIndex(segReq.getOrderIndex())
+                        .startLat(segReq.getStartLat())
+                        .startLng(segReq.getStartLng())
+                        .endLat(segReq.getEndLat())
+                        .endLng(segReq.getEndLng())
+                        .distanceKm(segReq.getDistanceKm())
+                        .build())
+                .toList();
+
+        course.setSegments(segments);
+
         CustomCourseEntity saved = customCourseRepository.save(course);
 
         return new CustomCourseDetailResponse(
                 saved.getId(),
                 saved.getTitle(),
                 saved.getTotalDistanceKm(),
-                List.of() // TODO: 세그먼트 저장 후 매핑
+                saved.getSegments().stream()
+                        .map(segment -> new CourseSegmentDetailResponse(
+                                segment.getId(),
+                                segment.getType().name(),
+                                segment.getStartLat(),
+                                segment.getStartLng(),
+                                segment.getEndLat(),
+                                segment.getEndLng(),
+                                segment.getDistanceKm()
+                        ))
+                        .toList()
         );
     }
+
 
     @Override
     public List<CustomCourseSummaryResponse> getUserCourses(Long userId) {
