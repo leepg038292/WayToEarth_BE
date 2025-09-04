@@ -24,5 +24,8 @@ public record UserVirtualCourseResponse(
         Double progressPercent,
 
         @Schema(description = "코스 진행 상태", example = "ONGOING")
-        String status
+        String status,
+
+        @Schema(description = "러닝 세션 ID (프론트에서 updateProgress 시 사용)", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+        String sessionId
 ) {}

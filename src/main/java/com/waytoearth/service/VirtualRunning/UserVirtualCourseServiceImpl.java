@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +36,6 @@ public class UserVirtualCourseServiceImpl implements UserVirtualCourseService {
     private final CustomCourseRepository customCourseRepository;
     private final CourseSegmentRepository courseSegmentRepository;
 
-    // ✅ 추가
     private final RunningRecordRepository runningRecordRepository;
     private final UserRepository userRepository;
 
@@ -69,33 +69,50 @@ public class UserVirtualCourseServiceImpl implements UserVirtualCourseService {
         userCourse.setTotalDistanceAccumulated(newTotal);
         userCourse.setProgressPercent(calculateProgressPercent(userCourse, newTotal));
 
+        // ✅ RunningRecord 동기화
+        RunningRecord record = runningRecordRepository.findBySessionId(request.getSessionId())
+                .orElseThrow(() -> new IllegalArgumentException("세션을 찾을 수 없습니다."));
+
+        record.setDistance(BigDecimal.valueOf(newTotal));
+        if (request.getDurationSeconds() != null) {
+            record.setDuration(request.getDurationSeconds());
+        }
+        if (request.getCalories() != null) {
+            record.setCalories(request.getCalories());
+        }
+        if (request.getAveragePaceSeconds() != null) {
+            record.setAveragePaceSeconds(request.getAveragePaceSeconds());
+        }
+
+        // 경로 데이터 추가
+        if (request.getCurrentPoint() != null) {
+            record.addRoutePoint(
+                    request.getCurrentPoint().getLatitude(),
+                    request.getCurrentPoint().getLongitude(),
+                    request.getCurrentPoint().getSequence()
+            );
+        }
+
         // 코스 완료 체크
         double courseTotal = getCourseTotalDistance(userCourse);
         if (newTotal >= courseTotal) {
             userCourse.setStatus(VirtualCourseStatus.COMPLETED);
 
-            // ✅ RunningRecord 저장
-            User user = userRepository.findById(userCourse.getUserId())
-                    .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-
-            RunningRecord record = RunningRecord.builder()
-                    .user(user)
-                    .runningType(RunningType.VIRTUAL)
-                    .virtualCourseId(userCourse.getId())
-                    .distance(BigDecimal.valueOf(courseTotal))
-                    .status(RunningStatus.COMPLETED)
-                    .isCompleted(true)
-                    .startedAt(LocalDateTime.now().minusDays(1)) // TODO: 실제 시작 시간 연동 필요
-                    .endedAt(LocalDateTime.now())
-                    .build();
-
-            runningRecordRepository.save(record);
+            record.complete(
+                    BigDecimal.valueOf(courseTotal),
+                    request.getDurationSeconds(),
+                    request.getAveragePaceSeconds(),
+                    request.getCalories(),
+                    LocalDateTime.now()
+            );
 
             // ✅ 유저 통계 업데이트
+            User user = record.getUser();
             user.updateRunningStats(BigDecimal.valueOf(courseTotal));
             userRepository.save(user);
         }
 
+        runningRecordRepository.save(record);
         userVirtualCourseRepository.save(userCourse);
 
         return new VirtualCourseProgressResponse(
@@ -136,7 +153,7 @@ public class UserVirtualCourseServiceImpl implements UserVirtualCourseService {
     }
 
     /**
-     * ✅ 사용자 가상 코스 생성 + 세그먼트 진행률 초기화
+     * ✅ 사용자 가상 코스 생성 + 세그먼트 진행률 초기화 + RunningRecord 생성
      */
     @Override
     public UserVirtualCourseResponse createUserVirtualCourse(UserVirtualCourseCreateRequest request) {
@@ -173,7 +190,25 @@ public class UserVirtualCourseServiceImpl implements UserVirtualCourseService {
 
         segmentProgressRepository.saveAll(progressList);
 
-        // 4. 응답 반환
+        // 4. RunningRecord 생성 (sessionId 포함)
+        User user = userRepository.findById(request.userId())
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        String sessionId = UUID.randomUUID().toString();
+
+        RunningRecord record = RunningRecord.builder()
+                .sessionId(sessionId)
+                .user(user)
+                .runningType(RunningType.VIRTUAL)
+                .virtualCourseId(savedCourse.getId())
+                .status(RunningStatus.RUNNING)
+                .isCompleted(false)
+                .startedAt(LocalDateTime.now())
+                .build();
+
+        runningRecordRepository.save(record);
+
+        // 5. 응답 반환 (sessionId 포함)
         return new UserVirtualCourseResponse(
                 savedCourse.getId(),
                 savedCourse.getUserId(),
@@ -181,7 +216,8 @@ public class UserVirtualCourseServiceImpl implements UserVirtualCourseService {
                 savedCourse.getCourseType().name(),
                 savedCourse.getTotalDistanceAccumulated(),
                 savedCourse.getProgressPercent(),
-                savedCourse.getStatus().name()
+                savedCourse.getStatus().name(),
+                sessionId
         );
     }
 
