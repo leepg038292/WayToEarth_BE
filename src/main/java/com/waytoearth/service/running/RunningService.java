@@ -1,8 +1,12 @@
 package com.waytoearth.service.running;
 
 import com.waytoearth.dto.request.running.*;
-import com.waytoearth.dto.response.running.*;
+import com.waytoearth.dto.response.running.RunningCompleteResponse;
+import com.waytoearth.dto.response.running.RunningRecordSummaryResponse;
+import com.waytoearth.dto.response.running.RunningStartResponse;
 import com.waytoearth.security.AuthenticatedUser;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface RunningService {
 
@@ -22,4 +26,6 @@ public interface RunningService {
 
     // 완료 페이지 재조회(경로 포함)
     RunningCompleteResponse getDetail(AuthenticatedUser user, Long recordId);
+
+    Page<RunningRecordSummaryResponse> getRecords(AuthenticatedUser authUser, Pageable pageable);
 }

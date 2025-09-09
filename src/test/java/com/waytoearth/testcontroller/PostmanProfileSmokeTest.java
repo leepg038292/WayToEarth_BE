@@ -18,6 +18,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -1058,6 +1060,123 @@ class PostmanProfileSmokeTest {
     }
 
 
+    //운동 기록 조회 테스트
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @DisplayName("러닝 기록 목록 조회 (DB 저장 후 조회)")
+    void running_records_list_test() throws Exception {
+        System.out.println("=== 러닝 기록 목록 조회 테스트 시작 ===");
+
+        String sessionId = UUID.randomUUID().toString();
+        System.out.println(" SessionId: " + sessionId);
+
+        // 1. 러닝 시작
+        System.out.println("\n1. 러닝 시작");
+        MvcResult startResult = mockMvc.perform(
+                        post("/v1/running/start")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(Map.of(
+                                        "sessionId", sessionId,
+                                        "runningType", "SINGLE"
+                                )))
+                )
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        System.out.println("러닝 시작 응답: " + startResult.getResponse().getContentAsString());
+
+        // 2. 러닝 완료
+        System.out.println("\n2. 러닝 완료");
+        MvcResult completeResult = mockMvc.perform(
+                        post("/v1/running/complete")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(Map.of(
+                                        "sessionId", sessionId,
+                                        "distanceMeters", 2000,   // 2km
+                                        "durationSeconds", 600,   // 10분
+                                        "averagePaceSeconds", 300, // 5분/km
+                                        "calories", 120,
+                                        "routePoints", List.of()
+                                )))
+                )
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        String completeResponse = completeResult.getResponse().getContentAsString();
+        System.out.println("러닝 완료 응답: " + completeResponse);
+
+        // ✅ 완료 응답에서 runningRecordId 추출
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode completeJson = mapper.readTree(completeResponse);
+
+        if (completeJson.has("runningRecordId")) {
+            Long recordId = completeJson.get("runningRecordId").asLong();
+            System.out.println("생성된 기록 ID: " + recordId);
+
+            // ✅ 생성된 기록을 직접 조회해보기
+            System.out.println("\n2-1. 생성된 기록 직접 조회");
+            MvcResult detailResult = mockMvc.perform(
+                            get("/v1/running/" + recordId)
+                    )
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn();
+
+            System.out.println("직접 조회 응답: " + detailResult.getResponse().getContentAsString());
+        } else {
+            System.out.println("⚠️ 완료 응답에 runningRecordId가 없습니다!");
+        }
+
+        // ✅ 약간의 대기시간 (트랜잭션 커밋 대기)
+        Thread.sleep(500);
+
+        // 3. 목록 조회
+        System.out.println("\n3. 목록 조회");
+        MvcResult result = mockMvc.perform(
+                        get("/v1/running/records")
+                                .param("page", "0")
+                                .param("size", "5")
+                )
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        String json = result.getResponse().getContentAsString();
+        System.out.println("운동 기록 목록 응답: " + json);
+
+        // ✅ JSON 파싱하여 상세 분석
+        if (!json.isEmpty()) {
+            JsonNode jsonNode = mapper.readTree(json);
+            System.out.println("JSON 구조:");
+            System.out.println("- content 키 존재: " + jsonNode.has("content"));
+            System.out.println("- totalElements: " + jsonNode.path("totalElements").asText());
+
+            if (jsonNode.has("content")) {
+                JsonNode content = jsonNode.get("content");
+                System.out.println("- content 크기: " + content.size());
+                if (content.size() > 0) {
+                    System.out.println("- 첫 번째 항목: " + content.get(0).toString());
+                }
+            }
+        }
+
+        // ✅ 응답이 비어있지 않아야 함
+        Assertions.assertFalse(json.isEmpty(), "응답이 비어있으면 안됨");
+
+        // ✅ content가 있고 비어있지 않아야 함
+        JsonNode responseNode = mapper.readTree(json);
+        Assertions.assertTrue(responseNode.has("content"), "content 키가 있어야 함");
+
+        JsonNode contentNode = responseNode.get("content");
+        Assertions.assertTrue(contentNode.isArray(), "content는 배열이어야 함");
+        Assertions.assertTrue(contentNode.size() > 0, "최소 1개의 운동 기록이 있어야 함");
+    }
+
+
+
 
 
 
@@ -1117,4 +1236,7 @@ class PostmanProfileSmokeTest {
     private static String textOrEmpty(JsonNode node, String field) {
         return node.path(field).isMissingNode() ? "" : node.path(field).asText("");
     }
+
+
+
 }
