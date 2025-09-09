@@ -51,6 +51,11 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
+	// Spring Retry (동시성 처리용)
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+	implementation 'org.springframework.retry:spring-retry'
+	implementation 'org.springframework:spring-aspects'
+
 	// DB
 	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 

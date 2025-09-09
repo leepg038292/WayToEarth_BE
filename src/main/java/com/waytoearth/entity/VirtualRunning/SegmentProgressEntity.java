@@ -33,4 +33,9 @@ public class SegmentProgressEntity {
     @Enumerated(EnumType.STRING)
     @Schema(description = "진행 상태", example = "ACTIVE")
     private VirtualCourseStatus status;
+
+    @Version
+    @Schema(description = "낙관적 락 버전", hidden = true)
+    private Long version;
+
 }

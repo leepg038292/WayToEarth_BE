@@ -40,6 +40,11 @@ public class UserVirtualCourseEntity {
     @Schema(description = "진행 상태", example = "ACTIVE")
     private VirtualCourseStatus status;
 
+    @Version
+    @Schema(description = "낙관적 락 버전", hidden = true)
+    private Long version;
+
+
     // ✅ Enum 정의 (내부 또는 별도 파일로 관리 가능)
     public enum CourseType {
         CUSTOM, THEME

@@ -41,6 +41,10 @@ public class Feed {
     @Column(name = "like_count", nullable = false)
     private int likeCount = 0;
 
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
