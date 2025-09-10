@@ -111,4 +111,39 @@ public class SwaggerConfig {
                 .pathsToMatch("/v1/emblems/**")
                 .build();
     }
+
+
+
+    @Bean
+    public GroupedOpenApi themeCourseApi() {
+        return GroupedOpenApi.builder()
+                .group("11. 테마 코스 API")
+                .pathsToMatch("/v1/theme-courses/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi customCourseApi() {
+        return GroupedOpenApi.builder()
+                .group("12. 커스텀 코스 API")
+                .pathsToMatch("/v1/custom-courses/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi courseSegmentApi() {
+        return GroupedOpenApi.builder()
+                .group("13. 코스 세그먼트 API")
+                .pathsToMatch("/v1/course-segments/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi userVirtualCourseApi() {
+        return GroupedOpenApi.builder()
+                .group("14. 사용자 가상 코스 API")
+                .pathsToMatch("/v1/user-virtual-courses/**")
+                .build();
+    }
+
 }

@@ -47,6 +47,7 @@ public class FeedService {
                 .runningRecord(record)
                 .content(req.getContent())
                 .imageUrl(req.getImageUrl())
+                .imageKey(req.getImageKey())
                 .build();
 
         feedRepository.save(feed);
@@ -55,32 +56,30 @@ public class FeedService {
     }
 
     /**
-     * 피드 목록 조회 (무한 스크롤, 좋아요 여부 포함)
+     * 피드 목록 조회 (N+1 문제 해결된 버전)
      */
     @Transactional(readOnly = true)
     public List<FeedResponse> getFeeds(AuthenticatedUser authUser, int offset, int limit) {
         User user = userRepository.findById(authUser.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        return feedRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(offset / limit, limit))
-                .stream()
-                .map(feed -> {
-                    boolean liked = feedLikeRepository.existsByFeedAndUser(feed, user);
-                    return FeedResponse.from(feed, liked);
-                })
-                .toList();
+        // 단일 쿼리로 모든 데이터를 조회하여 N+1 문제 해결
+        return feedRepository.findFeedsWithUserAndLikeStatus(user, PageRequest.of(offset / limit, limit));
     }
 
     /**
-     * 피드 단건 조회 (좋아요 여부 포함)
+     * 피드 단건 조회 (N+1 문제 해결된 버전)
      */
     @Transactional(readOnly = true)
     public FeedResponse getFeed(AuthenticatedUser authUser, Long feedId) {
-        Feed feed = feedRepository.findById(feedId)
+        // fetch join으로 연관 엔티티를 한 번에 조회
+        Feed feed = feedRepository.findByIdWithUserAndRecord(feedId)
                 .orElseThrow(() -> new EntityNotFoundException("Feed not found"));
+        
         User user = userRepository.findById(authUser.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
+        // 단일 쿼리로 좋아요 여부 확인
         boolean liked = feedLikeRepository.existsByFeedAndUser(feed, user);
         return FeedResponse.from(feed, liked);
     }
@@ -106,7 +105,7 @@ public class FeedService {
     }
 
     /**
-     * 피드 좋아요 (토글)
+     * 피드 좋아요 (토글) - 동시성 문제 해결
      */
     @Transactional
     public FeedLikeResponse toggleLike(AuthenticatedUser authUser, Long feedId) {
@@ -117,23 +116,26 @@ public class FeedService {
 
         return feedLikeRepository.findByFeedAndUser(feed, user)
                 .map(existingLike -> {
-                    // 좋아요 취소
+                    // 좋아요 취소 - 원자적 업데이트로 동시성 보장
                     feedLikeRepository.delete(existingLike);
-                    feed.setLikeCount(feed.getLikeCount() - 1); //  DB 필드 업데이트
-                    feedRepository.save(feed); //  변경사항 반영
-                    return new FeedLikeResponse(feed.getId(), feed.getLikeCount(), false);
+                    feedRepository.decrementLikeCount(feedId); // ✅ 원자적 감소
+                    
+                    // 최신 좋아요 수 조회
+                    Feed updatedFeed = feedRepository.findById(feedId).orElseThrow();
+                    return new FeedLikeResponse(feed.getId(), updatedFeed.getLikeCount(), false);
                 })
                 .orElseGet(() -> {
-                    // 좋아요 추가
+                    // 좋아요 추가 - 원자적 업데이트로 동시성 보장
                     FeedLike like = FeedLike.builder()
                             .feed(feed)
                             .user(user)
                             .build();
                     feedLikeRepository.save(like);
-
-                    feed.setLikeCount(feed.getLikeCount() + 1); //  DB 필드 업데이트
-                    feedRepository.save(feed); //  변경사항 반영
-                    return new FeedLikeResponse(feed.getId(), feed.getLikeCount(), true);
+                    feedRepository.incrementLikeCount(feedId); // ✅ 원자적 증가
+                    
+                    // 최신 좋아요 수 조회
+                    Feed updatedFeed = feedRepository.findById(feedId).orElseThrow();
+                    return new FeedLikeResponse(feed.getId(), updatedFeed.getLikeCount(), true);
                 });
     }
 }

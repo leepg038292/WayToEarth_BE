@@ -1,8 +1,7 @@
 package com.waytoearth.entity;
 
-import com.waytoearth.entity.enums.RunningType;
-import com.waytoearth.entity.enums.WeatherCondition;
 import com.waytoearth.entity.enums.RunningStatus;
+import com.waytoearth.entity.enums.RunningType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,7 +25,8 @@ import java.util.List;
 @Builder
 public class RunningRecord {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /** 러닝 소유 사용자 */
@@ -47,10 +47,11 @@ public class RunningRecord {
     @Column(name = "virtual_course_id")
     private Long virtualCourseId;
 
+    /** 러닝 제목 */
     @Column(length = 100)
     private String title;
 
-    /** 러닝 상태*/
+    /** 러닝 상태 */
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
     private RunningStatus status;
@@ -72,7 +73,7 @@ public class RunningRecord {
     private Integer calories;
 
     /** 완료 여부 */
-    @Column(name = "is_completed", nullable = false)
+    @Column(name = "is_completed", columnDefinition = "TINYINT(1)", nullable = false)
     private Boolean isCompleted;
 
     /** 시작 시각 */
