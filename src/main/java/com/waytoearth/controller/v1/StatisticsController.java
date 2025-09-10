@@ -1,5 +1,6 @@
 package com.waytoearth.controller.v1;
 
+import com.waytoearth.dto.response.common.ApiResponse;
 import com.waytoearth.dto.response.statistics.RunningWeeklyStatsResponse;
 import com.waytoearth.security.AuthUser;
 import com.waytoearth.security.AuthenticatedUser;
@@ -8,7 +9,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +29,7 @@ public class StatisticsController {
             description = "로그인한 사용자 기준으로 이번 주(월~일) 러닝 통계를 반환합니다.",
             security = @SecurityRequirement(name = "bearerAuth")  // SwaggerConfig의 보안 스키마 이름과 일치
     )
-    @ApiResponse(
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
             description = "성공",
             content = @Content(
@@ -54,19 +54,19 @@ public class StatisticsController {
                             """)
             )
     )
-    @ApiResponse(
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "401",
             description = "인증 실패 (JWT 누락/만료)",
             content = @Content(mediaType = "application/json")
     )
-    @ApiResponse(
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "403",
             description = "권한 부족",
             content = @Content(mediaType = "application/json")
     )
     @GetMapping("/weekly")
-    public ResponseEntity<RunningWeeklyStatsResponse> getWeeklyStats(@AuthUser AuthenticatedUser user) {
+    public ResponseEntity<ApiResponse<RunningWeeklyStatsResponse>> getWeeklyStats(@AuthUser AuthenticatedUser user) {
         RunningWeeklyStatsResponse res = statisticsService.getWeeklyStats(user);
-        return ResponseEntity.ok(res);
+        return ResponseEntity.ok(ApiResponse.success(res, "주간 러닝 통계를 성공적으로 조회했습니다."));
     }
 }

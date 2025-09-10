@@ -1,5 +1,6 @@
 package com.waytoearth.controller.v1;
 
+import com.waytoearth.dto.response.common.ApiResponse;
 import com.waytoearth.dto.response.weather.WeatherCurrentResponse;
 import com.waytoearth.service.weather.WeatherService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,10 +23,11 @@ public class WeatherController {
 
     @Operation(summary = "현재 날씨 조회", description = "좌표(lat, lon) 기반 현재 날씨를 반환합니다.")
     @GetMapping("/current")
-    public ResponseEntity<WeatherCurrentResponse> getCurrent(
+    public ResponseEntity<ApiResponse<WeatherCurrentResponse>> getCurrent(
             @RequestParam @Min(-90) @Max(90) double lat,
             @RequestParam @Min(-180) @Max(180) double lon
     ) {
-        return ResponseEntity.ok(weatherService.getCurrent(lat, lon));
+        WeatherCurrentResponse response = weatherService.getCurrent(lat, lon);
+        return ResponseEntity.ok(ApiResponse.success(response, "현재 날씨 정보를 성공적으로 조회했습니다."));
     }
 }

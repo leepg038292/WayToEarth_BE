@@ -1,0 +1,76 @@
+spring:
+  application:
+    name: waytoearth-prod
+
+  # 운영 환경 데이터베이스
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.mariadb.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 10
+      connection-timeout: 30000
+      idle-timeout: 300000
+      max-lifetime: 900000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate  # 운영환경에서는 스키마 변경 방지
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        use_sql_comments: false
+    open-in-view: false
+
+# 운영 서버 설정
+server:
+  address: 0.0.0.0
+  port: 8080
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain,text/css,text/javascript,application/javascript
+  http2:
+    enabled: true
+
+# 로깅 설정 (운영환경 - 최소 로그)
+logging:
+  level:
+    root: WARN
+    com.waytoearth: INFO
+    org.springframework.security: WARN
+    org.hibernate: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /var/log/waytoearth/application.log
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 30
+
+# Swagger 비활성화 (운영환경)
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
+
+# 운영환경 모니터링
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: never
+  prometheus:
+    metrics:
+      export:
+        enabled: true

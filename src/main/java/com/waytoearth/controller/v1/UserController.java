@@ -1,6 +1,7 @@
 package com.waytoearth.controller.v1;
 
 import com.waytoearth.dto.request.user.UserUpdateRequest;
+import com.waytoearth.dto.response.common.ApiResponse;
 import com.waytoearth.dto.response.user.UserInfoResponse;
 import com.waytoearth.dto.response.user.UserSummaryResponse;
 import com.waytoearth.security.AuthenticatedUser;
@@ -13,12 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import io.swagger.v3.oas.annotations.Parameter; // 2025-08-22 병합 후 추가
 
-
-
-import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -32,19 +28,18 @@ public class UserController {
 
 
     @GetMapping("/check-nickname")
-    public ResponseEntity<Map<String, Object>> checkNicknameDuplicate(
+    public ResponseEntity<ApiResponse<Map<String, Boolean>>> checkNicknameDuplicate(
             @Parameter(description = "중복 확인할 닉네임", example = "runner_kim", required = true)
             @RequestParam String nickname
     ) {
         log.info("[UserController] 닉네임 중복 확인 요청 - nickname: {}", nickname);
 
         boolean isDuplicate = userService.existsByNickname(nickname);
-        Map<String, Object> response = new HashMap<>();
-        response.put("isDuplicate", isDuplicate);
-        response.put("message", isDuplicate ? "이미 사용 중인 닉네임입니다." : "사용 가능한 닉네임입니다.");
+        Map<String, Boolean> data = Map.of("isDuplicate", isDuplicate);
+        String message = isDuplicate ? "이미 사용 중인 닉네임입니다." : "사용 가능한 닉네임입니다.";
 
-log.info("[NicknameCheck] 결과 - nickname: {}, isDuplicate: {}", nickname, isDuplicate);
-        return ResponseEntity.ok(response);
+        log.info("[NicknameCheck] 결과 - nickname: {}, isDuplicate: {}", nickname, isDuplicate);
+        return ResponseEntity.ok(ApiResponse.success(data, message));
     }
 
     /**
@@ -52,10 +47,10 @@ log.info("[NicknameCheck] 결과 - nickname: {}, isDuplicate: {}", nickname, isD
      * GET /v1/users/me
      */
     @GetMapping("/me")
-    public ResponseEntity<UserInfoResponse> me(@AuthUser AuthenticatedUser me) {
+    public ResponseEntity<ApiResponse<UserInfoResponse>> me(@AuthUser AuthenticatedUser me) {
         log.info("[Users:Me] 내 정보 조회 - userId: {}", me.getUserId());
         UserInfoResponse body = userService.getMe(me.getUserId());
-        return ResponseEntity.ok(body);
+        return ResponseEntity.ok(ApiResponse.success(body, "사용자 정보를 성공적으로 조회했습니다."));
     }
 
     /**
@@ -63,10 +58,10 @@ log.info("[NicknameCheck] 결과 - nickname: {}, isDuplicate: {}", nickname, isD
      * GET /v1/users/me/summary
      */
     @GetMapping("/me/summary")
-    public ResponseEntity<UserSummaryResponse> summary(@AuthUser AuthenticatedUser me) {
+    public ResponseEntity<ApiResponse<UserSummaryResponse>> summary(@AuthUser AuthenticatedUser me) {
         log.info("[Users:Summary] 요약 조회 - userId: {}", me.getUserId());
         UserSummaryResponse body = userService.getSummary(me.getUserId());
-        return ResponseEntity.ok(body);
+        return ResponseEntity.ok(ApiResponse.success(body, "사용자 요약 정보를 성공적으로 조회했습니다."));
     }
 
     /**
@@ -75,14 +70,11 @@ log.info("[NicknameCheck] 결과 - nickname: {}, isDuplicate: {}", nickname, isD
      * Body: nickname, profile_image_url, residence, weekly_goal_distance(선택/부분 수정)
      */
     @PutMapping("/me")
-    public ResponseEntity<Map<String, Object>> updateProfile(@AuthUser AuthenticatedUser me,
-                                                             @Valid @RequestBody UserUpdateRequest request) {
+    public ResponseEntity<ApiResponse<Void>> updateProfile(@AuthUser AuthenticatedUser me,
+                                                           @Valid @RequestBody UserUpdateRequest request) {
         log.info("[Users:Update] 프로필 수정 요청 - userId: {}, payload: {}", me.getUserId(), request);
         userService.updateProfile(me.getUserId(), request);
 
-        Map<String, Object> res = new HashMap<>();
-        res.put("message", "프로필이 수정되었습니다.");
-        res.put("updated_at", Instant.now().toString());
-        return ResponseEntity.ok(res);
+        return ResponseEntity.ok(ApiResponse.success("프로필이 성공적으로 수정되었습니다."));
     }
 }

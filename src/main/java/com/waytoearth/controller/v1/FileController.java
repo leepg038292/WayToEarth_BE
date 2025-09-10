@@ -2,6 +2,7 @@
 package com.waytoearth.controller.v1;
 
 import com.waytoearth.dto.request.file.PresignRequest;
+import com.waytoearth.dto.response.common.ApiResponse;
 import com.waytoearth.dto.response.file.PresignResponse;
 import com.waytoearth.security.AuthUser;
 import com.waytoearth.security.AuthenticatedUser;
@@ -25,26 +26,28 @@ public class FileController {
 
     @Operation(summary = "프로필 이미지 업로드 Presigned URL 발급", description = "사용자가 프로필 이미지를 업로드할 수 있도록 S3 Presigned URL을 발급한다.")
     @PostMapping("/presign/profile")
-    public ResponseEntity<PresignResponse> presignProfile(
+    public ResponseEntity<ApiResponse<PresignResponse>> presignProfile(
             @AuthUser AuthenticatedUser me,
             @Valid @RequestBody PresignRequest request
     ) {
-        return ResponseEntity.ok(fileService.presignProfile(me.getUserId(), request));
+        PresignResponse response = fileService.presignProfile(me.getUserId(), request);
+        return ResponseEntity.ok(ApiResponse.success(response, "프로필 이미지 업로드 URL이 성공적으로 발급되었습니다."));
     }
 
     @Operation(summary = "피드 이미지 업로드 Presigned URL 발급", description = "사용자가 피드 공유 시 이미지를 업로드할 수 있도록 S3 Presigned URL을 발급한다.")
     @PostMapping("/presign/feed")
-    public ResponseEntity<PresignResponse> presignFeed(
+    public ResponseEntity<ApiResponse<PresignResponse>> presignFeed(
             @AuthUser AuthenticatedUser me,
             @Valid @RequestBody PresignRequest request
     ) {
-        return ResponseEntity.ok(fileService.presignFeed(me.getUserId(), request));
+        PresignResponse response = fileService.presignFeed(me.getUserId(), request);
+        return ResponseEntity.ok(ApiResponse.success(response, "피드 이미지 업로드 URL이 성공적으로 발급되었습니다."));
     }
 
 
     @DeleteMapping("/profile")
-    public ResponseEntity<Void> deleteProfileImage(@AuthUser AuthenticatedUser me) {
+    public ResponseEntity<ApiResponse<Void>> deleteProfileImage(@AuthUser AuthenticatedUser me) {
         userService.removeProfileImage(me.getUserId());
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success("프로필 이미지가 성공적으로 삭제되었습니다."));
     }
 }
