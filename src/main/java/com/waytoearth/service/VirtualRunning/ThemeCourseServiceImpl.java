@@ -30,7 +30,8 @@ public class ThemeCourseServiceImpl implements ThemeCourseService {
 
     @Override
     public ThemeCourseDetailResponse getThemeCourseDetail(Long courseId) {
-        var course = themeCourseRepository.findById(courseId)
+        // ✅ N+1 문제 해결: fetch join으로 세그먼트까지 한번에 조회
+        var course = themeCourseRepository.findByIdWithSegments(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("코스를 찾을 수 없습니다. id=" + courseId));
 
         return new ThemeCourseDetailResponse(

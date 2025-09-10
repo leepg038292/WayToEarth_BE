@@ -37,7 +37,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.MariaDBDialect
     open-in-view: false
 
 # 기존 KakaoApiService가 사용하는 설정.
