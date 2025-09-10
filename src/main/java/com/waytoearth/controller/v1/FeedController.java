@@ -75,7 +75,7 @@ public class FeedController {
             @PathVariable Long feedId
     ) {
         FeedLikeResponse response = feedService.toggleLike(user, feedId);
-        String message = response.isLiked() ? "좋아요를 추가했습니다." : "좋아요를 취소했습니다.";
+        String message = response.liked() ? "좋아요를 추가했습니다." : "좋아요를 취소했습니다.";
         return ResponseEntity.ok(ApiResponse.success(response, message));
     }
 
