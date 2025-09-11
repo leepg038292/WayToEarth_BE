@@ -3,7 +3,9 @@ spring:
     name: waytoearth-dev
 
   config:
-    import: optional:dotenv:.env
+    import: 
+      - optional:dotenv:.env
+      - optional:file:.env
 
   # 개발 환경 데이터베이스
   datasource:
@@ -56,6 +58,13 @@ springdoc:
   api-docs:
     path: /v3/api-docs
     enabled: true
+
+# AWS S3 설정 (개발환경)
+cloud:
+  aws:
+    region: ${AWS_REGION:ap-northeast-2}
+    s3:
+      bucket: ${S3_BUCKET:waytoearth-assets}  # 개발용 버킷
 
 # 개발환경 관리자 도구
 management:

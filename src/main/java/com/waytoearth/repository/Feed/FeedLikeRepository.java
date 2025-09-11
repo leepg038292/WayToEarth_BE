@@ -1,0 +1,16 @@
+package com.waytoearth.repository.Feed;
+
+import com.waytoearth.entity.Feed.Feed;
+import com.waytoearth.entity.Feed.FeedLike;
+import com.waytoearth.entity.User.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface FeedLikeRepository extends JpaRepository<FeedLike, Long> {
+    boolean existsByFeedAndUser(Feed feed, User user);
+    Optional<FeedLike> findByFeedAndUser(Feed feed, User user);
+    int countByFeed(Feed feed);
+    void deleteByFeedAndUser(Feed feed, User user);
+
+}

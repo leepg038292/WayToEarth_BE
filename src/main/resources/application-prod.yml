@@ -61,6 +61,13 @@ springdoc:
   api-docs:
     enabled: false
 
+# AWS S3 설정 (운영환경)
+cloud:
+  aws:
+    region: ${AWS_REGION:ap-northeast-2}
+    s3:
+      bucket: ${S3_BUCKET:waytoearth-assets-prod}  # 운영용 버킷
+
 # 운영환경 모니터링
 management:
   endpoints:
