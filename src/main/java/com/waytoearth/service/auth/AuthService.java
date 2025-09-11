@@ -4,7 +4,7 @@ import com.waytoearth.dto.request.auth.OnboardingRequest;
 import com.waytoearth.dto.response.auth.KakaoUserInfo;
 import com.waytoearth.dto.response.auth.LoginResponse;
 import com.waytoearth.dto.response.auth.OnboardingResponse;
-import com.waytoearth.entity.User;
+import com.waytoearth.entity.User.User;
 import com.waytoearth.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

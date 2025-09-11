@@ -1,6 +1,6 @@
 package com.waytoearth.dto.response.feed;
 
-import com.waytoearth.entity.Feed;
+import com.waytoearth.entity.Feed.Feed;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
