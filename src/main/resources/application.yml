@@ -1,10 +1,15 @@
+# 기본 프로파일 설정
 spring:
   application:
-    name: postman
+    name: waytoearth-backend
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:waytoearth-dev}
 
   config:
     import: optional:dotenv:.env
 
+  # OAuth2 설정 (모든 환경 공통)
   security:
     oauth2:
       client:
@@ -24,22 +29,7 @@ spring:
             user-info-uri: ${KAKAO_USER_INFO_URI}
             user-name-attribute: id
 
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: org.mariadb.jdbc.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-    open-in-view: false
-
-# 기존 KakaoApiService가 사용하는 설정.
+# 공통 설정
 kakao:
   client-id: ${KAKAO_CLIENT_ID}
   redirect-uri: ${KAKAO_REDIRECT_URI}
@@ -47,48 +37,16 @@ kakao:
 # JWT 설정
 jwt:
   secret: ${JWT_SECRET}
-  expiration: 86400000
+  expiration: ${JWT_EXPIRATION:86400000}
 
-# AWS S3 설정 (추가)
+# AWS S3 설정
 cloud:
   aws:
     region: ${AWS_REGION:ap-northeast-2}
     s3:
       bucket: ${S3_BUCKET:waytoearth-assets}
 
-# 서버 설정
-server:
-  address: 0.0.0.0
-  port: 8080  # 기본 포트는 그대로
-
-## #Profile별 포트 설정
-#---
-#spring:
-#  config:
-#    activate:
-#      on-profile: postman
-#
-#server:
-#  port: 9090  # postman 프로필일 때만 9090 포트 사용
-
-# Swagger 설정
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-    tags-sorter: alpha
-    operations-sorter: alpha
-  api-docs:
-    path: /v3/api-docs
-
+# 날씨 API 설정
 weather:
   openweather:
-    api-key: ${OPENWEATHER_API_KEY:}  # 없으면 빈값 -> Fallback 응답
-
-# 로깅 설정.
-logging:
-  level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.springframework.security: DEBUG
-    com.waytoearth: DEBUG
-    org.springframework.web.reactive: DEBUG
+    api-key: ${OPENWEATHER_API_KEY:}

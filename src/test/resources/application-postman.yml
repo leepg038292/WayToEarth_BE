@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: waytoearth-test
+
+  # 테스트용 인메모리 H2 데이터베이스
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+
+  # H2 Console (테스트 시 필요하면 활성화)
+  h2:
+    console:
+      enabled: false
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # 테스트 시 스키마 자동 생성/삭제
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+    open-in-view: false
+
+# 테스트용 Mock 설정들
+jwt:
+  secret: test-secret-key-for-testing-only-not-for-production-use
+  expiration: 3600000
+
+# AWS S3는 Mock으로
+cloud:
+  aws:
+    region: ap-northeast-2
+    s3:
+      bucket: test-bucket
+
+# 날씨 API도 Mock 처리
+weather:
+  openweather:
+    api-key: test-key
+
+# 로깅 레벨 (테스트 시 조용히)
+logging:
+  level:
+    org.springframework.web: WARN
+    org.hibernate: WARN
+    com.waytoearth: INFO
