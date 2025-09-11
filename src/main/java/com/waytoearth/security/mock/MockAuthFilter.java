@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-@Profile("postman")
+@Profile("postman-disabled") // 비활성화: postman에서 실제 JWT 토큰 방식 사용
 public class MockAuthFilter extends OncePerRequestFilter {
 
     @Override
