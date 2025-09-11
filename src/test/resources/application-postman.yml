@@ -1,6 +1,6 @@
 spring:
   application:
-    name: waytoearth-test
+    name: waytoearth-dev
 
   # 테스트용 인메모리 H2 데이터베이스
   datasource:
