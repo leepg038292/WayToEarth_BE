@@ -4,7 +4,7 @@ spring:
     name: waytoearth-backend
 
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}  # 기본값은 dev
+    active: ${SPRING_PROFILES_ACTIVE:waytoearth-dev}
 
   config:
     import: optional:dotenv:.env
