@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("postman")
+@ActiveProfiles("waytoearth-dev")
 class PostmanProfileSmokeTest {
 
     @Autowired

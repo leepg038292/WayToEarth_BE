@@ -9,6 +9,7 @@ import com.waytoearth.security.AuthUser;
 import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.service.running.RunningService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "러닝 기록 API", description = "러닝 시작, 업데이트, 완료 및 기록 조회 관련 API")
 @RestController
 @RequestMapping("/v1/running")
 @RequiredArgsConstructor

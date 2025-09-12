@@ -57,33 +57,17 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi virtualCourseApi() {
-        return GroupedOpenApi.builder()
-                .group("4. 가상 코스 API")
-                .pathsToMatch("/v1/virtual-courses/**")
-                .build();
-    }
-
-    @Bean
     public GroupedOpenApi feedApi() {
         return GroupedOpenApi.builder()
-                .group("5. 피드 API")
+                .group("4. 피드 API")
                 .pathsToMatch("/v1/feeds/**")
-                .build();
-    }
-
-    @Bean
-    public GroupedOpenApi crewApi() {
-        return GroupedOpenApi.builder()
-                .group("6. 크루 API")
-                .pathsToMatch("/v1/crews/**")
                 .build();
     }
 
     @Bean
     public GroupedOpenApi statisticsApi() {
         return GroupedOpenApi.builder()
-                .group("7. 통계 API")
+                .group("5. 통계 API")
                 .pathsToMatch("/v1/statistics/**")
                 .build();
     }
@@ -91,7 +75,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi fileApi() {
         return GroupedOpenApi.builder()
-                .group("8. 파일 업로드 API")
+                .group("6. 파일 업로드 API")
                 .pathsToMatch("/v1/files/**")
                 .build();
     }
@@ -99,7 +83,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi weatherApi() {
         return GroupedOpenApi.builder()
-                .group("9. 날씨 API")
+                .group("7. 날씨 API")
                 .pathsToMatch("/v1/weather/**")
                 .build();
     }
@@ -107,7 +91,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi emblemApi() {
         return GroupedOpenApi.builder()
-                .group("10. 엠블럼 API")
+                .group("8. 엠블럼 API")
                 .pathsToMatch("/v1/emblems/**")
                 .build();
     }
@@ -117,7 +101,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi themeCourseApi() {
         return GroupedOpenApi.builder()
-                .group("11. 테마 코스 API")
+                .group("9. 테마 코스 API")
                 .pathsToMatch("/v1/theme-courses/**")
                 .build();
     }
@@ -125,7 +109,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi customCourseApi() {
         return GroupedOpenApi.builder()
-                .group("12. 커스텀 코스 API")
+                .group("10. 커스텀 코스 API")
                 .pathsToMatch("/v1/custom-courses/**")
                 .build();
     }
@@ -133,7 +117,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi courseSegmentApi() {
         return GroupedOpenApi.builder()
-                .group("13. 코스 세그먼트 API")
+                .group("11. 코스 세그먼트 API")
                 .pathsToMatch("/v1/course-segments/**")
                 .build();
     }
@@ -141,7 +125,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi userVirtualCourseApi() {
         return GroupedOpenApi.builder()
-                .group("14. 사용자 가상 코스 API")
+                .group("12. 사용자 가상 코스 API")
                 .pathsToMatch("/v1/user-virtual-courses/**")
                 .build();
     }

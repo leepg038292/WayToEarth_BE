@@ -7,7 +7,9 @@ import com.waytoearth.dto.response.user.UserSummaryResponse;
 import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.security.AuthUser;
 import com.waytoearth.service.user.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class UserController {
     private final UserService userService;
 
 
+    @Operation(summary = "닉네임 중복 확인", description = "닉네임 사용 가능 여부를 확인합니다.")
     @GetMapping("/check-nickname")
     public ResponseEntity<ApiResponse<Map<String, Boolean>>> checkNicknameDuplicate(
             @Parameter(description = "중복 확인할 닉네임", example = "runner_kim", required = true)
@@ -42,10 +45,11 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(data, message));
     }
 
-    /**
-     * 내 정보 전체 조회
-     * GET /v1/users/me
-     */
+    @Operation(
+            summary = "내 정보 전체 조회",
+            description = "현재 로그인한 사용자의 전체 정보를 조회합니다.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserInfoResponse>> me(@AuthUser AuthenticatedUser me) {
         log.info("[Users:Me] 내 정보 조회 - userId: {}", me.getUserId());
@@ -53,10 +57,11 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(body, "사용자 정보를 성공적으로 조회했습니다."));
     }
 
-    /**
-     * 내 정보 요약(총거리/횟수/엠블럼/완성도)
-     * GET /v1/users/me/summary
-     */
+    @Operation(
+            summary = "내 정보 요약 조회",
+            description = "총거리, 러닝 횟수, 엠블럼, 완성도 등 요약 정보를 조회합니다.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @GetMapping("/me/summary")
     public ResponseEntity<ApiResponse<UserSummaryResponse>> summary(@AuthUser AuthenticatedUser me) {
         log.info("[Users:Summary] 요약 조회 - userId: {}", me.getUserId());
@@ -64,11 +69,11 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(body, "사용자 요약 정보를 성공적으로 조회했습니다."));
     }
 
-    /**
-     * 프로필 수정
-     * PUT /v1/users/me
-     * Body: nickname, profile_image_url, residence, weekly_goal_distance(선택/부분 수정)
-     */
+    @Operation(
+            summary = "프로필 수정",
+            description = "닉네임, 프로필 이미지, 거주지, 주간 목표 거리 등을 수정합니다.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @PutMapping("/me")
     public ResponseEntity<ApiResponse<Void>> updateProfile(@AuthUser AuthenticatedUser me,
                                                            @Valid @RequestBody UserUpdateRequest request) {

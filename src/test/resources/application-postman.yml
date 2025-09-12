@@ -2,12 +2,15 @@ spring:
   application:
     name: waytoearth-dev
 
-  # 테스트용 인메모리 H2 데이터베이스
+  config:
+    import: optional:dotenv:.env
+
+  # 테스트용으로도 MariaDB 사용 (H2 호환성 문제 회피)
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password: 
-    driver-class-name: org.h2.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.mariadb.jdbc.Driver
 
   # H2 Console (테스트 시 필요하면 활성화)
   h2:
@@ -16,7 +19,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop  # 테스트 시 스키마 자동 생성/삭제
+      ddl-auto: validate  # 기존 스키마 사용 (MariaDB)
     show-sql: false
     properties:
       hibernate:
