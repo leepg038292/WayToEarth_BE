@@ -1,6 +1,6 @@
 package com.waytoearth.config.backendtest;
 
-import com.waytoearth.security.mock.MockAuthFilter;
+import com.waytoearth.config.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfigPostman {
 
-    private final MockAuthFilter mockAuthFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain postmanFilterChain(HttpSecurity http) throws Exception {
@@ -31,12 +31,12 @@ public class SecurityConfigPostman {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-                                "/actuator/**", "/health", "/ping"
+                                "/actuator/**", "/health", "/ping",
+                                "/v1/auth/mock-login" // Mock Login API는 인증 불요
                         ).permitAll()
-                        // 컨트롤러에서 @AuthUser를 쓰므로 인증 객체는 필요 -> authenticated()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(mockAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

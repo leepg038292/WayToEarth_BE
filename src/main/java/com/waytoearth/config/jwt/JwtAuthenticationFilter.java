@@ -18,7 +18,7 @@ import java.io.IOException;
 
 @Slf4j
 @Component
-@Profile("!postman")
+// postman 프로파일에서도 JWT 인증 사용하도록 변경
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
