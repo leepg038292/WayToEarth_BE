@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/v1/auth")
 @RequiredArgsConstructor
 @Slf4j
-@Profile("postman")
+@Profile({"postman", "dev"})
 public class MockAuthController {
 
     private final JwtTokenProvider jwtTokenProvider;
