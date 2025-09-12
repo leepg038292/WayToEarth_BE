@@ -96,7 +96,7 @@ public class FeedService {
             throw new IllegalStateException("본인이 작성한 피드만 삭제할 수 있습니다.");
         }
 
-        // ✅ S3 삭제
+        //  S3 삭제
         if (feed.getImageKey() != null) {
             fileService.deleteObject(feed.getImageKey());
         }
@@ -116,26 +116,25 @@ public class FeedService {
 
         return feedLikeRepository.findByFeedAndUser(feed, user)
                 .map(existingLike -> {
-                    // 좋아요 취소 - 원자적 업데이트로 동시성 보장
+                    // 좋아요 취소
                     feedLikeRepository.delete(existingLike);
-                    feedRepository.decrementLikeCount(feedId); // ✅ 원자적 감소
-                    
-                    // 최신 좋아요 수 조회
-                    Feed updatedFeed = feedRepository.findById(feedId).orElseThrow();
-                    return new FeedLikeResponse(feed.getId(), updatedFeed.getLikeCount(), false);
+                    feedRepository.decrementLikeCount(feedId);
+
+                    int newCount = feedRepository.getLikeCount(feedId); //  최신값 강제 조회
+                    return new FeedLikeResponse(feed.getId(), newCount, false);
                 })
                 .orElseGet(() -> {
-                    // 좋아요 추가 - 원자적 업데이트로 동시성 보장
+                    // 좋아요 추가
                     FeedLike like = FeedLike.builder()
                             .feed(feed)
                             .user(user)
                             .build();
                     feedLikeRepository.save(like);
-                    feedRepository.incrementLikeCount(feedId); // ✅ 원자적 증가
-                    
-                    // 최신 좋아요 수 조회
-                    Feed updatedFeed = feedRepository.findById(feedId).orElseThrow();
-                    return new FeedLikeResponse(feed.getId(), updatedFeed.getLikeCount(), true);
+                    feedRepository.incrementLikeCount(feedId);
+
+                    int newCount = feedRepository.getLikeCount(feedId); //  최신값 강제 조회
+                    return new FeedLikeResponse(feed.getId(), newCount, true);
                 });
     }
+
 }
