@@ -26,6 +26,10 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedRepositor
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT f FROM Feed f WHERE f.id = :feedId")
     Optional<Feed> findByIdWithLock(@Param("feedId") Long feedId);
+
+    // 최신 좋아요 수만 조회
+    @Query("SELECT f.likeCount FROM Feed f WHERE f.id = :feedId")
+    int getLikeCount(@Param("feedId") Long feedId);
     
     // 원자적 좋아요 증가 (동시성 안전)
     @Modifying
