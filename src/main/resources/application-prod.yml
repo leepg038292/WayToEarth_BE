@@ -54,12 +54,16 @@ logging:
       max-file-size: 100MB
       max-history: 30
 
-# Swagger 비활성화 (운영환경)
+# Swagger 활성화 (운영환경 - 프론트엔드 개발용)
 springdoc:
   swagger-ui:
-    enabled: false
+    enabled: true
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
   api-docs:
-    enabled: false
+    path: /v3/api-docs
+    enabled: true
 
 # AWS S3 설정 (운영환경)
 cloud:
