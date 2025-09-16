@@ -1,5 +1,6 @@
 package com.waytoearth.entity.VirtualRunning;
 
+import com.waytoearth.entity.common.BaseTimeEntity;
 import com.waytoearth.entity.enums.SegmentType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -13,7 +14,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Schema(description = "코스를 이루는 세그먼트 엔티티")
-public class CourseSegmentEntity {
+public class CourseSegmentEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

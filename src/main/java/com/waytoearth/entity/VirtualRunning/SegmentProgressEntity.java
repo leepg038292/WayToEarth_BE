@@ -1,5 +1,6 @@
 package com.waytoearth.entity.VirtualRunning;
 
+import com.waytoearth.entity.common.BaseTimeEntity;
 import com.waytoearth.entity.enums.VirtualCourseStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -13,7 +14,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Schema(description = "사용자의 세그먼트별 진행률 엔티티")
-public class SegmentProgressEntity {
+public class SegmentProgressEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,5 +1,6 @@
 package com.waytoearth.entity.Running;
 
+import com.waytoearth.entity.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,7 +16,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RunningRoute {
+public class RunningRoute extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
