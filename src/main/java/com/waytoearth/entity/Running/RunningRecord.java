@@ -1,6 +1,7 @@
 package com.waytoearth.entity.Running;
 
 import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.common.BaseTimeEntity;
 import com.waytoearth.entity.enums.RunningStatus;
 import com.waytoearth.entity.enums.RunningType;
 import jakarta.persistence.*;
@@ -24,7 +25,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RunningRecord {
+public class RunningRecord extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
