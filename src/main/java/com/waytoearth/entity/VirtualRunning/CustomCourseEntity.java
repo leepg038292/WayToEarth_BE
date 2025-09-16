@@ -1,10 +1,10 @@
 package com.waytoearth.entity.VirtualRunning;
 
+import com.waytoearth.entity.common.BaseTimeEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Schema(description = "사용자 정의 커스텀 코스 엔티티")
-public class CustomCourseEntity {
+public class CustomCourseEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,8 +31,6 @@ public class CustomCourseEntity {
     @Schema(description = "총 거리 (km)", example = "12.3")
     private Double totalDistanceKm;
 
-    @Schema(description = "생성일시")
-    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "customCourse", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CourseSegmentEntity> segments;

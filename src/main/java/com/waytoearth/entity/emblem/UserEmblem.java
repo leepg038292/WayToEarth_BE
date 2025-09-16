@@ -1,11 +1,11 @@
 package com.waytoearth.entity.emblem;
 
 import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.common.BaseTimeEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.Instant;
 
 @Entity
 @Table(
@@ -15,7 +15,7 @@ import java.time.Instant;
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
 @Schema(description = "사용자-엠블럼 수집 내역 엔티티")
-public class UserEmblem {
+public class UserEmblem extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,12 +32,4 @@ public class UserEmblem {
     @Schema(description = "보유한 엠블럼")
     private Emblem emblem;
 
-    @Column(nullable = false, updatable = false)
-    @Schema(description = "엠블럼 획득 시각")
-    private Instant acquiredAt;
-
-    @PrePersist
-    protected void onCreate() {
-        if (acquiredAt == null) acquiredAt = Instant.now();
-    }
 }

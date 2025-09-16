@@ -2,10 +2,9 @@ package com.waytoearth.entity.Feed;
 
 import com.waytoearth.entity.Running.RunningRecord;
 import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.Instant;
 
 @Entity
 @Table(name = "feeds")
@@ -14,7 +13,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Feed {
+public class Feed extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,11 +46,4 @@ public class Feed {
     @Column(name = "version")
     private Long version;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
-
-    @PrePersist
-    public void onCreate() {
-        this.createdAt = Instant.now();
-    }
 }

@@ -1,18 +1,18 @@
 package com.waytoearth.entity.emblem;
 
+import com.waytoearth.entity.common.BaseTimeEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 
 @Entity
 @Table(name = "emblems")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
 @Schema(description = "엠블럼 정보 엔티티")
-public class Emblem {
+public class Emblem extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,12 +43,4 @@ public class Emblem {
     @Schema(description = "지급 조건 값", example = "100.00")
     private BigDecimal conditionValue; // OPTIONAL (서비스에서 사용)
 
-    @Column(nullable = false, updatable = false)
-    @Schema(description = "생성 시각")
-    private Instant createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        if (createdAt == null) createdAt = Instant.now();
-    }
 }
