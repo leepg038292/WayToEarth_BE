@@ -1,24 +1,20 @@
 package com.waytoearth.entity.User;
 
+import com.waytoearth.entity.common.BaseTimeEntity;
 import com.waytoearth.entity.enums.AgeGroup;
 import com.waytoearth.entity.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
-@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class User {
+public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -70,14 +66,6 @@ public class User {
     @Builder.Default
     private Integer totalRunningCount = 0;
 
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Setter
-    @LastModifiedDate
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
 
     // 온보딩 완료 메서드
     public void completeOnboarding(String nickname, String residence, AgeGroup ageGroup,
