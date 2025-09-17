@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Schema(description = "피드 응답 DTO")
 @Builder
@@ -55,7 +56,7 @@ public record FeedResponse(
                 .imageUrl(feed.getImageUrl())
                 .likeCount(feed.getLikeCount())
                 .liked(liked)   //  좋아요 여부 반영
-                .createdAt(feed.getCreatedAt())
+                .createdAt(feed.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant())
                 .userId(feed.getUser().getId())
                 .nickname(feed.getUser().getNickname())
                 .profileImageUrl(feed.getUser().getProfileImageUrl())

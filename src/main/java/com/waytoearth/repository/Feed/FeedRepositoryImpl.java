@@ -56,7 +56,7 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
                         .imageUrl(tuple.get(feed.imageUrl))
                         .likeCount(tuple.get(feed.likeCount))
                         .liked(Boolean.TRUE.equals(tuple.get(feedLike.isNotNull())))
-                        .createdAt(tuple.get(feed.createdAt))
+                        .createdAt(tuple.get(feed.createdAt).atZone(java.time.ZoneId.systemDefault()).toInstant())
                         .userId(tuple.get(user.id))
                         .nickname(tuple.get(user.nickname))
                         .profileImageUrl(tuple.get(user.profileImageUrl))

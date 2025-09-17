@@ -94,7 +94,7 @@ public class EmblemService {
         Optional<UserEmblem> userEmblem = userEmblemRepository.findByUserIdAndEmblemId(userId, emblemId);
         
         boolean owned = userEmblem.isPresent();
-        Instant earnedAt = userEmblem.map(UserEmblem::getAcquiredAt).orElse(null);
+        Instant earnedAt = userEmblem.map(ue -> ue.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant()).orElse(null);
 
         return EmblemDetailResponse.builder()
                 .emblemId(e.getId())
@@ -138,7 +138,6 @@ public class EmblemService {
                     UserEmblem.builder()
                             .user(user)
                             .emblem(emblem)
-                            .acquiredAt(Instant.now())
                             .build()
             );
             return true;

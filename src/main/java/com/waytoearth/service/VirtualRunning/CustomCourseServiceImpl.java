@@ -30,7 +30,6 @@ public class CustomCourseServiceImpl implements CustomCourseService {
                 .totalDistanceKm(request.getSegments().stream()
                         .mapToDouble(CourseSegmentCreateRequest::getDistanceKm)
                         .sum())
-                .createdAt(LocalDateTime.now())
                 .build();
 
         // ✅ 세그먼트 생성 및 course와 연관관계 주입
