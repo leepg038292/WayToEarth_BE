@@ -66,16 +66,20 @@ jobs:
       - name: Deploy on EC2 via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.EC2_HOST }}   # 배포용 → deploy.waytoearth.cloud
+          host: ${{ secrets.EC2_HOST }}   # deploy.waytoearth.cloud
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
           script: |
+            set -e
             IMAGE_NAME=docker.io/${{ secrets.DOCKER_USERNAME }}/waytoearth:latest
+
             for i in 1 2 3; do
-              docker pull $IMAGE_NAME && break || (echo "Retrying pull ($i/3)..." && sleep 15)
+              docker pull "$IMAGE_NAME" && break || (echo "Retrying pull ($i/3)..." && sleep 15)
             done
+
             docker stop waytoearth || true
             docker rm waytoearth || true
+
             docker run -d \
               -p 8080:8080 \
               --name waytoearth \
@@ -94,17 +98,19 @@ jobs:
               -e S3_BUCKET="${{ vars.S3_BUCKET }}" \
               -e OPENWEATHER_API_KEY="${{ secrets.OPENWEATHER_API_KEY }}" \
               -e JWT_EXPIRATION="${{ vars.JWT_EXPIRATION }}" \
-              -e SERVICE_HOST="${{ secrets.SERVICE_HOST }}" \   # 서비스용 도메인 추가
-              $IMAGE_NAME
+              -e SERVICE_HOST="${{ secrets.SERVICE_HOST }}" \
+              "$IMAGE_NAME"
 
-            echo "⏳ Waiting for app to start (max 50s)..."
-            for i in {1..10}; do
-              if curl -s http://127.0.0.1:8080/actuator/health | grep '"status":"UP"' > /dev/null; then
+            echo "⏳ Waiting for app to start (max 60s)..."
+            for i in {1..12}; do
+              if curl -fsS http://127.0.0.1:8080/actuator/health | grep -q '"status":"UP"'; then
                 echo "✅ App is healthy!"
                 exit 0
               fi
-              echo "⏳ Still starting... ($i/10)"
+              echo "⏳ Still starting... ($i/12)"
               sleep 5
             done
-            echo "❌ App failed to start within 50s"
+
+            echo "❌ App failed to start within 60s"
+            docker logs --tail 200 waytoearth || true
             exit 1
