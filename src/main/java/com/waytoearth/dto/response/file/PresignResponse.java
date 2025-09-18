@@ -15,10 +15,10 @@ public class PresignResponse {
     @Schema(description = "업로드용 Presigned URL")
     private String uploadUrl;
 
-    @Schema(description = "업로드 후 접근 가능한 공개 URL")
-    private String publicUrl;
+    @Schema(description = "다운로드용 Presigned URL")
+    private String downloadUrl;
 
-    @Schema(description = "S3 오브젝트 키", example = "profiles/12345.png")
+    @Schema(description = "S3 오브젝트 키", example = "profiles/12345/profile.png")
     private String key;
 
     @Schema(description = "만료 시간(초)", example = "300")
@@ -26,11 +26,10 @@ public class PresignResponse {
 
     public PresignResponse() { }
 
-    public PresignResponse(String uploadUrl, String publicUrl, String key, int expiresIn) {
+    public PresignResponse(String uploadUrl, String downloadUrl, String key, int expiresIn) {
         this.uploadUrl = uploadUrl;
-        this.publicUrl = publicUrl;
+        this.downloadUrl = downloadUrl;
         this.key = key;
         this.expiresIn = expiresIn;
     }
-
 }
