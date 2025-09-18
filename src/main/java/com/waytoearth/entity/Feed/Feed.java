@@ -32,7 +32,7 @@ public class Feed extends BaseTimeEntity {
     @Column(nullable = false, length = 500)
     private String content;
 
-    @Column(name = "image_url")
+    @Column(name = "image_url", length = 2000)
     private String imageUrl;
 
     // S3 삭제를 위해 Key 보관
