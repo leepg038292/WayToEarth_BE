@@ -4,7 +4,7 @@ import com.waytoearth.entity.Feed.Feed;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Schema(description = "피드 응답 DTO")
 @Builder
@@ -24,8 +24,8 @@ public record FeedResponse(
         @Schema(description = "현재 로그인한 사용자가 좋아요 눌렀는지 여부", example = "true")
         boolean liked,   // 새로 추가됨
 
-        @Schema(description = "작성 시간", example = "2025-08-18T02:45:00")
-        LocalDateTime createdAt,
+        @Schema(description = "작성 시간", example = "2025-08-18T02:45:00Z")
+        Instant createdAt,
 
         @Schema(description = "작성자 ID", example = "7")
         Long userId,
@@ -55,7 +55,7 @@ public record FeedResponse(
                 .imageUrl(feed.getImageUrl())
                 .likeCount(feed.getLikeCount())
                 .liked(liked)   //  좋아요 여부 반영
-                .createdAt(feed.getCreatedAt())
+                .createdAt(feed.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant())
                 .userId(feed.getUser().getId())
                 .nickname(feed.getUser().getNickname())
                 .profileImageUrl(feed.getUser().getProfileImageUrl())

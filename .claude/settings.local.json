@@ -4,7 +4,8 @@
       "Bash(./gradlew:*)",
       "Bash(jps:*)",
       "Bash(taskkill:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

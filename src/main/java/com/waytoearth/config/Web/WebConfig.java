@@ -22,11 +22,15 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/v1/**")
-                .allowedOriginPatterns("*")
+                .allowedOrigins(
+                        "https://api.waytoearth.cloud", // 프론트
+                        "http://localhost:3000"            // 로컬 개발용
+                )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
+
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
