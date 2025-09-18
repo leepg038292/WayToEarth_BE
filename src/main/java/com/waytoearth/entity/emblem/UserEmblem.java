@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.Instant;
+
 
 @Entity
 @Table(
@@ -31,5 +33,9 @@ public class UserEmblem extends BaseTimeEntity {
     @JoinColumn(name = "emblem_id", nullable = false)
     @Schema(description = "보유한 엠블럼")
     private Emblem emblem;
+
+    @Column(name = "acquired_at")
+    @Schema(description = "엠블럼 획득 시각", example = "2024-01-15T10:30:00Z")
+    private Instant acquiredAt;
 
 }

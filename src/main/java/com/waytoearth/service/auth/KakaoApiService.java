@@ -99,6 +99,36 @@ public class KakaoApiService {
         }
     }
 
+    /**
+     * SDK용: 카카오 액세스 토큰 검증 및 사용자 정보 조회
+     * (getKakaoUserInfo와 동일하지만 SDK 용도임을 명시)
+     */
+    public KakaoUserInfo verifyAndGetKakaoUserInfo(String accessToken) {
+        log.info("[KakaoApiService] SDK 토큰 검증 및 사용자 정보 조회 시작");
+
+        try {
+            KakaoUserInfo kakaoUserInfo = kakaoApiWebClient.get()
+                    .uri("/v2/user/me")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .retrieve()
+                    .bodyToMono(KakaoUserInfo.class)
+                    .block();
+
+            Objects.requireNonNull(kakaoUserInfo, "카카오 사용자 정보 응답이 null입니다");
+
+            log.info("[KakaoApiService] SDK 토큰 검증 성공 - kakaoId: {}", kakaoUserInfo.getId());
+            return kakaoUserInfo;
+
+        } catch (WebClientResponseException e) {
+            log.error("[KakaoApiService] SDK 토큰 검증 실패 - Status: {}, Body: {}",
+                    e.getStatusCode(), e.getResponseBodyAsString());
+            throw new UnauthorizedException("카카오 액세스 토큰이 유효하지 않습니다", e);
+        } catch (Exception e) {
+            log.error("[KakaoApiService] SDK 토큰 검증 중 예상치 못한 에러", e);
+            throw new RuntimeException("카카오 토큰 검증 중 오류가 발생했습니다.", e);
+        }
+    }
+
     // 카카오 API 응답용 내부 DTO
     @Getter
     @NoArgsConstructor

@@ -66,7 +66,7 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
                         .averagePace(formatPace(tuple.get(runningRecord.averagePaceSeconds)))
                         .calories(tuple.get(runningRecord.calories))
                         .build())
-                .toList();
+                .collect(java.util.stream.Collectors.toList());
     }
 
     private String formatPace(Integer paceSeconds) {
