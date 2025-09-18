@@ -32,10 +32,10 @@ public class AuthController {
     private final AuthService authService;
     private final UserService userService; // 닉네임 중복 확인용
 
-    @Operation(summary = "카카오 로그인", description = "카카오 Authorization Code로 로그인 처리")
+    @Operation(summary = "카카오 로그인", description = "카카오 SDK에서 받은 액세스 토큰으로 로그인 처리")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그인 성공"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 인가 코드"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 액세스 토큰"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("/kakao")
@@ -43,9 +43,10 @@ public class AuthController {
             @Parameter(description = "카카오 로그인 요청", required = true)
             @RequestBody @Valid KakaoLoginRequest request) {
 
-        log.info("[AuthController] 카카오 로그인 요청 - authorizationCode: {}", request.getCode());
+        log.info("[AuthController] 카카오 로그인 요청 - accessToken: {}, kakaoId: {}", 
+                request.getAccessToken(), request.getKakaoId());
 
-        LoginResponse response = authService.loginWithKakaoCode(request.getCode());
+        LoginResponse response = authService.loginWithKakaoAccessToken(request);
 
         log.info("[AuthController] 카카오 로그인 완료 - userId: {}, isNewUser: {}",
                 response.getUserId(), response.getIsNewUser());

@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Schema(description = "피드 응답 DTO")
 @Builder

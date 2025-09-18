@@ -40,6 +40,7 @@ public class Feed extends BaseTimeEntity {
     private String imageKey;
 
     @Column(name = "like_count", nullable = false)
+    @Builder.Default
     private int likeCount = 0;
 
     @Version
