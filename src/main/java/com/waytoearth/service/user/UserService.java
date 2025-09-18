@@ -104,15 +104,21 @@ public class UserService {
     public UserInfoResponse getMe(Long userId) {
         User u = findById(userId);
 
-        String ageGroup = (u.getAgeGroup() == null) ? null : u.getAgeGroup().name();     // or .getLabel()
-        String gender   = (u.getGender()   == null) ? null : u.getGender().name();       // or .getLabel()
-        Instant created = (u.getCreatedAt()== null) ? null : u.getCreatedAt()
+        String ageGroup = (u.getAgeGroup() == null) ? null : u.getAgeGroup().name();
+        String gender   = (u.getGender() == null) ? null : u.getGender().name();
+        Instant created = (u.getCreatedAt() == null) ? null : u.getCreatedAt()
                 .atOffset(ZoneOffset.UTC).toInstant();
+
+        // ✅ profileImageKey로 presigned GET URL 발급
+        String profileImageUrl = null;
+        if (u.getProfileImageKey() != null && !u.getProfileImageKey().isEmpty()) {
+            profileImageUrl = fileService.createPresignedGetUrl(u.getProfileImageKey());
+        }
 
         return new UserInfoResponse(
                 u.getId(),
                 u.getNickname(),
-                u.getProfileImageUrl(),
+                profileImageUrl,   // presigned GET URL
                 u.getResidence(),
                 ageGroup,
                 gender,
@@ -123,6 +129,7 @@ public class UserService {
                 u.getProfileImageKey()
         );
     }
+
     /**
      * 내 정보 요약 (GET /v1/users/me/summary)
      * - 보유 엠블럼 수 / 전체 엠블럼 수 = completion_rate
@@ -149,7 +156,7 @@ public class UserService {
     public void updateProfile(Long userId, UserUpdateRequest req) {
         User u = findById(userId);
 
-        // 🔹 닉네임
+        // 닉네임
         if (req.getNickname() != null) {
             String newNickname = req.getNickname().trim();
             if (!newNickname.isEmpty() && !newNickname.equals(u.getNickname())) {
@@ -160,31 +167,17 @@ public class UserService {
             }
         }
 
-// 🔹 프로필 이미지 (URL + Key)
-        if (req.getProfileImageUrl() != null && req.getProfileImageKey() != null) {
-            String newUrl = req.getProfileImageUrl().trim();
-            String newKey = req.getProfileImageKey().trim();
-
-            if (!newUrl.isEmpty() && !newKey.isEmpty()) {
-                // ❌ 고정 키 방식에서는 굳이 삭제할 필요 없음
-                // if (u.getProfileImageKey() != null) {
-                //     fileService.deleteObject(u.getProfileImageKey());
-                // }
-                u.setProfileImageUrl(newUrl);
-                u.setProfileImageKey(newKey);
-            }
+        // 프로필 이미지 (Key만 저장)
+        if (req.getProfileImageKey() != null && !req.getProfileImageKey().trim().isEmpty()) {
+            u.setProfileImageKey(req.getProfileImageKey().trim());
         }
 
-
-        // 🔹 거주지
-        if (req.getResidence() != null) {
-            String resi = req.getResidence().trim();
-            if (!resi.isEmpty()) {
-                u.setResidence(resi);
-            }
+        // 거주지
+        if (req.getResidence() != null && !req.getResidence().trim().isEmpty()) {
+            u.setResidence(req.getResidence().trim());
         }
 
-        // 🔹 주간 목표 거리
+        // 주간 목표 거리
         if (req.getWeeklyGoalDistance() != null) {
             var normalized = req.getWeeklyGoalDistance().setScale(2, RoundingMode.HALF_UP);
             u.setWeeklyGoalDistance(normalized);
@@ -195,6 +188,7 @@ public class UserService {
         log.info("[Users:Update] userId={}, nickname={}, residence={}, weeklyGoalDistance={}, profileImageKey={}",
                 u.getId(), u.getNickname(), u.getResidence(), u.getWeeklyGoalDistance(), u.getProfileImageKey());
     }
+
 
 
     @Transactional

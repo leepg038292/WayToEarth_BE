@@ -38,6 +38,9 @@ public class FileService {
     @Value("${cloud.aws.region}")
     private String region;
 
+
+
+
     // 프로필 Presign 발급
     public PresignResponse presignProfile(Long userId, PresignRequest req) {
         validateProfile(userId, req);
@@ -98,7 +101,7 @@ public class FileService {
     }
 
     // 공통 Presign GET
-    private String createPresignedGetUrl(String key) {
+    public String createPresignedGetUrl(String key) {
         GetObjectRequest get = GetObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
