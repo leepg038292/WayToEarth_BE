@@ -1,10 +1,10 @@
 name: Deploy WayToEarth Backend to EC2 using Docker
 
 on:
-  pull_request:   # PR 생성/업데이트 → 빌드만 실행.
+  pull_request:
     branches:
       - dev
-  push:           # dev 브랜치에 머지되었을 때 → 배포 실행
+  push:
     branches:
       - dev
 
@@ -26,7 +26,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build & Test with Gradle
-        run: ./gradlew clean build -x test   # PR 단계에서도 테스트 스킵
+        run: ./gradlew clean build -x test
 
   deploy:
     runs-on: ubuntu-latest
@@ -71,14 +71,18 @@ jobs:
             set -e
             IMAGE_NAME=docker.io/${{ secrets.DOCKER_USERNAME }}/waytoearth:latest
 
+            echo "🛑 기존 컨테이너 중지 및 삭제"
+            docker stop waytoearth || true
+            docker rm waytoearth || true
+
+            echo "📦 최신 이미지 Pull"
             for i in 1 2 3; do
               docker pull "$IMAGE_NAME" && break || (echo "Retrying pull ($i/3)..." && sleep 15)
             done
 
-            docker stop waytoearth || true
-            docker rm waytoearth || true
-
+            echo "🚀 새 컨테이너 실행 (자동 재시작 활성화)"
             docker run -d \
+              --restart always \
               -p 8080:8080 \
               --name waytoearth \
               -e SPRING_PROFILES_ACTIVE="${{ vars.SPRING_PROFILES_ACTIVE }}" \
@@ -97,6 +101,9 @@ jobs:
               -e OPENWEATHER_API_KEY="${{ secrets.OPENWEATHER_API_KEY }}" \
               -e JWT_EXPIRATION="${{ vars.JWT_EXPIRATION }}" \
               "$IMAGE_NAME"
+
+            echo "🧹 안 쓰는 이미지 정리"
+            docker image prune -f
 
             echo "⏳ Waiting for app to start (max 60s)..."
             for i in {1..12}; do
