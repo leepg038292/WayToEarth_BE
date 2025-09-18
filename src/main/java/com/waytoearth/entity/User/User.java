@@ -45,12 +45,12 @@ public class User extends BaseTimeEntity {
     private BigDecimal weeklyGoalDistance;
 
     @Setter
-    @Column(name = "profile_image_url", length = 500)
+    @Column(name = "profile_image_url", length = 2048)
     private String profileImageUrl;
 
     // S3 삭제를 위해 Key도 보관
     @Setter
-    @Column(name = "profile_image_key", length = 500)
+    @Column(name = "profile_image_key", length = 1024)
     private String profileImageKey;
 
     @Column(name = "is_onboarding_completed", nullable = false)
