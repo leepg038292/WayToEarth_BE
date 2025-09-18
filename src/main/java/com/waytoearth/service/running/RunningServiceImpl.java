@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,7 +45,7 @@ public class RunningServiceImpl implements RunningService {
                 .runningType(request.getRunningType() != null ? request.getRunningType() : RunningType.SINGLE)
                 .virtualCourseId(request.getVirtualCourseId())
                 .status(RunningStatus.RUNNING)
-                .startedAt(LocalDateTime.now())
+                .startedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")))
                 .isCompleted(false)
                 .build();
 
@@ -123,7 +124,7 @@ public class RunningServiceImpl implements RunningService {
                 request.getDurationSeconds(),
                 request.getAveragePaceSeconds(),
                 request.getCalories(),
-                LocalDateTime.now()
+                LocalDateTime.now(ZoneId.of("Asia/Seoul"))
         );
 
         if (request.getRoutePoints() != null) {
