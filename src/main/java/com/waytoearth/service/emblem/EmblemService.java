@@ -5,8 +5,8 @@ import com.waytoearth.dto.response.emblem.EmblemAwardResult;
 import com.waytoearth.dto.response.emblem.EmblemCatalogItem;
 import com.waytoearth.dto.response.emblem.EmblemDetailResponse;
 import com.waytoearth.dto.response.emblem.EmblemSummaryResponse;
-import com.waytoearth.entity.emblem.Emblem;
 import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.emblem.Emblem;
 import com.waytoearth.entity.emblem.UserEmblem;
 import com.waytoearth.repository.Emblem.EmblemRepository;
 import com.waytoearth.repository.Emblem.UserEmblemRepository;
@@ -36,7 +36,6 @@ public class EmblemService {
        ========================= */
 
     public EmblemSummaryResponse summary(Long userId) {
-        // ✅ 최적화: 카운트 쿼리 사용 (전체 목록 조회하지 않음)
         int owned = (int) userEmblemRepository.countByUserId(userId);
         int total = (int) emblemRepository.count();
         double completion = total == 0 ? 0.0 : (owned * 1.0 / total);
@@ -52,7 +51,6 @@ public class EmblemService {
      * 카탈로그(필터/커서/사이즈) - 최적화된 페이징 처리
      */
     public List<EmblemCatalogItem> catalog(Long userId, String filter, int size, Long cursor) {
-        // ✅ 최적화: 전체 조회 대신 페이징 쿼리 사용
         List<Emblem> emblems;
         if (cursor != null) {
             emblems = emblemRepository.findByIdLessThanOrderByIdDesc(cursor, Pageable.ofSize(size));
@@ -60,7 +58,6 @@ public class EmblemService {
             emblems = emblemRepository.findAllByOrderByIdDesc(Pageable.ofSize(size));
         }
 
-        // 보유 목록 한 번만 로드
         Set<Long> ownedIds = userEmblemRepository.findByUserId(userId).stream()
                 .map(ue -> ue.getEmblem().getId())
                 .collect(Collectors.toSet());
@@ -80,7 +77,7 @@ public class EmblemService {
                     .imageUrl(e.getImageUrl())
                     .rarity(e.getRarity())
                     .owned(owned)
-                    .earnedAt(null) // 필요하면 UserEmblem에서 조회 확장
+                    .earnedAt(null)
                     .build());
         }
         return result;
@@ -90,11 +87,10 @@ public class EmblemService {
         Emblem e = emblemRepository.findById(emblemId)
                 .orElseThrow(() -> new NoSuchElementException("Emblem not found: " + emblemId));
 
-        // ✅ 최적화: 특정 엠블럼만 조회 (전체 목록 조회하지 않음)
         Optional<UserEmblem> userEmblem = userEmblemRepository.findByUserIdAndEmblemId(userId, emblemId);
-        
+
         boolean owned = userEmblem.isPresent();
-        Instant earnedAt = userEmblem.map(ue -> ue.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant()).orElse(null);
+        Instant earnedAt = userEmblem.map(UserEmblem::getAcquiredAt).orElse(null);
 
         return EmblemDetailResponse.builder()
                 .emblemId(e.getId())
@@ -115,9 +111,6 @@ public class EmblemService {
 
     /**
      * 단건 지급 시도 (멱등)
-     * - 이미 보유 시 false
-     * - 조건 미충족 시 false
-     * - 지급 성공 시 true
      */
     @Transactional
     public boolean awardIfEligible(Long userId, Long emblemId) {
@@ -138,23 +131,22 @@ public class EmblemService {
                     UserEmblem.builder()
                             .user(user)
                             .emblem(emblem)
+                            .acquiredAt(Instant.now()) // ✅ null 방지
                             .build()
             );
             return true;
         } catch (DataIntegrityViolationException dup) {
-            // 동시성 등으로 인한 UNIQUE 충돌 → 멱등 처리
             return false;
         }
     }
 
     /**
-     * 일괄 스캔 지급 - 최적화된 조건별 조회
+     * 일괄 스캔 지급
      */
     @Transactional
     public EmblemAwardResult scanAndAward(Long userId, String scope) {
         String type = scope == null ? "DISTANCE" : scope.toUpperCase();
-        
-        // ✅ 최적화: 전체 조회 대신 조건별 조회 사용
+
         List<Emblem> candidates;
         if ("ALL".equals(type)) {
             candidates = emblemRepository.findAll();
@@ -176,7 +168,7 @@ public class EmblemService {
     }
 
     /* ==================
-       조건 평가 (간단판)
+       조건 평가
        ================== */
     private boolean meetsCondition(User user, Emblem emblem) {
         String type = nullToEmpty(emblem.getConditionType()).toUpperCase();
@@ -187,10 +179,11 @@ public class EmblemService {
                 if (user.getTotalDistance() == null || target == null) yield false;
                 yield user.getTotalDistance().compareTo(target) >= 0;
             }
-            // TODO: WEEKLY_GOAL, COURSE_COMPLETE 등 필요 시 추가
             default -> false;
         };
     }
 
-    private String nullToEmpty(String s) { return s == null ? "" : s; }
+    private String nullToEmpty(String s) {
+        return s == null ? "" : s;
+    }
 }

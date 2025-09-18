@@ -38,4 +38,12 @@ public class UserEmblem extends BaseTimeEntity {
     @Schema(description = "엠블럼 획득 시각", example = "2024-01-15T10:30:00Z")
     private Instant acquiredAt;
 
+    @PrePersist
+    protected void onCreate() {
+        if (this.acquiredAt == null) {
+            this.acquiredAt = Instant.now();
+        }
+    }
+
+
 }
