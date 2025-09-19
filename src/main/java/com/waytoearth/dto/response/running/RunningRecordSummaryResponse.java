@@ -1,5 +1,6 @@
 package com.waytoearth.dto.response.running;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,7 +29,7 @@ public class RunningRecordSummaryResponse {
     @Schema(description = "칼로리", example = "350")
     private int calories;
 
-    @Schema(description = "시작 시각(ISO-8601)", example = "2025-08-14T09:30:00")
+    @Schema(description = "시작 시각(한국시간 ISO-8601)", example = "2025-08-14T09:30:00")
     private String startedAt;
 
     // ✅ 추가
