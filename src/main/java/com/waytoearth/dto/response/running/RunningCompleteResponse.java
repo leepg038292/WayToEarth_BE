@@ -24,6 +24,9 @@ public class RunningCompleteResponse {
     @Schema(description = "평균 페이스 (MM:SS)")
     private String averagePace;
 
+    @Schema(description = "러닝 지속 시간 (초)")
+    private Integer durationSeconds;
+
     @Schema(description = "칼로리 소모량")
     private Integer calories;
 

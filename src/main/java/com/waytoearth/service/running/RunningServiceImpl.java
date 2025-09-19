@@ -142,23 +142,24 @@ public class RunningServiceImpl implements RunningService {
 
         var awardResult = emblemService.scanAndAward(user.getId(), "DISTANCE");
 
-        return new RunningCompleteResponse(
-                savedRecord.getId(),
-                savedRecord.getTitle(),
-                savedRecord.getDistance() != null ? savedRecord.getDistance().doubleValue() : 0.0,
-                formatPace(savedRecord.getAveragePaceSeconds()),
-                savedRecord.getCalories(),
-                savedRecord.getStartedAt() != null ? savedRecord.getStartedAt().toString() : null,
-                savedRecord.getEndedAt() != null ? savedRecord.getEndedAt().toString() : null,
-                savedRecord.getRoutes().stream()
+        return RunningCompleteResponse.builder()
+                .runningRecordId(savedRecord.getId())
+                .title(savedRecord.getTitle())
+                .totalDistanceKm(savedRecord.getDistance() != null ? savedRecord.getDistance().doubleValue() : 0.0)
+                .averagePace(formatPace(savedRecord.getAveragePaceSeconds()))
+                .durationSeconds(savedRecord.getDuration())
+                .calories(savedRecord.getCalories())
+                .startedAt(savedRecord.getStartedAt() != null ? savedRecord.getStartedAt().toString() : null)
+                .endedAt(savedRecord.getEndedAt() != null ? savedRecord.getEndedAt().toString() : null)
+                .routePoints(savedRecord.getRoutes().stream()
                         .map(rt -> new RunningCompleteResponse.RoutePoint(
                                 rt.getLatitude(), rt.getLongitude(), rt.getSequence()
                         ))
-                        .collect(Collectors.toList()),
-                awardResult,
-                savedRecord.getRunningType().name(),      // ✅ 추가
-                savedRecord.getVirtualCourseId()          // ✅ 추가
-        );
+                        .collect(Collectors.toList()))
+                .emblemAwardResult(awardResult)
+                .runningType(savedRecord.getRunningType().name())
+                .virtualCourseId(savedRecord.getVirtualCourseId())
+                .build();
     }
 
     @Override
@@ -189,6 +190,7 @@ public class RunningServiceImpl implements RunningService {
                 .title(r.getTitle())
                 .totalDistanceKm(r.getDistance() != null ? r.getDistance().doubleValue() : 0.0)
                 .averagePace(formatPace(r.getAveragePaceSeconds()))
+                .durationSeconds(r.getDuration())
                 .calories(r.getCalories())
                 .startedAt(r.getStartedAt() != null ? r.getStartedAt().toString() : null)
                 .endedAt(r.getEndedAt() != null ? r.getEndedAt().toString() : null)
