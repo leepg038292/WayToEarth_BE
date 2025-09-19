@@ -96,6 +96,9 @@ public class FeedService {
             throw new IllegalStateException("본인이 작성한 피드만 삭제할 수 있습니다.");
         }
 
+        // 피드 삭제 전에 관련된 모든 좋아요 데이터 먼저 삭제
+        feedLikeRepository.deleteByFeed(feed);
+
         //  S3 삭제
         if (feed.getImageKey() != null) {
             fileService.deleteObject(feed.getImageKey());
