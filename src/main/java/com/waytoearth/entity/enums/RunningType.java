@@ -10,7 +10,6 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public enum RunningType {
     SINGLE("SINGLE", "싱글 러닝"),
-    VIRTUAL("VIRTUAL", "가상 러닝"),
     JOURNEY("JOURNEY", "여정 러닝");
 
     private final String code;

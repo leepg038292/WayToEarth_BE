@@ -5,7 +5,8 @@
       "Bash(jps:*)",
       "Bash(taskkill:*)",
       "Bash(git add:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

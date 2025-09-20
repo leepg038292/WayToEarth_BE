@@ -33,9 +33,7 @@ public class RunningRecordSummaryResponse {
     private String startedAt;
 
     // ✅ 추가
-    @Schema(description = "러닝 타입 (SINGLE / VIRTUAL)")
+    @Schema(description = "러닝 타입 (SINGLE / JOURNEY)")
     private String runningType;
 
-    @Schema(description = "가상 코스 ID (Virtual일 경우만 세팅됨)")
-    private Long virtualCourseId;
 }

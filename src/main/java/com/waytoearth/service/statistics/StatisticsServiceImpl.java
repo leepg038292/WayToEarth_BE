@@ -1,7 +1,7 @@
 package com.waytoearth.service.statistics;
 
 import com.waytoearth.dto.response.statistics.RunningWeeklyStatsResponse;
-import com.waytoearth.repository.Running.RunningRecordRepository;
+import com.waytoearth.repository.running.RunningRecordRepository;
 import com.waytoearth.repository.statistics.WeeklyStatsDto;
 import com.waytoearth.security.AuthenticatedUser;
 import org.springframework.stereotype.Service;

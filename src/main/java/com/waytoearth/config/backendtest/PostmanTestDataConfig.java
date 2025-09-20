@@ -1,9 +1,9 @@
 package com.waytoearth.config.backendtest;
 
-import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.user.User;
 import com.waytoearth.entity.enums.AgeGroup;
 import com.waytoearth.entity.enums.Gender;
-import com.waytoearth.repository.User.UserRepository;
+import com.waytoearth.repository.user.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
