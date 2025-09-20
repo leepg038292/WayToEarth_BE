@@ -65,6 +65,7 @@ public class UserJourneyProgressEntity extends BaseTimeEntity {
     @Builder.Default
     private List<StampEntity> collectedStamps = new ArrayList<>();
 
+
     @Version
     @Schema(description = "낙관적 락 버전", hidden = true)
     private Long version;

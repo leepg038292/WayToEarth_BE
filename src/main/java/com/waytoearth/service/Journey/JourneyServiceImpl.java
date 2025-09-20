@@ -15,6 +15,12 @@ import com.waytoearth.repository.Journey.LandmarkRepository;
 import com.waytoearth.repository.Journey.StampRepository;
 import com.waytoearth.repository.Journey.UserJourneyProgressRepository;
 import com.waytoearth.repository.User.UserRepository;
+import com.waytoearth.service.running.RunningService;
+import com.waytoearth.dto.request.running.RunningStartRequest;
+import com.waytoearth.dto.request.running.RunningCompleteRequest;
+import com.waytoearth.dto.response.running.RunningStartResponse;
+import com.waytoearth.entity.enums.RunningType;
+import com.waytoearth.security.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,6 +40,7 @@ public class JourneyServiceImpl implements JourneyService {
     private final LandmarkRepository landmarkRepository;
     private final StampRepository stampRepository;
     private final UserRepository userRepository;
+    private final RunningService runningService;
 
     @Override
     public List<JourneySummaryResponse> getActiveJourneys() {
@@ -101,8 +108,23 @@ public class JourneyServiceImpl implements JourneyService {
                 .build();
 
         UserJourneyProgressEntity savedProgress = progressRepository.save(newProgress);
-        log.info("새로운 여행 시작: userId={}, journeyId={}, progressId={}",
-                request.userId(), request.journeyId(), savedProgress.getId());
+
+        // 러닝 레코드 시작 (Journey Running)
+        String sessionId = "journey-" + savedProgress.getId() + "-" + System.currentTimeMillis();
+        RunningStartRequest runningRequest = RunningStartRequest.builder()
+                .sessionId(sessionId)
+                .runningType(RunningType.JOURNEY)
+                .build();
+
+        AuthenticatedUser authUser = new AuthenticatedUser(user.getId());
+        RunningStartResponse runningResponse = runningService.startRunning(authUser, runningRequest);
+
+        // sessionId 저장
+        savedProgress.setSessionId(sessionId);
+        savedProgress = progressRepository.save(savedProgress);
+
+        log.info("새로운 여행 시작: userId={}, journeyId={}, progressId={}, sessionId={}",
+                request.userId(), request.journeyId(), savedProgress.getId(), sessionId);
 
         return buildProgressResponse(savedProgress);
     }
@@ -120,6 +142,27 @@ public class JourneyServiceImpl implements JourneyService {
         // 진행률 업데이트
         progress.updateProgress(request.distanceKm());
         progress.setSessionId(request.sessionId());
+
+        // 러닝 레코드 완료 처리
+        if (request.durationSeconds() != null && request.calories() != null) {
+            try {
+                RunningCompleteRequest runningCompleteRequest = RunningCompleteRequest.builder()
+                        .sessionId(request.sessionId())
+                        .distanceMeters((int) (request.distanceKm() * 1000)) // km -> meters
+                        .durationSeconds(request.durationSeconds())
+                        .averagePaceSeconds(request.averagePaceSeconds() != null ? request.averagePaceSeconds() : 0)
+                        .calories(request.calories())
+                        .build();
+
+                AuthenticatedUser authUser = new AuthenticatedUser(progress.getUser().getId());
+                runningService.completeRunning(authUser, runningCompleteRequest);
+
+                log.info("러닝 레코드 완료: sessionId={}, 거리={}km, 시간={}초",
+                        request.sessionId(), request.distanceKm(), request.durationSeconds());
+            } catch (Exception e) {
+                log.warn("러닝 레코드 완료 중 오류 발생: sessionId={}, error={}", request.sessionId(), e.getMessage());
+            }
+        }
 
         UserJourneyProgressEntity updatedProgress = progressRepository.save(progress);
 
