@@ -30,22 +30,10 @@ public interface StampRepository extends JpaRepository<StampEntity, Long> {
     Optional<StampEntity> findByUserJourneyProgressIdAndLandmarkId(Long progressId, Long landmarkId);
 
     /**
-     * 특별 스탬프 목록 조회
-     */
-    @Query("SELECT s FROM StampEntity s JOIN FETCH s.landmark WHERE s.userJourneyProgress.id = :progressId AND s.isSpecial = true ORDER BY s.collectedAt DESC")
-    List<StampEntity> findSpecialStampsByProgressId(@Param("progressId") Long progressId);
-
-    /**
      * 사용자의 총 스탬프 수
      */
     @Query("SELECT COUNT(s) FROM StampEntity s WHERE s.userJourneyProgress.user.id = :userId")
     Long countStampsByUserId(@Param("userId") Long userId);
-
-    /**
-     * 사용자의 특별 스탬프 수
-     */
-    @Query("SELECT COUNT(s) FROM StampEntity s WHERE s.userJourneyProgress.user.id = :userId AND s.isSpecial = true")
-    Long countSpecialStampsByUserId(@Param("userId") Long userId);
 
     /**
      * 랜드마크별 스탬프 수집자 수

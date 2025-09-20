@@ -63,17 +63,9 @@ public class GuestbookController {
     public ResponseEntity<Page<GuestbookResponse>> getLandmarkGuestbook(
             @Parameter(description = "랜드마크 ID")
             @PathVariable Long landmarkId,
-            @Parameter(description = "기분 필터")
-            @RequestParam(required = false) GuestbookEntity.Mood mood,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        Page<GuestbookResponse> guestbooks;
-
-        if (mood != null) {
-            guestbooks = guestbookService.getGuestbookByMood(landmarkId, mood, pageable);
-        } else {
-            guestbooks = guestbookService.getGuestbookByLandmark(landmarkId, pageable);
-        }
+        Page<GuestbookResponse> guestbooks = guestbookService.getGuestbookByLandmark(landmarkId, pageable);
 
         return ResponseEntity.ok(guestbooks);
     }

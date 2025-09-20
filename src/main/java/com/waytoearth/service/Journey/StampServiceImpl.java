@@ -52,21 +52,17 @@ public class StampServiceImpl implements StampService {
             throw new IllegalArgumentException("아직 이 랜드마크에 도달하지 않았습니다.");
         }
 
-        // 특별 스탬프 여부 확인 (예: 첫 번째 스탬프, 마지막 스탬프 등)
-        boolean isSpecial = determineSpecialStamp(progress, landmark);
-
         // 스탬프 생성
         StampEntity stamp = StampEntity.builder()
                 .userJourneyProgress(progress)
                 .landmark(landmark)
                 .stampImageUrl(generateStampImageUrl(landmark))
-                .isSpecial(isSpecial)
                 .build();
 
         StampEntity savedStamp = stampRepository.save(stamp);
 
-        log.info("스탬프 수집 완료: userId={}, landmarkId={}, isSpecial={}",
-                progress.getUser().getId(), landmark.getId(), isSpecial);
+        log.info("스탬프 수집 완료: userId={}, landmarkId={}",
+                progress.getUser().getId(), landmark.getId());
 
         return StampResponse.from(savedStamp);
     }
@@ -89,14 +85,6 @@ public class StampServiceImpl implements StampService {
                 .toList();
     }
 
-    @Override
-    public List<StampResponse> getSpecialStampsByProgressId(Long progressId) {
-        List<StampEntity> stamps = stampRepository.findSpecialStampsByProgressId(progressId);
-
-        return stamps.stream()
-                .map(StampResponse::from)
-                .toList();
-    }
 
     @Override
     public boolean canCollectStamp(Long progressId, Long landmarkId, Double userLatitude, Double userLongitude) {
@@ -114,35 +102,11 @@ public class StampServiceImpl implements StampService {
     @Override
     public StampStatistics getStampStatistics(Long userId) {
         Long totalStamps = stampRepository.countStampsByUserId(userId);
-        Long specialStamps = stampRepository.countSpecialStampsByUserId(userId);
         Long completedJourneys = progressRepository.countCompletedJourneysByUserId(userId);
 
-        return new StampStatistics(totalStamps, specialStamps, completedJourneys);
+        return new StampStatistics(totalStamps, completedJourneys);
     }
 
-    /**
-     * 특별 스탬프 여부 결정
-     */
-    private boolean determineSpecialStamp(UserJourneyProgressEntity progress, LandmarkEntity landmark) {
-        // 여행의 첫 번째 랜드마크
-        List<LandmarkEntity> landmarks = landmarkRepository.findByJourneyIdOrderByOrderIndex(progress.getJourney().getId());
-        if (!landmarks.isEmpty() && landmarks.get(0).getId().equals(landmark.getId())) {
-            return true;
-        }
-
-        // 여행의 마지막 랜드마크
-        if (!landmarks.isEmpty() && landmarks.get(landmarks.size() - 1).getId().equals(landmark.getId())) {
-            return true;
-        }
-
-        // 사용자의 첫 번째 스탬프
-        Long userStampCount = stampRepository.countStampsByUserId(progress.getUser().getId());
-        if (userStampCount == 0) {
-            return true;
-        }
-
-        return false;
-    }
 
     /**
      * 스탬프 이미지 URL 생성

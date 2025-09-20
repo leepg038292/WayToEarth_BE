@@ -71,15 +71,6 @@ public class StampController {
         return ResponseEntity.ok(stamps);
     }
 
-    @GetMapping("/progress/{progressId}/special")
-    @Operation(summary = "특별 스탬프 목록", description = "특정 여행에서 수집한 특별 스탬프를 조회합니다.")
-    public ResponseEntity<List<StampResponse>> getSpecialStamps(
-            @Parameter(description = "여행 진행 ID")
-            @PathVariable Long progressId) {
-
-        List<StampResponse> stamps = stampService.getSpecialStampsByProgressId(progressId);
-        return ResponseEntity.ok(stamps);
-    }
 
     @GetMapping("/users/{userId}/statistics")
     @Operation(summary = "스탬프 통계", description = "사용자의 스탬프 수집 통계를 조회합니다.")

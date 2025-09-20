@@ -18,9 +18,6 @@ public record GuestbookCreateRequest(
     @Schema(description = "사진 URL", example = "https://example.com/photo.jpg")
     String photoUrl,
 
-    @Schema(description = "기분", example = "AMAZED")
-    GuestbookEntity.Mood mood,
-
     @Schema(description = "공개 여부", example = "true")
     Boolean isPublic
 ) {}

@@ -25,11 +25,6 @@ public interface GuestbookRepository extends JpaRepository<GuestbookEntity, Long
     @Query("SELECT g FROM GuestbookEntity g JOIN FETCH g.landmark WHERE g.user.id = :userId ORDER BY g.createdAt DESC")
     List<GuestbookEntity> findByUserIdWithLandmark(@Param("userId") Long userId);
 
-    /**
-     * 기분별 방명록 조회
-     */
-    Page<GuestbookEntity> findByLandmarkIdAndIsPublicTrueAndMoodOrderByCreatedAtDesc(
-            Long landmarkId, GuestbookEntity.Mood mood, Pageable pageable);
 
 
     /**

@@ -38,19 +38,9 @@ public class GuestbookEntity extends BaseTimeEntity {
     @Schema(description = "사진 URL", example = "https://example.com/photo.jpg")
     private String photoUrl;
 
-    @Schema(description = "기분", example = "AMAZED")
-    @Enumerated(EnumType.STRING)
-    private Mood mood;
-
     @Schema(description = "공개 여부", example = "true")
     @Column(nullable = false)
     @Builder.Default
     private Boolean isPublic = true;
 
-    public enum Mood {
-        HAPPY,      // 행복한
-        EXCITED,    // 신난
-        TIRED,      // 피곤한
-        AMAZED      // 놀란
-    }
 }

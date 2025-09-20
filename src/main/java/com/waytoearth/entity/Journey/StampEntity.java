@@ -41,11 +41,6 @@ public class StampEntity extends BaseTimeEntity {
     @Schema(description = "스탬프 이미지 URL", example = "https://example.com/stamp.png")
     private String stampImageUrl;
 
-    @Schema(description = "특별 스탬프 여부", example = "false")
-    @Column(nullable = false)
-    @Builder.Default
-    private Boolean isSpecial = false;
-
     @PrePersist
     protected void onCreate() {
         if (collectedAt == null) {

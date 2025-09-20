@@ -44,7 +44,6 @@ public class GuestbookServiceImpl implements GuestbookService {
                 .landmark(landmark)
                 .message(request.message())
                 .photoUrl(request.photoUrl())
-                .mood(request.mood())
                 .isPublic(request.isPublic() != null ? request.isPublic() : true)
                 .build();
 
@@ -63,13 +62,6 @@ public class GuestbookServiceImpl implements GuestbookService {
         return guestbooks.map(GuestbookResponse::from);
     }
 
-    @Override
-    public Page<GuestbookResponse> getGuestbookByMood(Long landmarkId, GuestbookEntity.Mood mood, Pageable pageable) {
-        Page<GuestbookEntity> guestbooks = guestbookRepository.findByLandmarkIdAndIsPublicTrueAndMoodOrderByCreatedAtDesc(
-                landmarkId, mood, pageable);
-
-        return guestbooks.map(GuestbookResponse::from);
-    }
 
 
     @Override

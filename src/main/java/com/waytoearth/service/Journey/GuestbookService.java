@@ -20,10 +20,6 @@ public interface GuestbookService {
      */
     Page<GuestbookResponse> getGuestbookByLandmark(Long landmarkId, Pageable pageable);
 
-    /**
-     * 기분별 방명록 조회
-     */
-    Page<GuestbookResponse> getGuestbookByMood(Long landmarkId, GuestbookEntity.Mood mood, Pageable pageable);
 
 
     /**

@@ -17,18 +17,14 @@ public record StampResponse(
     LocalDateTime collectedAt,
 
     @Schema(description = "스탬프 이미지 URL", example = "https://example.com/stamp.png")
-    String stampImageUrl,
-
-    @Schema(description = "특별 스탬프 여부", example = "false")
-    Boolean isSpecial
+    String stampImageUrl
 ) {
     public static StampResponse from(StampEntity stamp) {
         return new StampResponse(
             stamp.getId(),
             LandmarkSummaryResponse.from(stamp.getLandmark()),
             stamp.getCollectedAt(),
-            stamp.getStampImageUrl(),
-            stamp.getIsSpecial()
+            stamp.getStampImageUrl()
         );
     }
 }

@@ -22,9 +22,6 @@ public record GuestbookResponse(
     @Schema(description = "사진 URL", example = "https://example.com/photo.jpg")
     String photoUrl,
 
-    @Schema(description = "기분", example = "AMAZED")
-    String mood,
-
     @Schema(description = "작성 시간", example = "2024-01-15T14:30:00")
     LocalDateTime createdAt
 ) {
@@ -35,7 +32,6 @@ public record GuestbookResponse(
             LandmarkSummaryResponse.from(guestbook.getLandmark()),
             guestbook.getMessage(),
             guestbook.getPhotoUrl(),
-            guestbook.getMood() != null ? guestbook.getMood().name() : null,
             guestbook.getCreatedAt()
         );
     }

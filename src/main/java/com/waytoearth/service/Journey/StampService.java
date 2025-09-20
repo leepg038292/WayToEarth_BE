@@ -22,10 +22,6 @@ public interface StampService {
      */
     List<StampResponse> getStampsByProgressId(Long progressId);
 
-    /**
-     * 특별 스탬프 목록 조회
-     */
-    List<StampResponse> getSpecialStampsByProgressId(Long progressId);
 
     /**
      * 스탬프 수집 가능 여부 확인
@@ -42,7 +38,6 @@ public interface StampService {
      */
     record StampStatistics(
         Long totalStamps,
-        Long specialStamps,
         Long completedJourneys
     ) {}
 }
