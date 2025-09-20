@@ -5,6 +5,7 @@ import com.waytoearth.dto.response.journey.LandmarkSummaryResponse;
 import com.waytoearth.dto.response.journey.StoryCardResponse;
 import com.waytoearth.entity.Journey.LandmarkEntity;
 import com.waytoearth.entity.Journey.StoryCardEntity;
+import com.waytoearth.entity.enums.StoryType;
 import com.waytoearth.repository.Journey.LandmarkRepository;
 import com.waytoearth.repository.Journey.StampRepository;
 import com.waytoearth.repository.Journey.StoryCardRepository;
@@ -68,7 +69,7 @@ public class LandmarkServiceImpl implements LandmarkService {
     }
 
     @Override
-    public List<StoryCardResponse> getStoryCardsByType(Long landmarkId, StoryCardEntity.StoryType type) {
+    public List<StoryCardResponse> getStoryCardsByType(Long landmarkId, StoryType type) {
         List<StoryCardEntity> storyCards = storyCardRepository.findByLandmarkIdAndTypeOrderByOrderIndex(landmarkId, type);
 
         return storyCards.stream()

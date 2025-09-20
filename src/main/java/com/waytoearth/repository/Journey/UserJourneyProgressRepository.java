@@ -1,6 +1,7 @@
 package com.waytoearth.repository.Journey;
 
 import com.waytoearth.entity.Journey.UserJourneyProgressEntity;
+import com.waytoearth.entity.enums.JourneyProgressStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,7 +27,7 @@ public interface UserJourneyProgressRepository extends JpaRepository<UserJourney
     /**
      * 활성 상태인 사용자 여행 진행 목록
      */
-    List<UserJourneyProgressEntity> findByUserIdAndStatus(Long userId, UserJourneyProgressEntity.ProgressStatus status);
+    List<UserJourneyProgressEntity> findByUserIdAndStatus(Long userId, JourneyProgressStatus status);
 
     /**
      * 완료된 여행 목록 조회

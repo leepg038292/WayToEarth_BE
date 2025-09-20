@@ -1,6 +1,7 @@
 package com.waytoearth.entity.Journey;
 
 import com.waytoearth.entity.common.BaseTimeEntity;
+import com.waytoearth.entity.enums.StoryType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -45,9 +46,4 @@ public class StoryCardEntity extends BaseTimeEntity {
     @Column(nullable = false)
     private Integer orderIndex;
 
-    public enum StoryType {
-        HISTORY,    // 역사
-        CULTURE,    // 문화
-        NATURE      // 자연
-    }
 }

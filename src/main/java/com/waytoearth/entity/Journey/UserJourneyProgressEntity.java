@@ -2,6 +2,7 @@ package com.waytoearth.entity.Journey;
 
 import com.waytoearth.entity.common.BaseTimeEntity;
 import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.enums.JourneyProgressStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -50,7 +51,7 @@ public class UserJourneyProgressEntity extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private ProgressStatus status = ProgressStatus.ACTIVE;
+    private JourneyProgressStatus status = JourneyProgressStatus.ACTIVE;
 
     @Schema(description = "시작 시간", example = "2024-01-01T10:00:00")
     @Column(nullable = false)
@@ -71,11 +72,6 @@ public class UserJourneyProgressEntity extends BaseTimeEntity {
     @Schema(description = "낙관적 락 버전", hidden = true)
     private Long version;
 
-    public enum ProgressStatus {
-        ACTIVE,     // 진행 중
-        COMPLETED,  // 완료
-        PAUSED      // 일시정지
-    }
 
     @PrePersist
     protected void onCreate() {
@@ -89,7 +85,7 @@ public class UserJourneyProgressEntity extends BaseTimeEntity {
         this.progressPercent = (this.currentDistanceKm / this.journey.getTotalDistanceKm()) * 100.0;
 
         if (this.progressPercent >= 100.0) {
-            this.status = ProgressStatus.COMPLETED;
+            this.status = JourneyProgressStatus.COMPLETED;
             this.completedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         }
     }

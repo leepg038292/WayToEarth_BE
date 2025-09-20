@@ -3,7 +3,7 @@ package com.waytoearth.service.Journey;
 import com.waytoearth.dto.response.journey.LandmarkDetailResponse;
 import com.waytoearth.dto.response.journey.LandmarkSummaryResponse;
 import com.waytoearth.dto.response.journey.StoryCardResponse;
-import com.waytoearth.entity.Journey.StoryCardEntity;
+import com.waytoearth.entity.enums.StoryType;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ public interface LandmarkService {
     /**
      * 타입별 스토리 카드 조회
      */
-    List<StoryCardResponse> getStoryCardsByType(Long landmarkId, StoryCardEntity.StoryType type);
+    List<StoryCardResponse> getStoryCardsByType(Long landmarkId, StoryType type);
 
     /**
      * 스토리 카드 상세 조회

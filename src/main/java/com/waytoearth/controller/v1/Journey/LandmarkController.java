@@ -3,7 +3,7 @@ package com.waytoearth.controller.v1.Journey;
 import com.waytoearth.dto.response.journey.LandmarkDetailResponse;
 import com.waytoearth.dto.response.journey.LandmarkSummaryResponse;
 import com.waytoearth.dto.response.journey.StoryCardResponse;
-import com.waytoearth.entity.Journey.StoryCardEntity;
+import com.waytoearth.entity.enums.StoryType;
 import com.waytoearth.service.Journey.LandmarkService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -42,7 +42,7 @@ public class LandmarkController {
             @Parameter(description = "랜드마크 ID")
             @PathVariable Long landmarkId,
             @Parameter(description = "스토리 타입 필터")
-            @RequestParam(required = false) StoryCardEntity.StoryType type) {
+            @RequestParam(required = false) StoryType type) {
 
         List<StoryCardResponse> storyCards = (type != null)
                 ? landmarkService.getStoryCardsByType(landmarkId, type)

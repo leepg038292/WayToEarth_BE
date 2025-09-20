@@ -20,6 +20,7 @@ import com.waytoearth.dto.request.running.RunningCompleteRequest;
 import com.waytoearth.dto.response.running.RunningStartResponse;
 import com.waytoearth.entity.enums.RunningType;
 import com.waytoearth.entity.enums.JourneyCategory;
+import com.waytoearth.entity.enums.JourneyProgressStatus;
 import com.waytoearth.security.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -93,7 +94,7 @@ public class JourneyServiceImpl implements JourneyService {
 
         if (existingProgress.isPresent()) {
             UserJourneyProgressEntity progress = existingProgress.get();
-            if (progress.getStatus() == UserJourneyProgressEntity.ProgressStatus.COMPLETED) {
+            if (progress.getStatus() == JourneyProgressStatus.COMPLETED) {
                 throw new IllegalArgumentException("이미 완료된 여행입니다.");
             }
 
@@ -135,7 +136,7 @@ public class JourneyServiceImpl implements JourneyService {
         UserJourneyProgressEntity progress = progressRepository.findById(progressId)
                 .orElseThrow(() -> new IllegalArgumentException("여행 진행을 찾을 수 없습니다: " + progressId));
 
-        if (progress.getStatus() == UserJourneyProgressEntity.ProgressStatus.COMPLETED) {
+        if (progress.getStatus() == JourneyProgressStatus.COMPLETED) {
             throw new IllegalArgumentException("이미 완료된 여행입니다.");
         }
 
