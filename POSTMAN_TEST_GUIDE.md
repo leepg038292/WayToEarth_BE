@@ -1,17 +1,16 @@
-# Journey Running API Postman 테스트 가이드
+# 🌍 WayToEarth API Postman 테스트 가이드
 
-## 📋 **파일 설명**
+## 📋 **개요**
 
-- `Journey_Running_API_Postman_Collection.json` - 28개 API 엔드포인트 테스트 컬렉션 (Mock 로그인 포함)
-- `Journey_Running_Environment.postman_environment.json` - 환경 변수 설정
-- `POSTMAN_TEST_GUIDE.md` - 이 가이드 파일
+WayToEarth 백엔드 API (총 55개 엔드포인트)의 완전한 Postman 테스트 가이드입니다.
 
-## 🔐 **NEW! 인증 문제 해결**
+## 🔐 **인증 설정**
 
-### **Mock 로그인 API 추가**
-403 Forbidden 오류 해결을 위해 테스트용 Mock 로그인 API가 추가되었습니다.
+### **Mock 로그인 API**
+개발/테스트용 Mock 로그인 API를 제공합니다.
 
 **엔드포인트**: `POST /v1/auth/mock-login`
+
 **요청 예시**:
 ```json
 {
@@ -27,205 +26,196 @@
   "data": {
     "userId": 1,
     "jwtToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "isNewUser": false,
-    "isOnboardingCompleted": true
+    "isNewUser": false
   }
 }
 ```
 
-## 🚀 **Postman 설정 방법**
-
-### 1. Collection Import
-1. Postman 열기
-2. **Import** 버튼 클릭
-3. `Journey_Running_API_Postman_Collection.json` 파일 선택
-4. Import 완료
-
-### 2. Environment Import
-1. Postman에서 **Environments** 탭 클릭
-2. **Import** 버튼 클릭
-3. `Journey_Running_Environment.postman_environment.json` 파일 선택
-4. Import 완료
-5. **Journey Running Environment** 환경 선택
-
-### 3. 환경 변수 설정
-기본 설정된 환경 변수들:
-```
-baseUrl = http://localhost:8080
-userId = 1
-journeyId = 1
-landmarkId = 1
-storyCardId = 1
-progressId = (자동 설정됨)
-```
-
-## 🎯 **테스트 시나리오**
-
-### **시나리오 0: 인증 토큰 획득 (필수!)**
-```
-1. Mock Login - JWT 토큰 획득 (authToken 자동 저장됨)
-   ⚠️ 모든 테스트 전에 반드시 먼저 실행!
-```
-
-### **시나리오 1: 새로운 여정 시작하기**
-```
-1. Get All Journeys - 여정 목록 확인
-2. Get Journey Detail - 특정 여정 상세 보기
-3. Get Completion Estimate - 완주 예상 기간 계산
-4. Start Journey - 여정 시작 (progressId 자동 저장됨)
-   ✅ 이제 RunningRecord도 함께 생성됨 (JOURNEY 타입)
-```
-
-### **시나리오 2: 러닝 후 진행률 업데이트**
-```
-1. Update Progress - 러닝 완료 후 진행률 업데이트
-   ✅ 여정 진행률 + RunningRecord 완료 처리 동시 진행
-2. Get Current Progress - 현재 진행률 확인
-3. Get Journey Landmarks - 다음 랜드마크 확인
-```
-
-### **시나리오 3: 랜드마크 도달 및 스토리 경험**
-```
-1. Get Landmark Detail - 랜드마크 상세 정보
-2. Get Landmark Stories - 랜드마크 스토리 카드 목록
-3. Get Story Card Detail - 개별 스토리 상세
-```
-
-### **시나리오 4: 스탬프 수집**
-```
-1. Check Collection Availability - 수집 가능 여부 확인
-2. Collect Stamp - 스탬프 수집
-3. Get Progress Stamps - 수집된 스탬프 확인
-4. Get Stamp Statistics - 스탬프 통계 확인
-```
-
-### **시나리오 5: 방명록 작성 및 소셜**
-```
-1. Create Guestbook - 방명록 작성
-2. Get Landmark Guestbook - 랜드마크 방명록 조회
-3. Get Landmark Statistics - 랜드마크 통계 확인
-```
-
-## 📊 **포함된 API 목록 (28개)**
-
-### **00. Authentication (1개)**
-- `POST /v1/auth/mock-login` - Mock 로그인 (JWT 토큰 획득)
-
-### **01. Journey Management (6개)**
-- `GET /v1/journeys` - 여정 목록 조회
-- `GET /v1/journeys?category=DOMESTIC` - 카테고리별 여정 조회
-- `GET /v1/journeys/{id}` - 여정 상세 조회
-- `POST /v1/journeys/{id}/start` - 여정 시작 ⭐ **RunningRecord 자동 생성**
-- `GET /v1/journeys/search` - 여정 검색
-- `GET /v1/journeys/{id}/completion-estimate` - 완주 예상 기간
-
-### **02. Journey Progress (3개)**
-- `PUT /v1/journey-progress/{id}` - 진행률 업데이트 ⭐ **RunningRecord 완료 처리**
-- `GET /v1/journey-progress/{id}` - 진행률 조회
-- `GET /v1/journey-progress/user/{userId}` - 사용자 여정 목록
-
-### **03. Landmarks (4개)**
-- `GET /v1/landmarks/{id}` - 랜드마크 상세
-- `GET /v1/landmarks/{id}/stories` - 랜드마크 스토리
-- `GET /v1/landmarks/journey/{journeyId}` - 여정의 랜드마크 목록
-- `GET /v1/story-cards/{id}` - 스토리 카드 상세
-
-### **04. Stamps (6개)**
-- `GET /v1/stamps/check-collection` - 수집 가능 여부 확인
-- `POST /v1/stamps/collect` - 스탬프 수집
-- `GET /v1/stamps/users/{userId}` - 사용자 스탬프
-- `GET /v1/stamps/progress/{progressId}` - 여정별 스탬프
-- `GET /v1/stamps/progress/{progressId}/special` - 특별 스탬프
-- `GET /v1/stamps/users/{userId}/statistics` - 스탬프 통계
-
-### **05. Guestbook (8개)**
-- `POST /v1/guestbook` - 방명록 작성
-- `GET /v1/guestbook/landmarks/{landmarkId}` - 랜드마크 방명록
-- `GET /v1/guestbook/landmarks/{landmarkId}` (mood 필터) - 기분별 방명록
-- `GET /v1/guestbook/landmarks/{landmarkId}` (rating 필터) - 평점별 방명록
-- `GET /v1/guestbook/users/{userId}` - 사용자 방명록
-- `GET /v1/guestbook/recent` - 최근 방명록
-- `GET /v1/guestbook/landmarks/{landmarkId}/statistics` - 랜드마크 통계
-
-## 🔧 **자동 테스트 기능**
-
-### **Pre-request Script**
-- 환경 변수 자동 초기화
-- 기본값 설정
-
-### **Test Script**
-- 응답 상태 코드 검증 (200, 201, 204)
-- JSON 형식 검증
-- 응답 시간 검증 (2초 이내)
-- API 응답에서 ID 값 자동 추출 및 환경 변수 저장
-
-### **환경 변수 자동 업데이트**
-- `progressId`: Journey 시작 시 자동 저장
-- `journeyId`, `landmarkId`, `storyCardId`: 응답에서 자동 추출
-
-## 📝 **테스트 데이터 예시**
-
-### **Journey Start Request**
+### **환경 변수 설정**
 ```json
 {
-  "userId": 1,
-  "journeyId": 1
+  "baseUrl": "http://localhost:8080",
+  "jwtToken": "{{동적으로 설정됨}}",
+  "userId": "1",
+  "journeyId": "{{동적으로 설정됨}}",
+  "progressId": "{{동적으로 설정됨}}",
+  "landmarkId": "{{동적으로 설정됨}}"
 }
 ```
 
-### **Progress Update Request**
-```json
-{
-  "sessionId": "session-uuid-123",
-  "distanceKm": 5.2,
-  "currentLocation": {
-    "latitude": 37.5665,
-    "longitude": 126.9780
-  },
-  "durationSeconds": 1800,
-  "calories": 250,
-  "averagePaceSeconds": 360
+## 📊 **API 카테고리별 테스트**
+
+### **🔐 인증 APIs (3개)**
+1. `POST /v1/auth/kakao` - 카카오 로그인
+2. `POST /v1/auth/onboarding` - 온보딩 완료
+3. `POST /v1/auth/mock-login` - Mock 로그인 (테스트용)
+
+### **👤 사용자 APIs (3개)**
+1. `GET /v1/users/me` - 내 정보 조회
+2. `GET /v1/users/me/summary` - 내 정보 요약
+3. `PUT /v1/users/me` - 내 정보 수정
+
+### **🏃‍♂️ 러닝 APIs (7개)**
+1. `POST /v1/running/start` - 러닝 시작 (SINGLE/JOURNEY)
+2. `POST /v1/running/update` - 러닝 업데이트
+3. `POST /v1/running/pause` - 러닝 일시정지
+4. `POST /v1/running/resume` - 러닝 재개
+5. `POST /v1/running/complete` - 러닝 완료
+6. `GET /v1/running/{recordId}` - 러닝 기록 상세
+7. `GET /v1/running/records` - 러닝 기록 목록
+
+### **🗺️ 여정 APIs (5개)**
+1. `GET /v1/journeys` - 여정 목록 조회
+2. `GET /v1/journeys/{journeyId}` - 여정 상세 조회
+3. `POST /v1/journeys/{journeyId}/start` - 여정 시작
+4. `GET /v1/journeys/search` - 여정 검색
+5. `GET /v1/journeys/{journeyId}/completion-estimate` - 완주 예상 기간
+
+### **📍 랜드마크 & 스토리 APIs (4개)**
+1. `GET /v1/landmarks/{landmarkId}` - 랜드마크 상세
+2. `GET /v1/landmarks/{landmarkId}/stories` - 스토리 카드 목록
+3. `GET /v1/landmarks/journey/{journeyId}` - 여정별 랜드마크
+4. `GET /v1/story-cards/{storyCardId}` - 스토리 카드 상세
+
+### **🛤️ 여정 진행 APIs (3개)**
+1. `PUT /v1/journey-progress/{progressId}` - 진행률 업데이트
+2. `GET /v1/journey-progress/{progressId}` - 진행 상세
+3. `GET /v1/journey-progress/user/{userId}` - 사용자 여정 목록
+
+### **🎯 스탬프 APIs (6개)**
+1. `POST /v1/stamps/collect` - 스탬프 수집
+2. `GET /v1/stamps/users/{userId}` - 사용자 스탬프 목록
+3. `GET /v1/stamps/progress/{progressId}` - 진행별 스탬프
+4. `GET /v1/stamps/users/{userId}/statistics` - 스탬프 통계
+5. `GET /v1/stamps/check-collection` - 수집 여부 확인
+
+### **📝 방명록 APIs (6개)**
+1. `POST /v1/guestbook` - 방명록 작성
+2. `GET /v1/guestbook/landmarks/{landmarkId}` - 랜드마크별 방명록
+3. `GET /v1/guestbook/users/{userId}` - 사용자별 방명록
+4. `GET /v1/guestbook/recent` - 최근 방명록
+5. `GET /v1/guestbook/landmarks/{landmarkId}/statistics` - 방명록 통계
+
+### **📱 피드 APIs (6개)**
+1. `POST /v1/feeds` - 피드 작성
+2. `GET /v1/feeds` - 피드 목록
+3. `GET /v1/feeds/{feedId}` - 피드 상세
+4. `DELETE /v1/feeds/{feedId}` - 피드 삭제
+5. `POST /v1/feeds/{feedId}/like` - 피드 좋아요
+6. `POST /v1/feeds/{feedId}/image/presign` - 피드 이미지 업로드 URL
+
+### **📁 파일 APIs (3개)**
+1. `POST /v1/files/presign/profile` - 프로필 이미지 업로드 URL
+2. `POST /v1/files/presign/feed` - 피드 이미지 업로드 URL
+3. `DELETE /v1/files/profile` - 프로필 이미지 삭제
+
+### **🏆 엠블럼 APIs (6개)**
+1. `GET /v1/emblems/me/summary` - 내 엠블럼 요약
+2. `GET /v1/emblems/catalog` - 엠블럼 카탈로그
+3. `GET /v1/emblems/{id}` - 엠블럼 상세
+4. `POST /v1/emblems/{id}/award` - 엠블럼 수여
+5. `POST /v1/emblems/award/scan` - 엠블럼 스캔 수여
+
+### **기타 APIs (3개)**
+1. `GET /v1/statistics/weekly` - 주간 통계
+2. `GET /v1/weather/current` - 현재 날씨
+3. `GET /` - 루트 페이지
+
+## 🚀 **주요 테스트 시나리오**
+
+### **시나리오 1: 여정 시작부터 완료까지**
+```
+1. Mock 로그인 → JWT 토큰 획득
+2. 여정 목록 조회 → 여정 선택
+3. 여정 시작 → progress ID 획득
+4. 러닝 시작 (JOURNEY 타입)
+5. 진행률 업데이트 → 거리 누적
+6. 랜드마크 도달 시 스탬프 수집
+7. 방명록 작성
+8. 여정 완료 확인
+```
+
+### **시나리오 2: 일반 러닝**
+```
+1. Mock 로그인
+2. 러닝 시작 (SINGLE 타입)
+3. 러닝 업데이트 (거리, 속도 등)
+4. 러닝 완료
+5. 러닝 기록 조회
+```
+
+### **시나리오 3: 소셜 기능**
+```
+1. Mock 로그인
+2. 피드 작성 (러닝 기록 공유)
+3. 피드 목록 조회
+4. 피드 좋아요
+5. 방명록 작성
+6. 최근 방명록 조회
+```
+
+## 🔧 **Postman Collection 설정**
+
+### **Pre-request Script 예시**
+```javascript
+// Mock 로그인 자동 실행
+if (!pm.environment.get("jwtToken")) {
+    pm.sendRequest({
+        url: pm.environment.get("baseUrl") + "/v1/auth/mock-login",
+        method: 'POST',
+        header: {
+            'Content-Type': 'application/json'
+        },
+        body: {
+            mode: 'raw',
+            raw: JSON.stringify({
+                "userId": 1
+            })
+        }
+    }, function (err, res) {
+        if (!err && res.json().success) {
+            pm.environment.set("jwtToken", res.json().data.jwtToken);
+            pm.environment.set("userId", res.json().data.userId);
+        }
+    });
 }
 ```
 
-### **Stamp Collection Request**
-```json
-{
-  "progressId": 1,
-  "landmarkId": 1,
-  "collectionLocation": {
-    "latitude": 37.5665,
-    "longitude": 126.9780
-  }
+### **Authorization 설정**
+```
+Type: Bearer Token
+Token: {{jwtToken}}
+```
+
+### **Tests Script 예시**
+```javascript
+pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Response has success field", function () {
+    const jsonData = pm.response.json();
+    pm.expect(jsonData).to.have.property('success');
+    pm.expect(jsonData.success).to.be.true;
+});
+
+// ID 자동 추출 및 환경변수 설정
+if (pm.response.json().data && pm.response.json().data.id) {
+    pm.environment.set("extractedId", pm.response.json().data.id);
 }
 ```
 
-### **Guestbook Create Request**
-```json
-{
-  "landmarkId": 1,
-  "message": "정말 아름다운 곳이에요! 다시 오고 싶습니다.",
-  "photoUrl": "https://example.com/photo.jpg",
-  "mood": "AMAZED",
-  "rating": 5,
-  "isPublic": true
-}
-```
+## ⚠️ **주의사항**
 
-## 🎉 **사용 팁**
+1. **환경 설정**: 로컬 서버 (localhost:8080) 기준으로 설정
+2. **인증 토큰**: Mock 로그인으로 JWT 토큰 자동 획득
+3. **데이터 종속성**: 일부 API는 기존 데이터(여정, 랜드마크 등)가 필요
+4. **오류 처리**: 403 오류 시 JWT 토큰 재발급 필요
 
-1. **⚠️ 필수 첫 단계**: Mock Login으로 JWT 토큰 획득 후 테스트 시작
-2. **순서대로 테스트**: Mock Login → 여정 시작 → 진행률 업데이트 → 스탬프 수집 → 방명록 작성
-3. **환경 변수 활용**: {{변수명}} 형태로 동적 데이터 사용
-4. **자동 테스트**: Collection Runner로 전체 API 일괄 테스트 가능
-5. **Mock 데이터**: 실제 DB 데이터가 없어도 API 구조 확인 가능
+## 📝 **API 문서 연동**
 
-## 🔧 **NEW! 러닝 기록 연동**
+Swagger UI: `http://localhost:8080/swagger-ui.html`
 
-여정 러닝 시 다음과 같이 이중으로 기록됩니다:
-- **UserJourneyProgress**: 여정 진행률, 스탬프 수집 상태
-- **RunningRecord**: 상세 러닝 기록 (거리, 시간, 칼로리, 경로) - `JOURNEY` 타입
+---
 
-**연결 방식**: sessionId로 두 테이블이 연결되어 완전한 러닝 데이터 저장
-
-이제 Journey Running API의 모든 기능을 Postman에서 체계적으로 테스트할 수 있습니다! 🚀
+**총 55개 API 엔드포인트**를 통해 완전한 가상 여행 러닝 플랫폼 테스트가 가능합니다! 🌍🏃‍♂️
