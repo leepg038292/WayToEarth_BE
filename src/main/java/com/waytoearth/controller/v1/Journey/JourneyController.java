@@ -1,16 +1,14 @@
 package com.waytoearth.controller.v1.Journey;
 
-import com.waytoearth.dto.Journey.request.JourneyStartRequest;
-import com.waytoearth.dto.Journey.request.JourneyProgressUpdateRequest;
-import com.waytoearth.dto.Journey.response.JourneySummaryResponse;
-import com.waytoearth.dto.Journey.response.JourneyProgressResponse;
-import com.waytoearth.dto.Journey.response.JourneyCompletionEstimateResponse;
+import com.waytoearth.dto.request.journey.JourneyStartRequest;
+import com.waytoearth.dto.response.journey.JourneySummaryResponse;
+import com.waytoearth.dto.response.journey.JourneyProgressResponse;
+import com.waytoearth.dto.response.journey.JourneyCompletionEstimateResponse;
 import com.waytoearth.entity.Journey.JourneyEntity;
 import com.waytoearth.service.Journey.JourneyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

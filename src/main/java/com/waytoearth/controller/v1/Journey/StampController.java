@@ -1,7 +1,7 @@
 package com.waytoearth.controller.v1.Journey;
 
-import com.waytoearth.dto.Journey.request.StampCollectRequest;
-import com.waytoearth.dto.Journey.response.StampResponse;
+import com.waytoearth.dto.request.journey.StampCollectRequest;
+import com.waytoearth.dto.response.journey.StampResponse;
 import com.waytoearth.service.Journey.StampService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

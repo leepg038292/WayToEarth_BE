@@ -1,7 +1,7 @@
 package com.waytoearth.service.Journey;
 
-import com.waytoearth.dto.Journey.request.StampCollectRequest;
-import com.waytoearth.dto.Journey.response.StampResponse;
+import com.waytoearth.dto.request.journey.StampCollectRequest;
+import com.waytoearth.dto.response.journey.StampResponse;
 import com.waytoearth.entity.Journey.LandmarkEntity;
 import com.waytoearth.entity.Journey.StampEntity;
 import com.waytoearth.entity.Journey.UserJourneyProgressEntity;

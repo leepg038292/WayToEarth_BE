@@ -1,4 +1,4 @@
-package com.waytoearth.dto.Journey.request;
+package com.waytoearth.dto.request.journey;
 
 import com.waytoearth.entity.Journey.GuestbookEntity;
 import io.swagger.v3.oas.annotations.media.Schema;

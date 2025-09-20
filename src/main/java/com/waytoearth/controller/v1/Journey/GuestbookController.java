@@ -1,7 +1,7 @@
 package com.waytoearth.controller.v1.Journey;
 
-import com.waytoearth.dto.Journey.request.GuestbookCreateRequest;
-import com.waytoearth.dto.Journey.response.GuestbookResponse;
+import com.waytoearth.dto.request.journey.GuestbookCreateRequest;
+import com.waytoearth.dto.response.journey.GuestbookResponse;
 import com.waytoearth.entity.Journey.GuestbookEntity;
 import com.waytoearth.service.Journey.GuestbookService;
 import io.swagger.v3.oas.annotations.Operation;

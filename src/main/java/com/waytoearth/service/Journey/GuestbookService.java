@@ -1,7 +1,7 @@
 package com.waytoearth.service.Journey;
 
-import com.waytoearth.dto.Journey.request.GuestbookCreateRequest;
-import com.waytoearth.dto.Journey.response.GuestbookResponse;
+import com.waytoearth.dto.request.journey.GuestbookCreateRequest;
+import com.waytoearth.dto.response.journey.GuestbookResponse;
 import com.waytoearth.entity.Journey.GuestbookEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -1,10 +1,10 @@
 package com.waytoearth.service.Journey;
 
-import com.waytoearth.dto.Journey.request.JourneyStartRequest;
-import com.waytoearth.dto.Journey.request.JourneyProgressUpdateRequest;
-import com.waytoearth.dto.Journey.response.JourneySummaryResponse;
-import com.waytoearth.dto.Journey.response.JourneyProgressResponse;
-import com.waytoearth.dto.Journey.response.JourneyCompletionEstimateResponse;
+import com.waytoearth.dto.request.journey.JourneyStartRequest;
+import com.waytoearth.dto.request.journey.JourneyProgressUpdateRequest;
+import com.waytoearth.dto.response.journey.JourneySummaryResponse;
+import com.waytoearth.dto.response.journey.JourneyProgressResponse;
+import com.waytoearth.dto.response.journey.JourneyCompletionEstimateResponse;
 import com.waytoearth.entity.Journey.JourneyEntity;
 
 import java.util.List;

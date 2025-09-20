@@ -1,8 +1,8 @@
 package com.waytoearth.controller.v1.Journey;
 
-import com.waytoearth.dto.Journey.response.LandmarkDetailResponse;
-import com.waytoearth.dto.Journey.response.LandmarkSummaryResponse;
-import com.waytoearth.dto.Journey.response.StoryCardResponse;
+import com.waytoearth.dto.response.journey.LandmarkDetailResponse;
+import com.waytoearth.dto.response.journey.LandmarkSummaryResponse;
+import com.waytoearth.dto.response.journey.StoryCardResponse;
 import com.waytoearth.entity.Journey.StoryCardEntity;
 import com.waytoearth.service.Journey.LandmarkService;
 import io.swagger.v3.oas.annotations.Operation;

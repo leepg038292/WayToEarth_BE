@@ -1,4 +1,4 @@
-package com.waytoearth.controller.v1.Auth;
+package com.waytoearth.controller.v1.auth;
 
 import com.waytoearth.dto.request.auth.KakaoLoginRequest;
 import com.waytoearth.dto.request.auth.OnboardingRequest;

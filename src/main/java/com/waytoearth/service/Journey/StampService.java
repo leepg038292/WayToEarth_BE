@@ -1,7 +1,7 @@
 package com.waytoearth.service.Journey;
 
-import com.waytoearth.dto.Journey.request.StampCollectRequest;
-import com.waytoearth.dto.Journey.response.StampResponse;
+import com.waytoearth.dto.request.journey.StampCollectRequest;
+import com.waytoearth.dto.response.journey.StampResponse;
 
 import java.util.List;
 

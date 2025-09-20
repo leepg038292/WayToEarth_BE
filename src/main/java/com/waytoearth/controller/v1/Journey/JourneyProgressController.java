@@ -1,7 +1,7 @@
 package com.waytoearth.controller.v1.Journey;
 
-import com.waytoearth.dto.Journey.request.JourneyProgressUpdateRequest;
-import com.waytoearth.dto.Journey.response.JourneyProgressResponse;
+import com.waytoearth.dto.request.journey.JourneyProgressUpdateRequest;
+import com.waytoearth.dto.response.journey.JourneyProgressResponse;
 import com.waytoearth.service.Journey.JourneyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

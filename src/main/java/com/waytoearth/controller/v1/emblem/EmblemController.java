@@ -1,5 +1,5 @@
 // com/waytoearth/controller/v1/EmblemController.java
-package com.waytoearth.controller.v1.Emblem;
+package com.waytoearth.controller.v1.emblem;
 
 import com.waytoearth.dto.response.common.ApiResponse;
 import com.waytoearth.dto.response.emblem.EmblemAwardResult;

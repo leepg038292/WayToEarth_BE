@@ -1,4 +1,4 @@
-package com.waytoearth.dto.Journey.response;
+package com.waytoearth.dto.response.journey;
 
 import com.waytoearth.entity.User.User;
 import io.swagger.v3.oas.annotations.media.Schema;
