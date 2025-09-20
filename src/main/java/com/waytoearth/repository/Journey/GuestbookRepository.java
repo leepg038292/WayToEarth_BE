@@ -31,17 +31,6 @@ public interface GuestbookRepository extends JpaRepository<GuestbookEntity, Long
     Page<GuestbookEntity> findByLandmarkIdAndIsPublicTrueAndMoodOrderByCreatedAtDesc(
             Long landmarkId, GuestbookEntity.Mood mood, Pageable pageable);
 
-    /**
-     * 평점별 방명록 조회
-     */
-    Page<GuestbookEntity> findByLandmarkIdAndIsPublicTrueAndRatingGreaterThanEqualOrderByCreatedAtDesc(
-            Long landmarkId, Integer rating, Pageable pageable);
-
-    /**
-     * 랜드마크별 평균 평점
-     */
-    @Query("SELECT AVG(g.rating) FROM GuestbookEntity g WHERE g.landmark.id = :landmarkId AND g.isPublic = true AND g.rating IS NOT NULL")
-    Double getAverageRatingByLandmarkId(@Param("landmarkId") Long landmarkId);
 
     /**
      * 랜드마크별 방명록 총 개수

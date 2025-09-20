@@ -65,16 +65,12 @@ public class GuestbookController {
             @PathVariable Long landmarkId,
             @Parameter(description = "기분 필터")
             @RequestParam(required = false) GuestbookEntity.Mood mood,
-            @Parameter(description = "최소 평점 필터")
-            @RequestParam(required = false) Integer minRating,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
         Page<GuestbookResponse> guestbooks;
 
         if (mood != null) {
             guestbooks = guestbookService.getGuestbookByMood(landmarkId, mood, pageable);
-        } else if (minRating != null) {
-            guestbooks = guestbookService.getGuestbookByRating(landmarkId, minRating, pageable);
         } else {
             guestbooks = guestbookService.getGuestbookByLandmark(landmarkId, pageable);
         }

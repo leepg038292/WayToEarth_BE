@@ -45,7 +45,6 @@ public class GuestbookServiceImpl implements GuestbookService {
                 .message(request.message())
                 .photoUrl(request.photoUrl())
                 .mood(request.mood())
-                .rating(request.rating())
                 .isPublic(request.isPublic() != null ? request.isPublic() : true)
                 .build();
 
@@ -72,13 +71,6 @@ public class GuestbookServiceImpl implements GuestbookService {
         return guestbooks.map(GuestbookResponse::from);
     }
 
-    @Override
-    public Page<GuestbookResponse> getGuestbookByRating(Long landmarkId, Integer minRating, Pageable pageable) {
-        Page<GuestbookEntity> guestbooks = guestbookRepository.findByLandmarkIdAndIsPublicTrueAndRatingGreaterThanEqualOrderByCreatedAtDesc(
-                landmarkId, minRating, pageable);
-
-        return guestbooks.map(GuestbookResponse::from);
-    }
 
     @Override
     public List<GuestbookResponse> getUserGuestbook(Long userId) {
@@ -99,12 +91,10 @@ public class GuestbookServiceImpl implements GuestbookService {
     @Override
     public LandmarkStatistics getLandmarkStatistics(Long landmarkId) {
         Long totalGuestbook = guestbookRepository.countByLandmarkIdAndIsPublicTrue(landmarkId);
-        Double averageRating = guestbookRepository.getAverageRatingByLandmarkId(landmarkId);
         Long totalVisitors = stampRepository.countCollectorsByLandmarkId(landmarkId);
 
         return new LandmarkStatistics(
                 totalGuestbook,
-                averageRating != null ? averageRating : 0.0,
                 totalVisitors
         );
     }

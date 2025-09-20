@@ -42,10 +42,6 @@ public class GuestbookEntity extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Mood mood;
 
-    @Schema(description = "평점 (1-5)", example = "5")
-    @Column(columnDefinition = "TINYINT CHECK (rating >= 1 AND rating <= 5)")
-    private Integer rating;
-
     @Schema(description = "공개 여부", example = "true")
     @Column(nullable = false)
     @Builder.Default

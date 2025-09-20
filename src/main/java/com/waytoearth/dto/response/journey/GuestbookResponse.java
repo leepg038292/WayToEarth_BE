@@ -25,9 +25,6 @@ public record GuestbookResponse(
     @Schema(description = "기분", example = "AMAZED")
     String mood,
 
-    @Schema(description = "평점 (1-5)", example = "5")
-    Integer rating,
-
     @Schema(description = "작성 시간", example = "2024-01-15T14:30:00")
     LocalDateTime createdAt
 ) {
@@ -39,7 +36,6 @@ public record GuestbookResponse(
             guestbook.getMessage(),
             guestbook.getPhotoUrl(),
             guestbook.getMood() != null ? guestbook.getMood().name() : null,
-            guestbook.getRating(),
             guestbook.getCreatedAt()
         );
     }

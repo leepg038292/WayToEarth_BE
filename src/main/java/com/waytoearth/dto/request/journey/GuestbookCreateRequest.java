@@ -21,11 +21,6 @@ public record GuestbookCreateRequest(
     @Schema(description = "기분", example = "AMAZED")
     GuestbookEntity.Mood mood,
 
-    @Min(value = 1, message = "평점은 1 이상이어야 합니다")
-    @Max(value = 5, message = "평점은 5 이하여야 합니다")
-    @Schema(description = "평점 (1-5)", example = "5")
-    Integer rating,
-
     @Schema(description = "공개 여부", example = "true")
     Boolean isPublic
 ) {}

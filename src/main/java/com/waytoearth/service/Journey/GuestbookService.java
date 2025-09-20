@@ -25,10 +25,6 @@ public interface GuestbookService {
      */
     Page<GuestbookResponse> getGuestbookByMood(Long landmarkId, GuestbookEntity.Mood mood, Pageable pageable);
 
-    /**
-     * 평점별 방명록 조회
-     */
-    Page<GuestbookResponse> getGuestbookByRating(Long landmarkId, Integer minRating, Pageable pageable);
 
     /**
      * 사용자별 방명록 목록 조회
@@ -50,7 +46,6 @@ public interface GuestbookService {
      */
     record LandmarkStatistics(
         Long totalGuestbook,
-        Double averageRating,
         Long totalVisitors
     ) {}
 }
