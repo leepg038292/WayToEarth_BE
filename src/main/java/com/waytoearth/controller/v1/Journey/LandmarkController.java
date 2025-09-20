@@ -61,23 +61,3 @@ public class LandmarkController {
         return ResponseEntity.ok(landmarks);
     }
 }
-
-@RestController
-@RequestMapping("/v1/story-cards")
-@RequiredArgsConstructor
-@Slf4j
-@Tag(name = "Story Card API", description = "스토리 카드 API")
-class StoryCardController {
-
-    private final LandmarkService landmarkService;
-
-    @GetMapping("/{storyCardId}")
-    @Operation(summary = "스토리 카드 상세", description = "스토리 카드의 상세 정보를 조회합니다.")
-    public ResponseEntity<StoryCardResponse> getStoryCard(
-            @Parameter(description = "스토리 카드 ID")
-            @PathVariable Long storyCardId) {
-
-        StoryCardResponse response = landmarkService.getStoryCardById(storyCardId);
-        return ResponseEntity.ok(response);
-    }
-}
