@@ -43,7 +43,6 @@ public class RunningServiceImpl implements RunningService {
                 .sessionId(request.getSessionId())
                 .user(runner)
                 .runningType(request.getRunningType() != null ? request.getRunningType() : RunningType.SINGLE)
-                .virtualCourseId(request.getVirtualCourseId())
                 .status(RunningStatus.RUNNING)
                 .startedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")))
                 .isCompleted(false)
@@ -158,7 +157,6 @@ public class RunningServiceImpl implements RunningService {
                         .collect(Collectors.toList()))
                 .emblemAwardResult(awardResult)
                 .runningType(savedRecord.getRunningType().name())
-                .virtualCourseId(savedRecord.getVirtualCourseId())
                 .build();
     }
 
@@ -203,7 +201,6 @@ public class RunningServiceImpl implements RunningService {
                 )
                 .emblemAwardResult(null)
                 .runningType(r.getRunningType().name())   // ✅ 추가
-                .virtualCourseId(r.getVirtualCourseId())  // ✅ 추가
                 .build();
     }
 
@@ -232,8 +229,7 @@ public class RunningServiceImpl implements RunningService {
                         formatPace(r.getAveragePaceSeconds()),
                         r.getCalories() != null ? r.getCalories() : 0,
                         r.getStartedAt() != null ? r.getStartedAt().toString() : null,
-                        r.getRunningType().name(),     // ✅ 추가
-                        r.getVirtualCourseId()         // ✅ 추가
+                        r.getRunningType().name()      // ✅ 추가
                 )
         );
     }

@@ -130,20 +130,12 @@ public class SwaggerConfig {
                 .build();
     }
 
-    @Bean
-    public GroupedOpenApi userVirtualCourseApi() {
-        return GroupedOpenApi.builder()
-                .group("12. 사용자 가상 코스 API")
-                .pathsToMatch("/v1/user-virtual-courses/**")
-                .build();
-    }
-
     // ===== Journey Running APIs (New System) =====
 
     @Bean
     public GroupedOpenApi journeyApi() {
         return GroupedOpenApi.builder()
-                .group("13. Journey 여정 관리 API")
+                .group("12. Journey 여정 관리 API")
                 .pathsToMatch("/v1/journeys/**", "/v1/journey-progress/**")
                 .build();
     }
@@ -151,7 +143,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi landmarkApi() {
         return GroupedOpenApi.builder()
-                .group("14. Landmark 랜드마크 API")
+                .group("13. Landmark 랜드마크 API")
                 .pathsToMatch("/v1/landmarks/**", "/v1/story-cards/**")
                 .build();
     }
@@ -159,7 +151,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi stampApi() {
         return GroupedOpenApi.builder()
-                .group("15. Stamp 스탬프 수집 API")
+                .group("14. Stamp 스탬프 수집 API")
                 .pathsToMatch("/v1/stamps/**")
                 .build();
     }
@@ -167,7 +159,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi guestbookApi() {
         return GroupedOpenApi.builder()
-                .group("16. Guestbook 방명록 API")
+                .group("15. Guestbook 방명록 API")
                 .pathsToMatch("/v1/guestbook/**")
                 .build();
     }

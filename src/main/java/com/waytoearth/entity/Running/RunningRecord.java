@@ -45,9 +45,6 @@ public class RunningRecord extends BaseTimeEntity {
     @Column(name = "running_type", nullable = false, length = 20)
     private RunningType runningType;
 
-    /** 가상 코스 ID (가상 러닝 시 사용) */
-    @Column(name = "virtual_course_id")
-    private Long virtualCourseId;
 
     /** 러닝 제목 */
     @Column(length = 100)

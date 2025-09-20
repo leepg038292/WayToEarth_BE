@@ -18,10 +18,8 @@ public class RunningStartRequest {
     private String sessionId;
 
     @Schema(description = "러닝 타입", example = "SINGLE", requiredMode = Schema.RequiredMode.REQUIRED,
-            allowableValues = {"SINGLE", "VIRTUAL", "JOURNEY"})
+            allowableValues = {"SINGLE", "JOURNEY"})
     @NotNull(message = "runningType은 필수입니다.")
     private RunningType runningType;
 
-    @Schema(description = "가상 러닝 코스 ID (가상 러닝일 경우에만 사용)", example = "123")
-    private Long virtualCourseId;
 }
