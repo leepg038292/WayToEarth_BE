@@ -18,7 +18,7 @@ public class RunningStartRequest {
     private String sessionId;
 
     @Schema(description = "러닝 타입", example = "SINGLE", requiredMode = Schema.RequiredMode.REQUIRED,
-            allowableValues = {"SINGLE", "VIRTUAL"})
+            allowableValues = {"SINGLE", "VIRTUAL", "JOURNEY"})
     @NotNull(message = "runningType은 필수입니다.")
     private RunningType runningType;
 
