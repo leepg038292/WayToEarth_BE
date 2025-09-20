@@ -19,6 +19,7 @@ import com.waytoearth.dto.request.running.RunningStartRequest;
 import com.waytoearth.dto.request.running.RunningCompleteRequest;
 import com.waytoearth.dto.response.running.RunningStartResponse;
 import com.waytoearth.entity.enums.RunningType;
+import com.waytoearth.entity.enums.JourneyCategory;
 import com.waytoearth.security.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +56,7 @@ public class JourneyServiceImpl implements JourneyService {
     }
 
     @Override
-    public List<JourneySummaryResponse> getJourneysByCategory(JourneyEntity.Category category) {
+    public List<JourneySummaryResponse> getJourneysByCategory(JourneyCategory category) {
         List<JourneyEntity> journeys = journeyRepository.findByIsActiveTrueAndCategoryOrderByCreatedAtDesc(category);
 
         return journeys.stream()

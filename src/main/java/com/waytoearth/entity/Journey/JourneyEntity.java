@@ -1,6 +1,8 @@
 package com.waytoearth.entity.Journey;
 
 import com.waytoearth.entity.common.BaseTimeEntity;
+import com.waytoearth.entity.enums.JourneyCategory;
+import com.waytoearth.entity.enums.JourneyDifficulty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -41,12 +43,12 @@ public class JourneyEntity extends BaseTimeEntity {
     @Schema(description = "난이도", example = "MEDIUM")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Difficulty difficulty;
+    private JourneyDifficulty difficulty;
 
     @Schema(description = "카테고리", example = "DOMESTIC")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Category category;
+    private JourneyCategory category;
 
     @Schema(description = "예상 완주 기간 (일)", example = "30")
     private Integer estimatedDays;
@@ -59,12 +61,4 @@ public class JourneyEntity extends BaseTimeEntity {
     @OneToMany(mappedBy = "journey", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<LandmarkEntity> landmarks = new ArrayList<>();
-
-    public enum Difficulty {
-        EASY, MEDIUM, HARD
-    }
-
-    public enum Category {
-        DOMESTIC, INTERNATIONAL
-    }
 }

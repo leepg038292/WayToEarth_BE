@@ -6,6 +6,7 @@ import com.waytoearth.dto.response.journey.JourneySummaryResponse;
 import com.waytoearth.dto.response.journey.JourneyProgressResponse;
 import com.waytoearth.dto.response.journey.JourneyCompletionEstimateResponse;
 import com.waytoearth.entity.Journey.JourneyEntity;
+import com.waytoearth.entity.enums.JourneyCategory;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public interface JourneyService {
     /**
      * 카테고리별 여행 목록 조회
      */
-    List<JourneySummaryResponse> getJourneysByCategory(JourneyEntity.Category category);
+    List<JourneySummaryResponse> getJourneysByCategory(JourneyCategory category);
 
     /**
      * 여행 상세 조회

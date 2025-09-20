@@ -1,6 +1,8 @@
 package com.waytoearth.repository.Journey;
 
 import com.waytoearth.entity.Journey.JourneyEntity;
+import com.waytoearth.entity.enums.JourneyCategory;
+import com.waytoearth.entity.enums.JourneyDifficulty;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,12 +22,12 @@ public interface JourneyRepository extends JpaRepository<JourneyEntity, Long> {
     /**
      * 카테고리별 활성화된 여행 목록 조회
      */
-    List<JourneyEntity> findByIsActiveTrueAndCategoryOrderByCreatedAtDesc(JourneyEntity.Category category);
+    List<JourneyEntity> findByIsActiveTrueAndCategoryOrderByCreatedAtDesc(JourneyCategory category);
 
     /**
      * 난이도별 활성화된 여행 목록 조회
      */
-    List<JourneyEntity> findByIsActiveTrueAndDifficultyOrderByCreatedAtDesc(JourneyEntity.Difficulty difficulty);
+    List<JourneyEntity> findByIsActiveTrueAndDifficultyOrderByCreatedAtDesc(JourneyDifficulty difficulty);
 
     /**
      * 활성화된 여행 상세 조회 (랜드마크 포함)
