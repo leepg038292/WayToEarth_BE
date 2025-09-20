@@ -1,4 +1,4 @@
-package com.waytoearth.config.Web;
+package com.waytoearth.config.web;
 
 import com.waytoearth.security.AuthUserArgumentResolver;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.waytoearth.config.JPA;
+package com.waytoearth.config.jpa;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;

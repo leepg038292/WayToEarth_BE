@@ -1,4 +1,4 @@
-package com.waytoearth.config.Security;
+package com.waytoearth.config.security;
 
 import com.waytoearth.config.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;

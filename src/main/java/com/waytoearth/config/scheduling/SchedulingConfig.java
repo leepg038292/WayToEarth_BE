@@ -1,4 +1,4 @@
-package com.waytoearth.config.Scheduling;
+package com.waytoearth.config.scheduling;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;

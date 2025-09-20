@@ -1,4 +1,4 @@
-package com.waytoearth.config.QueryDsl;
+package com.waytoearth.config.queryDsl;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
