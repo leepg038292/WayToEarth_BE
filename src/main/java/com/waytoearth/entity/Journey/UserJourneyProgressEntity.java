@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,7 +80,7 @@ public class UserJourneyProgressEntity extends BaseTimeEntity {
     @PrePersist
     protected void onCreate() {
         if (startedAt == null) {
-            startedAt = LocalDateTime.now();
+            startedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         }
     }
 
@@ -89,7 +90,7 @@ public class UserJourneyProgressEntity extends BaseTimeEntity {
 
         if (this.progressPercent >= 100.0) {
             this.status = ProgressStatus.COMPLETED;
-            this.completedAt = LocalDateTime.now();
+            this.completedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         }
     }
 }

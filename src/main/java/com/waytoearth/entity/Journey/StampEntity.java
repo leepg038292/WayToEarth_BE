@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Entity
 @Table(name = "stamps",
@@ -54,7 +55,7 @@ public class StampEntity extends BaseTimeEntity {
     @PrePersist
     protected void onCreate() {
         if (collectedAt == null) {
-            collectedAt = LocalDateTime.now();
+            collectedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         }
     }
 
