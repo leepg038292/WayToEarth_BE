@@ -1,4 +1,4 @@
-package com.waytoearth.controller.v1.User;
+package com.waytoearth.controller.v1.user;
 
 import com.waytoearth.dto.request.user.UserUpdateRequest;
 import com.waytoearth.dto.response.common.ApiResponse;

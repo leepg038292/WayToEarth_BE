@@ -1,4 +1,4 @@
-package com.waytoearth.controller.v1.Feed;
+package com.waytoearth.controller.v1.feed;
 
 import com.waytoearth.dto.request.feed.FeedCreateRequest;
 import com.waytoearth.dto.request.file.PresignRequest;

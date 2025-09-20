@@ -1,4 +1,4 @@
-package com.waytoearth.controller.v1.Running;
+package com.waytoearth.controller.v1.running;
 
 
 import com.waytoearth.dto.request.running.*;

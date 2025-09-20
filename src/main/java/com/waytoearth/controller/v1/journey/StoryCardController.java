@@ -1,4 +1,4 @@
-package com.waytoearth.controller.v1.Journey;
+package com.waytoearth.controller.v1.journey;
 
 import com.waytoearth.dto.response.journey.StoryCardResponse;
 import com.waytoearth.service.Journey.LandmarkService;

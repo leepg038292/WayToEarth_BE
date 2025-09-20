@@ -1,5 +1,5 @@
 // com/waytoearth/controller/v1/FileController.java
-package com.waytoearth.controller.v1.File;
+package com.waytoearth.controller.v1.file;
 
 import com.waytoearth.dto.request.file.PresignRequest;
 import com.waytoearth.dto.response.common.ApiResponse;

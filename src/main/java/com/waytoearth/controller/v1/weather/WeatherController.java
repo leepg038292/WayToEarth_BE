@@ -1,4 +1,4 @@
-package com.waytoearth.controller.v1.Weather;
+package com.waytoearth.controller.v1.weather;
 
 import com.waytoearth.dto.response.common.ApiResponse;
 import com.waytoearth.dto.response.weather.WeatherCurrentResponse;

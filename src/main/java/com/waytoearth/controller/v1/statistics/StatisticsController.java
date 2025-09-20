@@ -1,4 +1,4 @@
-package com.waytoearth.controller.v1.Statistics;
+package com.waytoearth.controller.v1.statistics;
 
 import com.waytoearth.dto.response.common.ApiResponse;
 import com.waytoearth.dto.response.statistics.RunningWeeklyStatsResponse;
