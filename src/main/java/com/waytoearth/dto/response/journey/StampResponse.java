@@ -20,10 +20,7 @@ public record StampResponse(
     String stampImageUrl,
 
     @Schema(description = "특별 스탬프 여부", example = "false")
-    Boolean isSpecial,
-
-    @Schema(description = "스탬프 등급", example = "GOLD")
-    String grade
+    Boolean isSpecial
 ) {
     public static StampResponse from(StampEntity stamp) {
         return new StampResponse(
@@ -31,8 +28,7 @@ public record StampResponse(
             LandmarkSummaryResponse.from(stamp.getLandmark()),
             stamp.getCollectedAt(),
             stamp.getStampImageUrl(),
-            stamp.getIsSpecial(),
-            stamp.getGrade().name()
+            stamp.getIsSpecial()
         );
     }
 }

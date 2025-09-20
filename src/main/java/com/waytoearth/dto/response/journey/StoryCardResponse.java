@@ -17,9 +17,6 @@ public record StoryCardResponse(
     @Schema(description = "스토리 이미지 URL", example = "https://example.com/story.jpg")
     String imageUrl,
 
-    @Schema(description = "오디오 URL", example = "https://example.com/audio.mp3")
-    String audioUrl,
-
     @Schema(description = "스토리 타입", example = "HISTORY")
     String type,
 
@@ -32,7 +29,6 @@ public record StoryCardResponse(
             storyCard.getTitle(),
             storyCard.getContent(),
             storyCard.getImageUrl(),
-            storyCard.getAudioUrl(),
             storyCard.getType().name(),
             storyCard.getOrderIndex()
         );

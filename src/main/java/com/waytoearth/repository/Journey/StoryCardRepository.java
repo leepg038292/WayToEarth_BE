@@ -19,8 +19,4 @@ public interface StoryCardRepository extends JpaRepository<StoryCardEntity, Long
      */
     List<StoryCardEntity> findByLandmarkIdAndTypeOrderByOrderIndex(Long landmarkId, StoryCardEntity.StoryType type);
 
-    /**
-     * 오디오가 있는 스토리 카드 조회
-     */
-    List<StoryCardEntity> findByLandmarkIdAndAudioUrlIsNotNullOrderByOrderIndex(Long landmarkId);
 }

@@ -36,9 +36,6 @@ public class StoryCardEntity extends BaseTimeEntity {
     @Schema(description = "스토리 이미지 URL", example = "https://example.com/story.jpg")
     private String imageUrl;
 
-    @Schema(description = "오디오 URL", example = "https://example.com/audio.mp3")
-    private String audioUrl;
-
     @Schema(description = "스토리 타입", example = "HISTORY")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -51,7 +48,6 @@ public class StoryCardEntity extends BaseTimeEntity {
     public enum StoryType {
         HISTORY,    // 역사
         CULTURE,    // 문화
-        NATURE,     // 자연
-        LOCAL_TIP   // 현지 팁
+        NATURE      // 자연
     }
 }

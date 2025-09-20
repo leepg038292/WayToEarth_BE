@@ -46,12 +46,6 @@ public class StampEntity extends BaseTimeEntity {
     @Builder.Default
     private Boolean isSpecial = false;
 
-    @Schema(description = "스탬프 등급", example = "GOLD")
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @Builder.Default
-    private StampGrade grade = StampGrade.BRONZE;
-
     @PrePersist
     protected void onCreate() {
         if (collectedAt == null) {
@@ -59,10 +53,4 @@ public class StampEntity extends BaseTimeEntity {
         }
     }
 
-    public enum StampGrade {
-        BRONZE,     // 일반 스탬프
-        SILVER,     // 희귀 스탬프
-        GOLD,       // 에픽 스탬프
-        DIAMOND     // 전설 스탬프
-    }
 }
