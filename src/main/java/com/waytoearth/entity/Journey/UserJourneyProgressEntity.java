@@ -77,7 +77,6 @@ public class UserJourneyProgressEntity extends BaseTimeEntity {
 
     @PrePersist
     protected void onCreate() {
-        super.onCreate();
         if (startedAt == null) {
             startedAt = LocalDateTime.now();
         }

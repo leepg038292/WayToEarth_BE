@@ -1,6 +1,5 @@
 package com.waytoearth.dto.Journey.response;
 
-import com.waytoearth.dto.response.user.UserSummaryResponse;
 import com.waytoearth.entity.Journey.GuestbookEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 

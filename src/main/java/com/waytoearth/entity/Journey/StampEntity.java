@@ -53,7 +53,6 @@ public class StampEntity extends BaseTimeEntity {
 
     @PrePersist
     protected void onCreate() {
-        super.onCreate();
         if (collectedAt == null) {
             collectedAt = LocalDateTime.now();
         }
