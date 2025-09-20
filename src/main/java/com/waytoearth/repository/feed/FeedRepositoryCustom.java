@@ -1,7 +1,7 @@
 package com.waytoearth.repository.feed;
 
 import com.waytoearth.dto.response.feed.FeedResponse;
-import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.user.User;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;

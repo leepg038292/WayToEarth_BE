@@ -1,7 +1,7 @@
-package com.waytoearth.entity.Journey;
+package com.waytoearth.entity.journey;
 
 import com.waytoearth.entity.common.BaseTimeEntity;
-import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.user.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;

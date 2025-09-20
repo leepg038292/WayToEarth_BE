@@ -2,9 +2,9 @@ package com.waytoearth.service.journey;
 
 import com.waytoearth.dto.request.journey.GuestbookCreateRequest;
 import com.waytoearth.dto.response.journey.GuestbookResponse;
-import com.waytoearth.entity.Journey.GuestbookEntity;
-import com.waytoearth.entity.Journey.LandmarkEntity;
-import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.journey.GuestbookEntity;
+import com.waytoearth.entity.journey.LandmarkEntity;
+import com.waytoearth.entity.user.User;
 import com.waytoearth.repository.journey.GuestbookRepository;
 import com.waytoearth.repository.journey.LandmarkRepository;
 import com.waytoearth.repository.journey.StampRepository;

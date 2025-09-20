@@ -1,6 +1,6 @@
-package com.waytoearth.entity.Feed;
+package com.waytoearth.entity.feed;
 
-import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

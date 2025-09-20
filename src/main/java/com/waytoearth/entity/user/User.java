@@ -1,4 +1,4 @@
-package com.waytoearth.entity.User;
+package com.waytoearth.entity.user;
 
 import com.waytoearth.entity.common.BaseTimeEntity;
 import com.waytoearth.entity.enums.AgeGroup;

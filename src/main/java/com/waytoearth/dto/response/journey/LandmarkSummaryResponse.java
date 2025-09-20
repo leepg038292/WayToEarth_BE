@@ -1,6 +1,6 @@
 package com.waytoearth.dto.response.journey;
 
-import com.waytoearth.entity.Journey.LandmarkEntity;
+import com.waytoearth.entity.journey.LandmarkEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "랜드마크 요약 응답")

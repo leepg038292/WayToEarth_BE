@@ -1,6 +1,6 @@
 package com.waytoearth.dto.response.journey;
 
-import com.waytoearth.entity.Journey.JourneyEntity;
+import com.waytoearth.entity.journey.JourneyEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "여행 요약 응답")

@@ -1,4 +1,4 @@
-package com.waytoearth.entity.Journey;
+package com.waytoearth.entity.journey;
 
 import com.waytoearth.entity.common.BaseTimeEntity;
 import io.swagger.v3.oas.annotations.media.Schema;

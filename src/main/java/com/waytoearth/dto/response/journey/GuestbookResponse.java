@@ -1,6 +1,6 @@
 package com.waytoearth.dto.response.journey;
 
-import com.waytoearth.entity.Journey.GuestbookEntity;
+import com.waytoearth.entity.journey.GuestbookEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;

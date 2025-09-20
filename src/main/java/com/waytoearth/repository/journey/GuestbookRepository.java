@@ -1,6 +1,6 @@
 package com.waytoearth.repository.journey;
 
-import com.waytoearth.entity.Journey.GuestbookEntity;
+import com.waytoearth.entity.journey.GuestbookEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

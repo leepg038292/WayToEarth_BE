@@ -1,7 +1,7 @@
-package com.waytoearth.entity.Feed;
+package com.waytoearth.entity.feed;
 
-import com.waytoearth.entity.Running.RunningRecord;
-import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.running.RunningRecord;
+import com.waytoearth.entity.user.User;
 import com.waytoearth.entity.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;

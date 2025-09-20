@@ -5,7 +5,7 @@ import com.waytoearth.dto.response.emblem.EmblemAwardResult;
 import com.waytoearth.dto.response.emblem.EmblemCatalogItem;
 import com.waytoearth.dto.response.emblem.EmblemDetailResponse;
 import com.waytoearth.dto.response.emblem.EmblemSummaryResponse;
-import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.user.User;
 import com.waytoearth.entity.emblem.Emblem;
 import com.waytoearth.entity.emblem.UserEmblem;
 import com.waytoearth.repository.emblem.EmblemRepository;

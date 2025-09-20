@@ -2,7 +2,7 @@
 package com.waytoearth.repository.emblem;
 
 import com.waytoearth.entity.emblem.Emblem;
-import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.user.User;
 import com.waytoearth.entity.emblem.UserEmblem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

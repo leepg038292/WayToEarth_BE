@@ -1,6 +1,6 @@
 package com.waytoearth.repository.journey;
 
-import com.waytoearth.entity.Journey.JourneyEntity;
+import com.waytoearth.entity.journey.JourneyEntity;
 import com.waytoearth.entity.enums.JourneyCategory;
 import com.waytoearth.entity.enums.JourneyDifficulty;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -4,7 +4,7 @@ import com.waytoearth.dto.request.journey.JourneyStartRequest;
 import com.waytoearth.dto.response.journey.JourneySummaryResponse;
 import com.waytoearth.dto.response.journey.JourneyProgressResponse;
 import com.waytoearth.dto.response.journey.JourneyCompletionEstimateResponse;
-import com.waytoearth.entity.Journey.JourneyEntity;
+import com.waytoearth.entity.journey.JourneyEntity;
 import com.waytoearth.entity.enums.JourneyCategory;
 import com.waytoearth.service.journey.JourneyService;
 import io.swagger.v3.oas.annotations.Operation;

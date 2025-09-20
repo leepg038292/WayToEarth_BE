@@ -1,6 +1,6 @@
 package com.waytoearth.dto.response.journey;
 
-import com.waytoearth.entity.Journey.UserJourneyProgressEntity;
+import com.waytoearth.entity.journey.UserJourneyProgressEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "여행 진행률 응답")

@@ -1,8 +1,8 @@
 package com.waytoearth.repository.feed;
 
-import com.waytoearth.entity.Feed.Feed;
-import com.waytoearth.entity.Feed.FeedLike;
-import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.feed.Feed;
+import com.waytoearth.entity.feed.FeedLike;
+import com.waytoearth.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -1,6 +1,6 @@
 package com.waytoearth.repository.journey;
 
-import com.waytoearth.entity.Journey.UserJourneyProgressEntity;
+import com.waytoearth.entity.journey.UserJourneyProgressEntity;
 import com.waytoearth.entity.enums.JourneyProgressStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

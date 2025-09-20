@@ -1,6 +1,6 @@
 package com.waytoearth.repository.feed;
 
-import com.waytoearth.entity.Feed.Feed;
+import com.waytoearth.entity.feed.Feed;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

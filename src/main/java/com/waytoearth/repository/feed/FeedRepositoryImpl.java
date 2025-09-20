@@ -2,17 +2,17 @@ package com.waytoearth.repository.feed;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.waytoearth.dto.response.feed.FeedResponse;
-import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static com.waytoearth.entity.Feed.QFeed.feed;
-import static com.waytoearth.entity.User.QUser.user;
-import static com.waytoearth.entity.Running.QRunningRecord.runningRecord;
-import static com.waytoearth.entity.Feed.QFeedLike.feedLike;
+import static com.waytoearth.entity.feed.QFeed.feed;
+import static com.waytoearth.entity.user.QUser.user;
+import static com.waytoearth.entity.running.QRunningRecord.runningRecord;
+import static com.waytoearth.entity.feed.QFeedLike.feedLike;
 
 @Repository
 @RequiredArgsConstructor

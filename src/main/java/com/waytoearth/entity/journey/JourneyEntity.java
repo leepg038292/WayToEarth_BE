@@ -1,4 +1,4 @@
-package com.waytoearth.entity.Journey;
+package com.waytoearth.entity.journey;
 
 import com.waytoearth.entity.common.BaseTimeEntity;
 import com.waytoearth.entity.enums.JourneyCategory;

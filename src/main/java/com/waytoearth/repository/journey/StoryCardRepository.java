@@ -1,6 +1,6 @@
 package com.waytoearth.repository.journey;
 
-import com.waytoearth.entity.Journey.StoryCardEntity;
+import com.waytoearth.entity.journey.StoryCardEntity;
 import com.waytoearth.entity.enums.StoryType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

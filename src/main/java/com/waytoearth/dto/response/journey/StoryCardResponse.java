@@ -1,6 +1,6 @@
 package com.waytoearth.dto.response.journey;
 
-import com.waytoearth.entity.Journey.StoryCardEntity;
+import com.waytoearth.entity.journey.StoryCardEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "스토리 카드 응답")

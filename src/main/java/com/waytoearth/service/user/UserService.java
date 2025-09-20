@@ -4,7 +4,7 @@ import com.waytoearth.dto.request.auth.OnboardingRequest;
 import com.waytoearth.dto.request.user.UserUpdateRequest;
 import com.waytoearth.dto.response.user.UserInfoResponse;
 import com.waytoearth.dto.response.user.UserSummaryResponse;
-import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.user.User;
 import com.waytoearth.exception.DuplicateResourceException;
 import com.waytoearth.exception.UserNotFoundException;
 import com.waytoearth.repository.emblem.EmblemRepository;

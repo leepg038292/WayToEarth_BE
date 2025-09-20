@@ -1,7 +1,7 @@
 package com.waytoearth.repository.running;
 
-import com.waytoearth.entity.Running.RunningRecord;
-import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.running.RunningRecord;
+import com.waytoearth.entity.user.User;
 import com.waytoearth.entity.enums.RunningType;
 import com.waytoearth.repository.statistics.StatisticsRepositoryCustom;
 import org.springframework.data.domain.Page;

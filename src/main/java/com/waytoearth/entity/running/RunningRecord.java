@@ -1,6 +1,6 @@
-package com.waytoearth.entity.Running;
+package com.waytoearth.entity.running;
 
-import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.user.User;
 import com.waytoearth.entity.common.BaseTimeEntity;
 import com.waytoearth.entity.enums.RunningStatus;
 import com.waytoearth.entity.enums.RunningType;

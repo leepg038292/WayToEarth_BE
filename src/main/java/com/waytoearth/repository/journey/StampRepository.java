@@ -1,6 +1,6 @@
 package com.waytoearth.repository.journey;
 
-import com.waytoearth.entity.Journey.StampEntity;
+import com.waytoearth.entity.journey.StampEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

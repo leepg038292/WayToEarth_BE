@@ -2,9 +2,9 @@ package com.waytoearth.service.journey;
 
 import com.waytoearth.dto.request.journey.StampCollectRequest;
 import com.waytoearth.dto.response.journey.StampResponse;
-import com.waytoearth.entity.Journey.LandmarkEntity;
-import com.waytoearth.entity.Journey.StampEntity;
-import com.waytoearth.entity.Journey.UserJourneyProgressEntity;
+import com.waytoearth.entity.journey.LandmarkEntity;
+import com.waytoearth.entity.journey.StampEntity;
+import com.waytoearth.entity.journey.UserJourneyProgressEntity;
 import com.waytoearth.repository.journey.LandmarkRepository;
 import com.waytoearth.repository.journey.StampRepository;
 import com.waytoearth.repository.journey.UserJourneyProgressRepository;

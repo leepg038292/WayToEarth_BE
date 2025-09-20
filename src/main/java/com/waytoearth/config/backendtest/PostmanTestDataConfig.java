@@ -1,6 +1,6 @@
 package com.waytoearth.config.backendtest;
 
-import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.user.User;
 import com.waytoearth.entity.enums.AgeGroup;
 import com.waytoearth.entity.enums.Gender;
 import com.waytoearth.repository.user.UserRepository;

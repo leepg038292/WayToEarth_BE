@@ -1,6 +1,6 @@
 package com.waytoearth.dto.response.journey;
 
-import com.waytoearth.entity.User.User;
+import com.waytoearth.entity.user.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "사용자 요약 정보")

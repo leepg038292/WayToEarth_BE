@@ -1,4 +1,4 @@
-package com.waytoearth.entity.Running;
+package com.waytoearth.entity.running;
 
 import com.waytoearth.entity.common.BaseTimeEntity;
 import jakarta.persistence.*;
