@@ -18,8 +18,8 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Way to Earth API")
-                        .description("러닝 기반 가상 여정 및 크루 시스템 API")
-                        .version("1.0.0")
+                        .description("러닝 기반 Journey Running 및 크루 시스템 API")
+                        .version("2.0.0")
                         .contact(new Contact()
                                 .name("Way to Earth Team")
                                 .email("team@waytoearth.com")))
@@ -135,6 +135,40 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
                 .group("12. 사용자 가상 코스 API")
                 .pathsToMatch("/v1/user-virtual-courses/**")
+                .build();
+    }
+
+    // ===== Journey Running APIs (New System) =====
+
+    @Bean
+    public GroupedOpenApi journeyApi() {
+        return GroupedOpenApi.builder()
+                .group("13. Journey 여정 관리 API")
+                .pathsToMatch("/v1/journeys/**", "/v1/journey-progress/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi landmarkApi() {
+        return GroupedOpenApi.builder()
+                .group("14. Landmark 랜드마크 API")
+                .pathsToMatch("/v1/landmarks/**", "/v1/story-cards/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi stampApi() {
+        return GroupedOpenApi.builder()
+                .group("15. Stamp 스탬프 수집 API")
+                .pathsToMatch("/v1/stamps/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi guestbookApi() {
+        return GroupedOpenApi.builder()
+                .group("16. Guestbook 방명록 API")
+                .pathsToMatch("/v1/guestbook/**")
                 .build();
     }
 
