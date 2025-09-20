@@ -1,4 +1,4 @@
-package com.waytoearth.repository.Journey;
+package com.waytoearth.repository.journey;
 
 import com.waytoearth.entity.Journey.UserJourneyProgressEntity;
 import com.waytoearth.entity.enums.JourneyProgressStatus;

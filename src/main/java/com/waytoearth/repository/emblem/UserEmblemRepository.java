@@ -1,5 +1,5 @@
 // com/waytoearth/repository/UserEmblemRepository.java
-package com.waytoearth.repository.Emblem;
+package com.waytoearth.repository.emblem;
 
 import com.waytoearth.entity.emblem.Emblem;
 import com.waytoearth.entity.User.User;

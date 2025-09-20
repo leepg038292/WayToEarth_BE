@@ -1,4 +1,4 @@
-package com.waytoearth.service.Journey;
+package com.waytoearth.service.journey;
 
 import com.waytoearth.dto.request.journey.JourneyStartRequest;
 import com.waytoearth.dto.request.journey.JourneyProgressUpdateRequest;
@@ -9,11 +9,11 @@ import com.waytoearth.dto.response.journey.LandmarkSummaryResponse;
 import com.waytoearth.entity.Journey.JourneyEntity;
 import com.waytoearth.entity.Journey.UserJourneyProgressEntity;
 import com.waytoearth.entity.User.User;
-import com.waytoearth.repository.Journey.JourneyRepository;
-import com.waytoearth.repository.Journey.LandmarkRepository;
-import com.waytoearth.repository.Journey.StampRepository;
-import com.waytoearth.repository.Journey.UserJourneyProgressRepository;
-import com.waytoearth.repository.User.UserRepository;
+import com.waytoearth.repository.journey.JourneyRepository;
+import com.waytoearth.repository.journey.LandmarkRepository;
+import com.waytoearth.repository.journey.StampRepository;
+import com.waytoearth.repository.journey.UserJourneyProgressRepository;
+import com.waytoearth.repository.user.UserRepository;
 import com.waytoearth.service.running.RunningService;
 import com.waytoearth.dto.request.running.RunningStartRequest;
 import com.waytoearth.dto.request.running.RunningCompleteRequest;

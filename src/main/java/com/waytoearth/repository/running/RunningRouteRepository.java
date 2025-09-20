@@ -1,4 +1,4 @@
-package com.waytoearth.repository.Running;
+package com.waytoearth.repository.running;
 
 import com.waytoearth.entity.Running.RunningRoute;
 import org.springframework.data.jpa.repository.JpaRepository;

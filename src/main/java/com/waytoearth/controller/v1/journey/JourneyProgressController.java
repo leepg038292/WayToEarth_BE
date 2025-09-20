@@ -2,7 +2,7 @@ package com.waytoearth.controller.v1.journey;
 
 import com.waytoearth.dto.request.journey.JourneyProgressUpdateRequest;
 import com.waytoearth.dto.response.journey.JourneyProgressResponse;
-import com.waytoearth.service.Journey.JourneyService;
+import com.waytoearth.service.journey.JourneyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

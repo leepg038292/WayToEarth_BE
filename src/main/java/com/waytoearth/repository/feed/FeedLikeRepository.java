@@ -1,4 +1,4 @@
-package com.waytoearth.repository.Feed;
+package com.waytoearth.repository.feed;
 
 import com.waytoearth.entity.Feed.Feed;
 import com.waytoearth.entity.Feed.FeedLike;

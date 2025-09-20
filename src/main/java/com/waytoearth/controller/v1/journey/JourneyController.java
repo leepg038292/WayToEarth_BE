@@ -6,7 +6,7 @@ import com.waytoearth.dto.response.journey.JourneyProgressResponse;
 import com.waytoearth.dto.response.journey.JourneyCompletionEstimateResponse;
 import com.waytoearth.entity.Journey.JourneyEntity;
 import com.waytoearth.entity.enums.JourneyCategory;
-import com.waytoearth.service.Journey.JourneyService;
+import com.waytoearth.service.journey.JourneyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

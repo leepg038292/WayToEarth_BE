@@ -1,4 +1,4 @@
-package com.waytoearth.service.Journey;
+package com.waytoearth.service.journey;
 
 import com.waytoearth.dto.request.journey.JourneyStartRequest;
 import com.waytoearth.dto.request.journey.JourneyProgressUpdateRequest;

@@ -1,4 +1,4 @@
-package com.waytoearth.repository.User;
+package com.waytoearth.repository.user;
 
 import com.waytoearth.entity.User.User;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -2,7 +2,7 @@ package com.waytoearth.controller.v1.journey;
 
 import com.waytoearth.dto.request.journey.GuestbookCreateRequest;
 import com.waytoearth.dto.response.journey.GuestbookResponse;
-import com.waytoearth.service.Journey.GuestbookService;
+import com.waytoearth.service.journey.GuestbookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

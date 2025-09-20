@@ -1,4 +1,4 @@
-package com.waytoearth.repository.Feed;
+package com.waytoearth.repository.feed;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.waytoearth.dto.response.feed.FeedResponse;

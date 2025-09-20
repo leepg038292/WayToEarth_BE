@@ -1,14 +1,14 @@
-package com.waytoearth.service.Journey;
+package com.waytoearth.service.journey;
 
 import com.waytoearth.dto.request.journey.GuestbookCreateRequest;
 import com.waytoearth.dto.response.journey.GuestbookResponse;
 import com.waytoearth.entity.Journey.GuestbookEntity;
 import com.waytoearth.entity.Journey.LandmarkEntity;
 import com.waytoearth.entity.User.User;
-import com.waytoearth.repository.Journey.GuestbookRepository;
-import com.waytoearth.repository.Journey.LandmarkRepository;
-import com.waytoearth.repository.Journey.StampRepository;
-import com.waytoearth.repository.User.UserRepository;
+import com.waytoearth.repository.journey.GuestbookRepository;
+import com.waytoearth.repository.journey.LandmarkRepository;
+import com.waytoearth.repository.journey.StampRepository;
+import com.waytoearth.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

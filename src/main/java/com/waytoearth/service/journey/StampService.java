@@ -1,4 +1,4 @@
-package com.waytoearth.service.Journey;
+package com.waytoearth.service.journey;
 
 import com.waytoearth.dto.request.journey.StampCollectRequest;
 import com.waytoearth.dto.response.journey.StampResponse;

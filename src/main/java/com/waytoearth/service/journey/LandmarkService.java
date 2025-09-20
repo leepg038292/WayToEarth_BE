@@ -1,4 +1,4 @@
-package com.waytoearth.service.Journey;
+package com.waytoearth.service.journey;
 
 import com.waytoearth.dto.response.journey.LandmarkDetailResponse;
 import com.waytoearth.dto.response.journey.LandmarkSummaryResponse;

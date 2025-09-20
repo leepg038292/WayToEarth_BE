@@ -1,4 +1,4 @@
-package com.waytoearth.repository.Running;
+package com.waytoearth.repository.running;
 
 import com.waytoearth.entity.Running.RunningRecord;
 import com.waytoearth.entity.User.User;

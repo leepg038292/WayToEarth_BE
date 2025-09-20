@@ -2,7 +2,7 @@ package com.waytoearth.controller.v1.journey;
 
 import com.waytoearth.dto.request.journey.StampCollectRequest;
 import com.waytoearth.dto.response.journey.StampResponse;
-import com.waytoearth.service.Journey.StampService;
+import com.waytoearth.service.journey.StampService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

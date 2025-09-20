@@ -1,7 +1,7 @@
 package com.waytoearth.controller.v1.journey;
 
 import com.waytoearth.dto.response.journey.StoryCardResponse;
-import com.waytoearth.service.Journey.LandmarkService;
+import com.waytoearth.service.journey.LandmarkService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

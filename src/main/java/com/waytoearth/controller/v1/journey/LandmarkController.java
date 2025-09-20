@@ -4,7 +4,7 @@ import com.waytoearth.dto.response.journey.LandmarkDetailResponse;
 import com.waytoearth.dto.response.journey.LandmarkSummaryResponse;
 import com.waytoearth.dto.response.journey.StoryCardResponse;
 import com.waytoearth.entity.enums.StoryType;
-import com.waytoearth.service.Journey.LandmarkService;
+import com.waytoearth.service.journey.LandmarkService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -1,4 +1,4 @@
-package com.waytoearth.repository.Feed;
+package com.waytoearth.repository.feed;
 
 import com.waytoearth.dto.response.feed.FeedResponse;
 import com.waytoearth.entity.User.User;

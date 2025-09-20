@@ -1,4 +1,4 @@
-package com.waytoearth.service.Journey;
+package com.waytoearth.service.journey;
 
 import com.waytoearth.dto.response.journey.LandmarkDetailResponse;
 import com.waytoearth.dto.response.journey.LandmarkSummaryResponse;
@@ -6,10 +6,10 @@ import com.waytoearth.dto.response.journey.StoryCardResponse;
 import com.waytoearth.entity.Journey.LandmarkEntity;
 import com.waytoearth.entity.Journey.StoryCardEntity;
 import com.waytoearth.entity.enums.StoryType;
-import com.waytoearth.repository.Journey.LandmarkRepository;
-import com.waytoearth.repository.Journey.StampRepository;
-import com.waytoearth.repository.Journey.StoryCardRepository;
-import com.waytoearth.repository.Journey.UserJourneyProgressRepository;
+import com.waytoearth.repository.journey.LandmarkRepository;
+import com.waytoearth.repository.journey.StampRepository;
+import com.waytoearth.repository.journey.StoryCardRepository;
+import com.waytoearth.repository.journey.UserJourneyProgressRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
