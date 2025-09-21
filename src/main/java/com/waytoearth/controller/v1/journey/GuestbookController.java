@@ -97,4 +97,5 @@ public class GuestbookController {
         GuestbookService.LandmarkStatistics statistics = guestbookService.getLandmarkStatistics(landmarkId);
         return ResponseEntity.ok(statistics);
     }
+
 }
