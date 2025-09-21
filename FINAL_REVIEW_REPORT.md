@@ -102,10 +102,24 @@ POST /v1/guestbook              # 방명록 작성
 GET  /v1/guestbook/landmarks/{landmarkId}  # 랜드마크별 방명록
 ```
 
-### **📱 소셜 & 기타 (22개)**
+### **📁 파일 업로드 (8개)**
+```
+POST /v1/files/presign/profile   # 프로필 이미지 업로드 URL
+POST /v1/files/presign/feed      # 피드 이미지 업로드 URL
+POST /v1/guestbook/image/presign # 방명록 이미지 업로드 URL
+POST /v1/story-cards/image/presign # 스토리 이미지 업로드 URL
+POST /v1/landmarks/image/presign # 랜드마크 이미지 업로드 URL
+DELETE /v1/files/profile         # 프로필 이미지 삭제
+POST /v1/feeds/{feedId}/image/presign # 피드별 이미지 업로드 URL
+```
+
+### **📱 소셜 & 기타 (15개)**
 ```
 POST /v1/feeds                   # 피드 작성
 GET  /v1/feeds                   # 피드 목록
+GET  /v1/feeds/{feedId}          # 피드 상세
+DELETE /v1/feeds/{feedId}        # 피드 삭제
+POST /v1/feeds/{feedId}/like     # 피드 좋아요
 GET  /v1/emblems/catalog         # 엠블럼 카탈로그
 GET  /v1/statistics/weekly       # 주간 통계
 GET  /v1/weather/current         # 현재 날씨
