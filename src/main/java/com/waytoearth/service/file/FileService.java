@@ -84,20 +84,6 @@ public class FileService {
         return new PresignResponse(uploadUrl, downloadUrl, key, (int) EXPIRES_IN.getSeconds());
     }
 
-    // 방명록 이미지 Presign 발급
-    public PresignResponse presignGuestbook(Long userId, PresignRequest req) {
-        validateJourneyImage(userId, req);
-
-        String key = String.format("journeys/guestbooks/%s/%s/%s", LocalDate.now(), userId, UUID.randomUUID());
-
-        String uploadUrl = createPresignedPutUrl(key, req.getContentType());
-        String downloadUrl = createPresignedGetUrl(key);
-
-        log.info("[S3 Presign Guestbook] userId={}, key={}, uploadUrl={}, downloadUrl={}",
-                userId, key, uploadUrl, downloadUrl);
-
-        return new PresignResponse(uploadUrl, downloadUrl, key, (int) EXPIRES_IN.getSeconds());
-    }
 
     // 스토리 이미지 Presign 발급
     public PresignResponse presignStory(Long userId, PresignRequest req) {
