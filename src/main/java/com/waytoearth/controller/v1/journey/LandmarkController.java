@@ -1,13 +1,20 @@
 package com.waytoearth.controller.v1.journey;
 
+import com.waytoearth.dto.request.file.PresignRequest;
+import com.waytoearth.dto.response.common.ApiResponse;
+import com.waytoearth.dto.response.file.PresignResponse;
 import com.waytoearth.dto.response.journey.LandmarkDetailResponse;
 import com.waytoearth.dto.response.journey.LandmarkSummaryResponse;
 import com.waytoearth.dto.response.journey.StoryCardResponse;
 import com.waytoearth.entity.enums.StoryType;
+import com.waytoearth.security.AuthUser;
+import com.waytoearth.security.AuthenticatedUser;
+import com.waytoearth.service.file.FileService;
 import com.waytoearth.service.journey.LandmarkService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +30,7 @@ import java.util.List;
 public class LandmarkController {
 
     private final LandmarkService landmarkService;
+    private final FileService fileService;
 
     @GetMapping("/{landmarkId}")
     @Operation(summary = "랜드마크 상세 정보", description = "랜드마크의 상세 정보를 조회합니다.")
@@ -59,5 +67,15 @@ public class LandmarkController {
 
         List<LandmarkSummaryResponse> landmarks = landmarkService.getLandmarksByJourneyId(journeyId);
         return ResponseEntity.ok(landmarks);
+    }
+
+    @PostMapping("/image/presign")
+    @Operation(summary = "랜드마크 이미지 업로드 Presigned URL 발급", description = "랜드마크에 사용할 이미지를 업로드할 수 있도록 S3 Presigned URL을 발급합니다.")
+    public ResponseEntity<ApiResponse<PresignResponse>> presignImageUpload(
+            @AuthUser AuthenticatedUser user,
+            @Valid @RequestBody PresignRequest req
+    ) {
+        PresignResponse response = fileService.presignLandmark(user.getUserId(), req);
+        return ResponseEntity.ok(ApiResponse.success(response, "랜드마크 이미지 업로드 URL이 성공적으로 발급되었습니다."));
     }
 }

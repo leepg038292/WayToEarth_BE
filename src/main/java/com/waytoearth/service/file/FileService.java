@@ -28,6 +28,7 @@ public class FileService {
 
     private static final long MAX_PROFILE_SIZE = 5L * 1024 * 1024; // 5MB
     private static final long MAX_FEED_SIZE = 10L * 1024 * 1024;   // 10MB
+    private static final long MAX_JOURNEY_SIZE = 10L * 1024 * 1024; // 10MB for journey images
     private static final Duration EXPIRES_IN = Duration.ofMinutes(5);
 
     private final S3Presigner presigner;
@@ -78,6 +79,51 @@ public class FileService {
         String downloadUrl = createPresignedGetUrl(key);
 
         log.info("[S3 Presign Feed] userId={}, key={}, uploadUrl={}, downloadUrl={}",
+                userId, key, uploadUrl, downloadUrl);
+
+        return new PresignResponse(uploadUrl, downloadUrl, key, (int) EXPIRES_IN.getSeconds());
+    }
+
+    // 방명록 이미지 Presign 발급
+    public PresignResponse presignGuestbook(Long userId, PresignRequest req) {
+        validateJourneyImage(userId, req);
+
+        String key = String.format("journeys/guestbooks/%s/%s/%s", LocalDate.now(), userId, UUID.randomUUID());
+
+        String uploadUrl = createPresignedPutUrl(key, req.getContentType());
+        String downloadUrl = createPresignedGetUrl(key);
+
+        log.info("[S3 Presign Guestbook] userId={}, key={}, uploadUrl={}, downloadUrl={}",
+                userId, key, uploadUrl, downloadUrl);
+
+        return new PresignResponse(uploadUrl, downloadUrl, key, (int) EXPIRES_IN.getSeconds());
+    }
+
+    // 스토리 이미지 Presign 발급
+    public PresignResponse presignStory(Long userId, PresignRequest req) {
+        validateJourneyImage(userId, req);
+
+        String key = String.format("journeys/stories/%s/%s/%s", LocalDate.now(), userId, UUID.randomUUID());
+
+        String uploadUrl = createPresignedPutUrl(key, req.getContentType());
+        String downloadUrl = createPresignedGetUrl(key);
+
+        log.info("[S3 Presign Story] userId={}, key={}, uploadUrl={}, downloadUrl={}",
+                userId, key, uploadUrl, downloadUrl);
+
+        return new PresignResponse(uploadUrl, downloadUrl, key, (int) EXPIRES_IN.getSeconds());
+    }
+
+    // 랜드마크 이미지 Presign 발급
+    public PresignResponse presignLandmark(Long userId, PresignRequest req) {
+        validateJourneyImage(userId, req);
+
+        String key = String.format("journeys/landmarks/%s/%s/%s", LocalDate.now(), userId, UUID.randomUUID());
+
+        String uploadUrl = createPresignedPutUrl(key, req.getContentType());
+        String downloadUrl = createPresignedGetUrl(key);
+
+        log.info("[S3 Presign Landmark] userId={}, key={}, uploadUrl={}, downloadUrl={}",
                 userId, key, uploadUrl, downloadUrl);
 
         return new PresignResponse(uploadUrl, downloadUrl, key, (int) EXPIRES_IN.getSeconds());
@@ -140,6 +186,21 @@ public class FileService {
         }
         if (req.getSize() <= 0 || req.getSize() > MAX_PROFILE_SIZE) {
             throw new IllegalArgumentException("파일 크기 초과(최대 5MB)");
+        }
+    }
+
+    private void validateJourneyImage(Long userId, PresignRequest req) {
+        if (userId == null || userId <= 0) {
+            throw new IllegalArgumentException("유효하지 않은 사용자 ID");
+        }
+        if (req == null) {
+            throw new IllegalArgumentException("요청이 비어 있습니다.");
+        }
+        if (req.getContentType() == null || !req.getContentType().matches("^image/(jpeg|png|webp)$")) {
+            throw new IllegalArgumentException("허용되지 않는 Content-Type");
+        }
+        if (req.getSize() <= 0 || req.getSize() > MAX_JOURNEY_SIZE) {
+            throw new IllegalArgumentException("파일 크기 초과(최대 10MB)");
         }
     }
 }

@@ -1,7 +1,13 @@
 package com.waytoearth.controller.v1.journey;
 
+import com.waytoearth.dto.request.file.PresignRequest;
 import com.waytoearth.dto.request.journey.GuestbookCreateRequest;
+import com.waytoearth.dto.response.common.ApiResponse;
+import com.waytoearth.dto.response.file.PresignResponse;
 import com.waytoearth.dto.response.journey.GuestbookResponse;
+import com.waytoearth.security.AuthUser;
+import com.waytoearth.security.AuthenticatedUser;
+import com.waytoearth.service.file.FileService;
 import com.waytoearth.service.journey.GuestbookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,6 +32,7 @@ import java.util.List;
 public class GuestbookController {
 
     private final GuestbookService guestbookService;
+    private final FileService fileService;
 
     @PostMapping
     @Operation(
@@ -96,5 +103,15 @@ public class GuestbookController {
 
         GuestbookService.LandmarkStatistics statistics = guestbookService.getLandmarkStatistics(landmarkId);
         return ResponseEntity.ok(statistics);
+    }
+
+    @PostMapping("/image/presign")
+    @Operation(summary = "방명록 이미지 업로드 Presigned URL 발급", description = "방명록에 첨부할 이미지를 업로드할 수 있도록 S3 Presigned URL을 발급합니다.")
+    public ResponseEntity<ApiResponse<PresignResponse>> presignImageUpload(
+            @AuthUser AuthenticatedUser user,
+            @Valid @RequestBody PresignRequest req
+    ) {
+        PresignResponse response = fileService.presignGuestbook(user.getUserId(), req);
+        return ResponseEntity.ok(ApiResponse.success(response, "방명록 이미지 업로드 URL이 성공적으로 발급되었습니다."));
     }
 }
