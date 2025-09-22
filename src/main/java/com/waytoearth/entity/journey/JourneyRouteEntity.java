@@ -56,8 +56,6 @@ public class JourneyRouteEntity extends BaseTimeEntity {
 
     @Schema(description = "고도 (미터)", example = "120.5")
     @Column(name = "altitude")
-    @DecimalMin(value = "-500.0", message = "고도는 -500미터 이상이어야 합니다")
-    @DecimalMax(value = "9000.0", message = "고도는 9000미터 이하여야 합니다")
     private Double altitude;
 
     @Schema(description = "구간 설명", example = "한강대교 진입")
