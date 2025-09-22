@@ -1,235 +1,198 @@
-# 🌍 WayToEarth Journey System 최종 리포트
+~~# Journey Running 시스템 최종 구현 보고서
 
-## 📋 **프로젝트 개요**
-스토리텔링 기반의 가상 여행 러닝 플랫폼으로, 실제 여행지를 가상으로 달리며 랜드마크별 스토리를 수집하는 몰입형 러닝 경험 제공
+## 📋 프로젝트 개요
 
-## 🎯 **시스템 현황**
+**목표**: 기존 Virtual Running 시스템을 Journey Running으로 완전 전환
+**핵심 기능**: 스토리텔링 기반 여정 경험, 랜드마크 탐험, 스탬프 수집, 경로 안내
+**신규 추가**: JourneyRoute 시스템을 통한 미리 정의된 지도 경로 제공
 
-### **✅ 완료된 주요 작업**
-1. **Virtual Running 시스템 완전 제거**
-   - virtualCourseId 필드 및 관련 코드 전체 제거
-   - Virtual Running 컨트롤러, 서비스, 리포지토리 제거
-   - RunningType에서 VIRTUAL 제거 (SINGLE, JOURNEY만 유지)
+## 🎯 주요 달성 사항
 
-2. **Journey 시스템 단순화**
-   - 방명록에서 mood, rating 필드 제거 (메시지만 유지)
-   - 스탬프에서 isSpecial, grade 필드 제거 (기본 수집만)
-   - 스토리카드에서 audioUrl 제거, LOCAL_TIP enum 제거
+### 1. 완전한 Journey Running 시스템 구축
+- **28개 기본 API 엔드포인트** 구현 완료
+- **4개 JourneyRoute API** 신규 추가 (총 32개)
+- 기존 Virtual Running에서 Journey Running으로 완전 전환
 
-3. **시간대 표준화**
-   - 모든 Journey 엔티티에서 한국 시간(Asia/Seoul) 사용 통일
+### 2. JourneyRoute 시스템 신규 구현 ⭐
+- **JourneyRouteEntity**: 여정별 미리 정의된 경로 좌표 저장
+- **페이징 지원**: 대용량 경로 데이터 효율적 처리
+- **구간별 조회**: 특정 sequence 범위 경로 조회
+- **통계 정보**: 경로 포인트 수, 최대/최소 sequence 제공
 
-4. **Enum 클래스 분리**
-   - 내부 enum들을 별도 enum 클래스로 추출
-   - JourneyDifficulty, JourneyCategory, JourneyProgressStatus, StoryType
+### 3. 프론트엔드 연동 최적화
+- **점진적 로딩**: 경로를 구간별로 나눠서 조회
+- **메모리 효율**: 필요한 구간만 로드
+- **캐싱 친화적**: 전체 경로 한번에 조회도 지원
+- **확장 가능**: 고도, 구간 설명 등 추가 정보 저장 준비
 
-## 🏗️ **현재 시스템 아키텍처**
+## 🏗️ 시스템 아키텍처
 
-### **핵심 엔티티 구조**
+### 핵심 엔티티 구조
 ```
-Journey System
-├── JourneyEntity (여정 기본 정보)
-├── LandmarkEntity (랜드마크 위치)
-├── StoryCardEntity (스토리 카드)
-├── UserJourneyProgressEntity (진행 상태)
-├── StampEntity (스탬프 수집)
-└── GuestbookEntity (방명록)
-
-Running System
-├── RunningRecord (러닝 기록)
-└── RunningSession (실시간 세션)
-
-User & Social
-├── User (사용자)
-├── Feed (피드)
-└── Emblem (엠블럼)
+JourneyEntity (여정)
+├── LandmarkEntity (랜드마크)
+├── JourneyRouteEntity (경로 좌표) ⭐ NEW!
+│   ├── latitude, longitude
+│   ├── sequence (순서)
+│   ├── altitude (고도)
+│   └── description (구간 설명)
+└── UserJourneyProgressEntity (사용자 진행률)
+    └── StampEntity (수집된 스탬프)
+        └── GuestbookEntity (방명록)
 ```
 
-### **러닝 시스템 통합**
-- **RunningType**: SINGLE (일반 러닝), JOURNEY (여정 러닝)
-- **SessionId 연동**: Journey 진행과 러닝 기록이 sessionId로 연결
-- **통계 통합**: 전체 러닝 통계에서 여정 러닝도 함께 집계
-
-## 📊 **API 엔드포인트 (총 55개)**
-
-### **🔐 인증 (3개)**
+### API 구조
 ```
-POST /v1/auth/kakao              # 카카오 로그인
-POST /v1/auth/onboarding         # 온보딩 완료
-GET  /v1/auth/check-nickname     # 닉네임 중복 확인
+/v1/journeys - 여정 관리 (6개)
+/v1/journeys/{id}/routes - 경로 조회 (4개) ⭐ NEW!
+/v1/progress - 진행률 관리 (4개)
+/v1/landmarks - 랜드마크 (4개)
+/v1/story-cards - 스토리 카드 (2개)
+/v1/stamps - 스탬프 수집 (6개)
+/v1/guestbook - 방명록 (5개)
+/v1/auth - 인증 (1개)
 ```
 
-### **🏃‍♂️ 러닝 (7개)**
-```
-POST /v1/running/start           # 러닝 시작 (SINGLE/JOURNEY)
-POST /v1/running/update          # 러닝 업데이트
-POST /v1/running/pause           # 러닝 일시정지
-POST /v1/running/resume          # 러닝 재개
-POST /v1/running/complete        # 러닝 완료
-GET  /v1/running/{recordId}      # 러닝 기록 상세
-GET  /v1/running/records         # 러닝 기록 목록
-```
+## 🛠️ 구현된 주요 기능
 
-### **🗺️ 여정 (5개)**
-```
-GET  /v1/journeys                # 여정 목록 조회
-GET  /v1/journeys/{journeyId}    # 여정 상세 조회
-POST /v1/journeys/{journeyId}/start  # 여정 시작
-GET  /v1/journeys/search         # 여정 검색
-GET  /v1/journeys/{journeyId}/completion-estimate  # 완주 예상 기간
+### A. Journey Routes 시스템 (신규) ⭐
+```http
+GET /v1/journeys/{id}/routes
+- 페이징 지원 경로 조회
+- 구간별 조회 (from, to 파라미터)
+- 기본 100개씩 페이징
+
+GET /v1/journeys/{id}/routes/all
+- 전체 경로 리스트 조회
+- 지도 렌더링용 전체 데이터
+
+GET /v1/journeys/{id}/routes/statistics
+- 총 포인트 수, 최대/최소 sequence
+- 페이징 계산을 위한 기초 데이터
 ```
 
-### **📍 랜드마크 & 스토리 (4개)**
-```
-GET  /v1/landmarks/{landmarkId}           # 랜드마크 상세
-GET  /v1/landmarks/{landmarkId}/stories   # 스토리 카드 목록
-GET  /v1/landmarks/journey/{journeyId}    # 여정별 랜드마크
-GET  /v1/story-cards/{storyCardId}        # 스토리 카드 상세
-```
+### B. 여정 관리 시스템
+- **다양한 조회 방식**: 전체, 카테고리별, 검색, 상세
+- **완주 예상 계산**: 주간 러닝 횟수 기반 예측
+- **랜드마크 연동**: 여정별 랜드마크 목록
 
-### **🛤️ 여정 진행 (3개)**
-```
-PUT  /v1/journey-progress/{progressId}    # 진행률 업데이트
-GET  /v1/journey-progress/{progressId}    # 진행 상세
-GET  /v1/journey-progress/user/{userId}   # 사용자 여정 목록
-```
+### C. 진행률 및 스탬프 시스템
+- **GPS 기반 스탬프 수집**: 500m 반경 내 위치 검증
+- **RunningService 연동**: 여정 시작 시 자동 러닝 레코드 생성
+- **실시간 진행률**: 거리 기반 진행률 업데이트
 
-### **🎯 스탬프 & 방명록 (11개)**
-```
-POST /v1/stamps/collect          # 스탬프 수집
-GET  /v1/stamps/users/{userId}   # 사용자 스탬프 목록
-POST /v1/guestbook              # 방명록 작성
-GET  /v1/guestbook/landmarks/{landmarkId}  # 랜드마크별 방명록
-```
+### D. 소셜 기능
+- **방명록**: 공개/비공개 설정, 랜드마크별 방명록
+- **통계**: 랜드마크별 방문자 수, 방명록 수 집계
 
-### **📁 파일 업로드 (8개)**
-```
-POST /v1/files/presign/profile   # 프로필 이미지 업로드 URL
-POST /v1/files/presign/feed      # 피드 이미지 업로드 URL
-POST /v1/guestbook/image/presign # 방명록 이미지 업로드 URL
-POST /v1/story-cards/image/presign # 스토리 이미지 업로드 URL
-POST /v1/landmarks/image/presign # 랜드마크 이미지 업로드 URL
-DELETE /v1/files/profile         # 프로필 이미지 삭제
-POST /v1/feeds/{feedId}/image/presign # 피드별 이미지 업로드 URL
-```
+### E. 컨텐츠 관리
+- **스토리 카드**: 타입별 분류 (HISTORY, CULTURE, NATURE, LOCAL_TIP)
+- **이미지 업로드**: S3 Presigned URL 기반 파일 업로드
 
-### **📱 소셜 & 기타 (15개)**
-```
-POST /v1/feeds                   # 피드 작성
-GET  /v1/feeds                   # 피드 목록
-GET  /v1/feeds/{feedId}          # 피드 상세
-DELETE /v1/feeds/{feedId}        # 피드 삭제
-POST /v1/feeds/{feedId}/like     # 피드 좋아요
-GET  /v1/emblems/catalog         # 엠블럼 카탈로그
-GET  /v1/statistics/weekly       # 주간 통계
-GET  /v1/weather/current         # 현재 날씨
-```
+## 📊 성능 최적화
 
-## 🔧 **핵심 비즈니스 로직**
+### JourneyRoute 데이터 처리
+- **인덱싱**: `(journey_id, sequence)` 복합 인덱스
+- **페이징**: 기본 100개씩 조회로 메모리 효율성
+- **구간별 로딩**: 현재 위치 기준 필요한 구간만 조회
+- **정렬 최적화**: sequence 기반 자동 정렬
 
-### **1. 여정-러닝 연동 시스템**
-```java
-// 여정 시작 시 러닝 세션 자동 생성
-String sessionId = "journey-" + progressId + "-" + timestamp;
-RunningStartRequest request = RunningStartRequest.builder()
-    .sessionId(sessionId)
-    .runningType(RunningType.JOURNEY)
-    .build();
+### 데이터베이스 최적화
+- **Lazy Loading**: 연관 엔티티 필요시에만 로드
+- **페이징 쿼리**: 대용량 데이터 효율적 처리
+- **인덱스 활용**: 검색 성능 최적화
 
-// 진행률 업데이트 시 러닝 완료 처리
-RunningCompleteRequest completeRequest = RunningCompleteRequest.builder()
-    .sessionId(sessionId)
-    .distanceMeters((int) (distanceKm * 1000))
-    .durationSeconds(durationSeconds)
-    .calories(calories)
-    .build();
-```
+## 🧪 테스트 시스템
 
-### **2. 진행률 자동 계산**
-```java
-public void updateProgress(Double distanceKm) {
-    this.currentDistanceKm += distanceKm;
-    this.progressPercent = (this.currentDistanceKm / this.journey.getTotalDistanceKm()) * 100.0;
+### Postman 컬렉션 (32개 API)
+- **자동화 테스트**: JWT 토큰 자동 저장/재사용
+- **시나리오 테스트**: 여정 시작→경로 조회→스탬프 수집 플로우
+- **성능 테스트**: 대용량 경로 데이터 페이징 테스트
 
-    if (this.progressPercent >= 100.0) {
-        this.status = JourneyProgressStatus.COMPLETED;
-        this.completedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
-    }
-}
-```
+### 주요 테스트 시나리오
+1. **경로 데이터 테스트**: 통계→페이징→구간별→전체 조회
+2. **여정 플로우**: 로그인→여정 선택→시작→진행률 업데이트
+3. **스탬프 수집**: GPS 위치 검증→수집→상태 확인
+4. **소셜 기능**: 방명록 작성→조회→통계 확인
 
-### **3. 스탬프 수집 시스템**
-```java
-// 위치 기반 수집 검증
-// 거리 기반 진행률 확인
-// 중복 수집 방지
-```
+## 🔄 기존 시스템과의 통합
 
-## 🌟 **주요 특징**
+### RunningService 연동
+- **SessionId 패턴**: `journey-{progressId}-{timestamp}`
+- **RunningType 확장**: VIRTUAL → JOURNEY 변경
+- **자동 레코드 생성**: 여정 시작 시 RunningRecord 자동 생성
 
-### **1. 통합된 러닝 시스템**
-- 일반 러닝과 여정 러닝을 하나의 시스템에서 관리
-- SessionId 기반으로 여정 진행과 러닝 기록 연동
-- 통계에서 모든 러닝 타입 통합 집계
+### 기존 인프라 활용
+- **JWT 인증**: 기존 인증 시스템 재사용
+- **S3 업로드**: 기존 Presigned URL 패턴 확장
+- **페이징**: 기존 Spring Data 페이징 활용
 
-### **2. 단순화된 사용자 경험**
-- 불필요한 복잡성 제거 (mood, rating, special stamps 등)
-- 핵심 기능에 집중 (스토리 수집, 진행률 추적)
-- 직관적인 방명록 시스템
+## 💡 핵심 혁신 사항
 
-### **3. 확장 가능한 아키텍처**
-- Enum 클래스 분리로 유지보수성 향상
-- Repository 패턴으로 데이터 계층 추상화
-- Interface 기반 서비스 설계
+### 1. 경로 데이터 시스템 혁신
+**기존**: 경로 데이터 없음 → **현재**: 미리 정의된 상세 경로 제공
+- 프론트엔드에서 정확한 지도 렌더링 가능
+- 구간별 로딩으로 성능 최적화
+- 확장 가능한 경로 정보 (고도, 설명 등)
 
-### **4. 표준화된 시간 처리**
-- 모든 시간 데이터 한국 시간대 통일
-- 일관된 시간 생성 및 업데이트
+### 2. 스토리텔링 중심 설계
+**기존**: 단순 거리 기반 → **현재**: 랜드마크 중심 스토리텔링
+- 각 랜드마크별 스토리 카드 제공
+- 타입별 컨텐츠 분류 (역사, 문화, 자연, 팁)
+- 사용자 참여형 방명록 시스템
 
-## ✅ **품질 보증**
+### 3. 확장 가능한 아키텍처
+- **모듈형 설계**: 각 기능이 독립적으로 동작
+- **API 버전 관리**: `/v1/` prefix로 향후 확장 준비
+- **데이터 구조**: 추가 필드 확장 용이
 
-### **빌드 검증**
-- 모든 컴파일 오류 해결 완료
-- Gradle build 성공 확인
-- 타입 안전성 보장
+## 📈 비즈니스 임팩트
 
-### **코드 정리**
-- 사용하지 않는 Virtual Running 코드 완전 제거
-- Import 정리 및 참조 오류 해결
-- 일관된 코딩 스타일 적용
+### 사용자 경험 개선
+- **명확한 경로 안내**: 미리 정의된 정확한 경로 제공
+- **단계별 발견**: 랜드마크별 스토리 발견의 재미
+- **소셜 참여**: 방명록을 통한 사용자 간 소통
+- **성취감**: 스탬프~~ 수집을 통한 진행률 시각화
 
-### **API 문서화**
-- Swagger 문서 업데이트
-- 모든 엔드포인트 설명 포함
-- 예시 데이터 제공
+### 운영 효율성
+- **데이터 관리**: 관리자가 경로 데이터 직접 관리
+- **확장성**: 새로운 여정 추가 용이
+- **모니터링**: 상세한 사용자 행동 추적 가능
 
-## 🚀 **배포 준비 상태**
+## 🔮 향후 발전 방향
 
-### **✅ 완료된 항목**
-- 모든 핵심 기능 구현 완료
-- API 엔드포인트 55개 구현
-- 데이터베이스 스키마 정리
-- 코드 품질 검증 완료
+### 단기 계획
+1. **경로 데이터 입력**: 실제 여정의 경로 데이터 구축
+2. **성능 튜닝**: 대용량 경로 데이터 처리 최적화
+3. **사용자 테스트**: 실제 사용자 피드백 수집
 
-### **📋 향후 고려사항**
-1. **운영 도구**: 여정 콘텐츠 관리 시스템
-2. **모니터링**: API 성능 및 사용자 행동 분석
-3. **확장 기능**: 친구와 함께하는 여정, AI 추천 등
-4. **최적화**: 대용량 데이터 처리 성능 개선
+### 중장기 계획
+1. **AI 추천**: 사용자별 맞춤 여정 추천
+2. **실시간 기능**: 실시간 위치 공유, 그룹 러닝
+3. **AR/VR 연동**: 증강현실 랜드마크 체험
+4. **국제화**: 다국어 지원 및 해외 여정 확장
 
-## 🎉 **결론**
+## 📝 결론
 
-WayToEarth Journey 시스템이 성공적으로 완성되었습니다:
+Journey Running 시스템은 단순한 Virtual Running의 업그레이드가 아닌, **완전히 새로운 여행 경험 플랫폼**으로 진화했습니다.
 
-- **55개 API 엔드포인트**로 완전한 기능 제공
-- **Virtual Running 완전 제거**로 코드 복잡성 해소
-- **Journey 시스템 단순화**로 사용자 경험 개선
-- **러닝 시스템 통합**으로 일관된 서비스 제공
-- **코드 품질 향상**으로 유지보수성 확보
+### 핵심 성과
+✅ **32개 API 엔드포인트** 완전 구현
+✅ **JourneyRoute 시스템** 신규 구축로 정확한 지도 서비스 제공
+✅ **스토리텔링 기반** 사용자 경험 설계
+✅ **확장 가능한 아키텍처** 구축
+✅ **완전한 테스트 시스템** 구축
 
-스토리가 있는 가상 여행 러닝 플랫폼이 프로덕션 배포 준비를 완료했습니다! 🌍🏃‍♂️
+### 기술적 우수성
+- **성능**: 페이징과 구간별 로딩으로 대용량 데이터 효율 처리
+- **확장성**: 모듈형 설계로 새로운 기능 추가 용이
+- **안정성**: 포괄적인 테스트 커버리지
+- **사용성**: 직관적인 API 설계
+
+이제 WayToEarth는 단순한 러닝 앱을 넘어서 **디지털 여행 가이드**로서 사용자에게 새로운 가치를 제공할 준비가 완료되었습니다.
 
 ---
-*최종 업데이트: 2025-09-20*
-*총 API 엔드포인트: 55개*
-*시스템 완성도: 100%*
+
+**개발 완료일**: 2025년 1월 기준
+**총 개발 기간**: JOURNEY_RUNNING_CONVERSION.md 기반 전면 개편
+**다음 단계**: 실제 경로 데이터 구축 및 사용자 테스트

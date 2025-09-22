@@ -61,4 +61,9 @@ public class JourneyEntity extends BaseTimeEntity {
     @OneToMany(mappedBy = "journey", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<LandmarkEntity> landmarks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "journey", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("sequence ASC")
+    @Builder.Default
+    private List<JourneyRouteEntity> routes = new ArrayList<>();
 }

@@ -5,11 +5,13 @@ import com.waytoearth.dto.request.journey.JourneyProgressUpdateRequest;
 import com.waytoearth.dto.response.journey.JourneySummaryResponse;
 import com.waytoearth.dto.response.journey.JourneyProgressResponse;
 import com.waytoearth.dto.response.journey.JourneyCompletionEstimateResponse;
+import com.waytoearth.dto.response.journey.JourneyRouteResponse;
 import com.waytoearth.dto.response.journey.LandmarkSummaryResponse;
 import com.waytoearth.entity.journey.JourneyEntity;
 import com.waytoearth.entity.journey.UserJourneyProgressEntity;
 import com.waytoearth.entity.user.User;
 import com.waytoearth.repository.journey.JourneyRepository;
+import com.waytoearth.repository.journey.JourneyRouteRepository;
 import com.waytoearth.repository.journey.LandmarkRepository;
 import com.waytoearth.repository.journey.StampRepository;
 import com.waytoearth.repository.journey.UserJourneyProgressRepository;
@@ -24,6 +26,8 @@ import com.waytoearth.entity.enums.JourneyProgressStatus;
 import com.waytoearth.security.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +41,7 @@ import java.util.Optional;
 public class JourneyServiceImpl implements JourneyService {
 
     private final JourneyRepository journeyRepository;
+    private final JourneyRouteRepository journeyRouteRepository;
     private final UserJourneyProgressRepository progressRepository;
     private final LandmarkRepository landmarkRepository;
     private final StampRepository stampRepository;
@@ -235,5 +240,67 @@ public class JourneyServiceImpl implements JourneyService {
                 collectedStamps.intValue(),
                 totalLandmarks.intValue()
         );
+    }
+
+    @Override
+    public Page<JourneyRouteResponse> getJourneyRoutes(Long journeyId, Pageable pageable) {
+        // 여정 존재 확인
+        if (!journeyRepository.existsById(journeyId)) {
+            throw new IllegalArgumentException("여정을 찾을 수 없습니다: " + journeyId);
+        }
+
+        return journeyRouteRepository.findByJourneyIdWithPaging(journeyId, pageable)
+                .map(JourneyRouteResponse::from);
+    }
+
+    @Override
+    public List<JourneyRouteResponse> getJourneyRoutes(Long journeyId) {
+        // 여정 존재 확인
+        if (!journeyRepository.existsById(journeyId)) {
+            throw new IllegalArgumentException("여정을 찾을 수 없습니다: " + journeyId);
+        }
+
+        return journeyRouteRepository.findByJourneyIdOrderBySequenceAsc(journeyId)
+                .stream()
+                .map(JourneyRouteResponse::from)
+                .toList();
+    }
+
+    @Override
+    public List<JourneyRouteResponse> getJourneyRoutesBySequenceRange(Long journeyId, Integer fromSequence, Integer toSequence) {
+        // 여정 존재 확인
+        if (!journeyRepository.existsById(journeyId)) {
+            throw new IllegalArgumentException("여정을 찾을 수 없습니다: " + journeyId);
+        }
+
+        return journeyRouteRepository.findByJourneyIdAndSequenceRange(journeyId, fromSequence, toSequence)
+                .stream()
+                .map(JourneyRouteResponse::from)
+                .toList();
+    }
+
+    @Override
+    public Page<JourneyRouteResponse> getJourneyRoutesBySequenceRange(Long journeyId, Integer fromSequence, Integer toSequence, Pageable pageable) {
+        // 여정 존재 확인
+        if (!journeyRepository.existsById(journeyId)) {
+            throw new IllegalArgumentException("여정을 찾을 수 없습니다: " + journeyId);
+        }
+
+        return journeyRouteRepository.findByJourneyIdAndSequenceRangeWithPaging(journeyId, fromSequence, toSequence, pageable)
+                .map(JourneyRouteResponse::from);
+    }
+
+    @Override
+    public JourneyRouteStatistics getJourneyRouteStatistics(Long journeyId) {
+        // 여정 존재 확인
+        if (!journeyRepository.existsById(journeyId)) {
+            throw new IllegalArgumentException("여정을 찾을 수 없습니다: " + journeyId);
+        }
+
+        Long totalRoutePoints = journeyRouteRepository.countByJourneyId(journeyId);
+        Integer maxSequence = journeyRouteRepository.findMaxSequenceByJourneyId(journeyId);
+        Integer minSequence = journeyRouteRepository.findMinSequenceByJourneyId(journeyId);
+
+        return new JourneyRouteStatistics(totalRoutePoints, maxSequence, minSequence);
     }
 }
