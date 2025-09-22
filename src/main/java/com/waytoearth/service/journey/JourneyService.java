@@ -5,8 +5,11 @@ import com.waytoearth.dto.request.journey.JourneyProgressUpdateRequest;
 import com.waytoearth.dto.response.journey.JourneySummaryResponse;
 import com.waytoearth.dto.response.journey.JourneyProgressResponse;
 import com.waytoearth.dto.response.journey.JourneyCompletionEstimateResponse;
+import com.waytoearth.dto.response.journey.JourneyRouteResponse;
 import com.waytoearth.entity.journey.JourneyEntity;
 import com.waytoearth.entity.enums.JourneyCategory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -56,4 +59,38 @@ public interface JourneyService {
      * 여정 완주 예상 기간 계산
      */
     JourneyCompletionEstimateResponse calculateCompletionEstimate(Long journeyId, Integer runsPerWeek, Double averageDistancePerRun);
+
+    /**
+     * 여정 전체 경로 조회 (페이징 지원)
+     */
+    Page<JourneyRouteResponse> getJourneyRoutes(Long journeyId, Pageable pageable);
+
+    /**
+     * 여정 전체 경로 조회 (리스트)
+     */
+    List<JourneyRouteResponse> getJourneyRoutes(Long journeyId);
+
+    /**
+     * 여정 구간별 경로 조회
+     */
+    List<JourneyRouteResponse> getJourneyRoutesBySequenceRange(Long journeyId, Integer fromSequence, Integer toSequence);
+
+    /**
+     * 여정 구간별 경로 조회 (페이징 지원)
+     */
+    Page<JourneyRouteResponse> getJourneyRoutesBySequenceRange(Long journeyId, Integer fromSequence, Integer toSequence, Pageable pageable);
+
+    /**
+     * 여정 경로 통계 조회
+     */
+    JourneyRouteStatistics getJourneyRouteStatistics(Long journeyId);
+
+    /**
+     * 여정 경로 통계 정보
+     */
+    record JourneyRouteStatistics(
+        Long totalRoutePoints,
+        Integer maxSequence,
+        Integer minSequence
+    ) {}
 }
