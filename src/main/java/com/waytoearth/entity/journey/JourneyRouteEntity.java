@@ -10,6 +10,9 @@ import lombok.*;
     name = "journey_routes",
     indexes = {
         @Index(name = "idx_journey_route_sequence", columnList = "journey_id,sequence")
+    },
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_journey_sequence", columnNames = {"journey_id", "sequence"})
     }
 )
 @Getter
