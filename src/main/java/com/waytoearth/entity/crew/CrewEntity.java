@@ -1,0 +1,75 @@
+package com.waytoearth.entity.crew;
+
+import com.waytoearth.entity.common.BaseTimeEntity;
+import com.waytoearth.entity.user.User;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "crews")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Schema(description = "크루 엔티티")
+public class CrewEntity extends BaseTimeEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "크루 ID", example = "1")
+    private Long id;
+
+    @Schema(description = "크루 이름", example = "서울 러닝 크루")
+    @Column(nullable = false, length = 50)
+    private String name;
+
+    @Schema(description = "크루 소개", example = "함께 달리며 건강한 라이프스타일을 추구하는 크루입니다")
+    @Column(length = 500)
+    private String description;
+
+    @Schema(description = "최대 인원", example = "20")
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer maxMembers = 50;
+
+    @Schema(description = "프로필 이미지 URL", example = "https://example.com/crew-profile.jpg")
+    private String profileImageUrl;
+
+    @Schema(description = "활성화 상태", example = "true")
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean isActive = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
+    @Schema(description = "크루장")
+    private User owner;
+
+    @OneToMany(mappedBy = "crew", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    @Schema(description = "크루 멤버들")
+    private List<CrewMemberEntity> members = new ArrayList<>();
+
+    @OneToMany(mappedBy = "crew", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    @Schema(description = "가입 신청들")
+    private List<CrewJoinRequestEntity> joinRequests = new ArrayList<>();
+
+    // 비즈니스 메서드
+    public boolean isFull() {
+        return members.size() >= maxMembers;
+    }
+
+    public boolean isOwner(User user) {
+        return owner.equals(user);
+    }
+
+    public int getCurrentMemberCount() {
+        return members.size();
+    }
+}
