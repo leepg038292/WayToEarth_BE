@@ -42,14 +42,13 @@ public class StoryCardController {
             - 스토리 제목 및 내용
             - 스토리 이미지
             - 오디오 가이드 URL (있는 경우)
-            - 스토리 타입 (HISTORY/CULTURE/NATURE/LOCAL_TIP)
+            - 스토리 타입 (HISTORY/CULTURE/NATURE)
             - 표시 순서
 
             **스토리 타입:**
             - HISTORY: 역사 정보
             - CULTURE: 문화 정보
             - NATURE: 자연 정보
-            - LOCAL_TIP: 현지 팁
             """,
         tags = {"Story Card API"}
     )
