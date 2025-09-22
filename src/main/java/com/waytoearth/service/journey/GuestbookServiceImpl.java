@@ -43,7 +43,6 @@ public class GuestbookServiceImpl implements GuestbookService {
                 .user(user)
                 .landmark(landmark)
                 .message(request.message())
-                .photoUrl(request.photoUrl())
                 .isPublic(request.isPublic() != null ? request.isPublic() : true)
                 .build();
 

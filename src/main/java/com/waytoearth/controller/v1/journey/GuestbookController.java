@@ -35,16 +35,7 @@ public class GuestbookController {
 
             **작성 가능 항목:**
             - 메시지 (필수, 최대 500자)
-            - 사진 업로드 (선택)
-            - 기분 표현 (HAPPY, EXCITED, TIRED, AMAZED)
-            - 평점 (1-5점)
             - 공개/비공개 설정
-
-            **기분 유형:**
-            - HAPPY: 행복한
-            - EXCITED: 신난
-            - TIRED: 피곤한
-            - AMAZED: 놀란
             """,
         tags = {"Guestbook API"}
     )

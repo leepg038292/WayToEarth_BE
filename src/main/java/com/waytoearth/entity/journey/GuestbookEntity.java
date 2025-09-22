@@ -35,9 +35,6 @@ public class GuestbookEntity extends BaseTimeEntity {
     @Column(nullable = false, length = 500)
     private String message;
 
-    @Schema(description = "사진 URL", example = "https://example.com/photo.jpg")
-    private String photoUrl;
-
     @Schema(description = "공개 여부", example = "true")
     @Column(nullable = false)
     @Builder.Default
