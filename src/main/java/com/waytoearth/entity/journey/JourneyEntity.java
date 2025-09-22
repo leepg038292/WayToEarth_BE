@@ -3,6 +3,7 @@ package com.waytoearth.entity.journey;
 import com.waytoearth.entity.common.BaseTimeEntity;
 import com.waytoearth.entity.enums.JourneyCategory;
 import com.waytoearth.entity.enums.JourneyDifficulty;
+import com.waytoearth.validation.ValidRouteSequence;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -64,6 +65,7 @@ public class JourneyEntity extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "journey", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("sequence ASC")
+    @ValidRouteSequence
     @Builder.Default
     private List<JourneyRouteEntity> routes = new ArrayList<>();
 }
