@@ -6,16 +6,16 @@ public class CrewGrowthDto {
     private final String previousMonth;
     private final Double distanceGrowthRate;
     private final Integer memberGrowthCount;
-    private final Double paceImprovement;
+    private final Double paceChange; // 양수: 느려짐, 음수: 빨라짐 (초 단위)
 
     public CrewGrowthDto(Long crewId, String currentMonth, String previousMonth,
-                       Double distanceGrowthRate, Integer memberGrowthCount, Double paceImprovement) {
+                       Double distanceGrowthRate, Integer memberGrowthCount, Double paceChange) {
         this.crewId = crewId;
         this.currentMonth = currentMonth;
         this.previousMonth = previousMonth;
         this.distanceGrowthRate = distanceGrowthRate;
         this.memberGrowthCount = memberGrowthCount;
-        this.paceImprovement = paceImprovement;
+        this.paceChange = paceChange;
     }
 
     // getters
@@ -24,5 +24,5 @@ public class CrewGrowthDto {
     public String getPreviousMonth() { return previousMonth; }
     public Double getDistanceGrowthRate() { return distanceGrowthRate; }
     public Integer getMemberGrowthCount() { return memberGrowthCount; }
-    public Double getPaceImprovement() { return paceImprovement; }
+    public Double getPaceChange() { return paceChange; }
 }

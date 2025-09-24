@@ -37,10 +37,10 @@ public class CrewStatisticsEntity extends BaseTimeEntity {
     @Builder.Default
     private BigDecimal totalDistance = BigDecimal.ZERO;
 
-    @Schema(description = "활동 멤버 수", example = "12")
+    @Schema(description = "해당 월 활동한 고유 멤버 수", example = "12")
     @Column(nullable = false)
     @Builder.Default
-    private Integer activeMembers = 0;
+    private Integer monthlyActiveMembers = 0;
 
     @Schema(description = "평균 페이스 (초)", example = "375")
     @Column(precision = 10, scale = 2)
@@ -74,7 +74,7 @@ public class CrewStatisticsEntity extends BaseTimeEntity {
                 .crew(crew)
                 .month(month)
                 .totalDistance(BigDecimal.ZERO)
-                .activeMembers(0)
+                .monthlyActiveMembers(0)
                 .totalRuns(0)
                 .build();
     }

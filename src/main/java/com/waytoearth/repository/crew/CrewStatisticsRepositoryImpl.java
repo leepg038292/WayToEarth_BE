@@ -37,7 +37,7 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
         return queryFactory
                 .selectFrom(crewStatisticsEntity)
                 .where(crewStatisticsEntity.month.eq(month))
-                .orderBy(crewStatisticsEntity.activeMembers.desc())
+                .orderBy(crewStatisticsEntity.monthlyActiveMembers.desc())
                 .limit(limit)
                 .fetch();
     }
@@ -76,12 +76,12 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
             }
 
             // 멤버 증가 수
-            memberGrowthCount = currentStats.getActiveMembers() - previousStats.getActiveMembers();
+            memberGrowthCount = currentStats.getMonthlyActiveMembers() - previousStats.getMonthlyActiveMembers();
 
-            // 페이스 개선도 (음수가 좋음 - 더 빨라짐)
+            // 페이스 변화 (양수: 느려짐, 음수: 빨라짐)
             if (previousStats.getAvgPaceSeconds() != null && currentStats.getAvgPaceSeconds() != null) {
-                paceImprovement = previousStats.getAvgPaceSeconds().doubleValue() -
-                                currentStats.getAvgPaceSeconds().doubleValue();
+                paceImprovement = currentStats.getAvgPaceSeconds().doubleValue() -
+                                previousStats.getAvgPaceSeconds().doubleValue();
             }
         }
 
@@ -154,7 +154,7 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
                         Expressions.constant(month),
                         crewStatisticsEntity.crew.id.countDistinct().intValue(),
                         crewStatisticsEntity.totalDistance.sum(),
-                        crewStatisticsEntity.activeMembers.sum(),
+                        crewStatisticsEntity.monthlyActiveMembers.sum(),
                         crewStatisticsEntity.avgPaceSeconds.avg()
                 ))
                 .from(crewStatisticsEntity)
