@@ -11,9 +11,14 @@ import java.util.List;
 public interface CrewStatisticsRepositoryCustom {
 
     /**
-     * 월별 상위 크루 조회 (거리 기준)
+     * 월별 상위 크루 조회 (총 거리 기준)
      */
     List<CrewStatisticsEntity> findTopCrewsByDistance(String month, int limit);
+
+    /**
+     * 월별 상위 크루 조회 (러닝 횟수 기준)
+     */
+    List<CrewStatisticsEntity> findTopCrewsByRunCount(String month, int limit);
 
     /**
      * 월별 상위 크루 조회 (활동 멤버 기준)
@@ -26,7 +31,7 @@ public interface CrewStatisticsRepositoryCustom {
     CrewGrowthDto calculateCrewGrowth(Long crewId, String currentMonth, String previousMonth);
 
     /**
-     * 통계 계산이 필요한 크루들 조회
+     * 해당 월 통계가 없는 크루들 조회
      */
     List<CrewEntity> findCrewsNeedingStatsCalculation(String month);
 
@@ -36,7 +41,7 @@ public interface CrewStatisticsRepositoryCustom {
     List<CrewRankingComparisonDto> getCrewRankingComparison(List<Long> crewIds, String month);
 
     /**
-     * 전체 크루 통계 요약
+     * 월별 전체 크루 통계 요약
      */
     CrewStatisticsSummaryDto getOverallStatistics(String month);
 

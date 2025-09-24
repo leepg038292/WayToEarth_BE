@@ -26,8 +26,20 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
     public List<CrewStatisticsEntity> findTopCrewsByDistance(String month, int limit) {
         return queryFactory
                 .selectFrom(crewStatisticsEntity)
-                .where(crewStatisticsEntity.month.eq(month))
+                .where(crewStatisticsEntity.month.eq(month)
+                        .and(crewStatisticsEntity.crew.isActive.isTrue()))
                 .orderBy(crewStatisticsEntity.totalDistance.desc())
+                .limit(limit)
+                .fetch();
+    }
+
+    @Override
+    public List<CrewStatisticsEntity> findTopCrewsByRunCount(String month, int limit) {
+        return queryFactory
+                .selectFrom(crewStatisticsEntity)
+                .where(crewStatisticsEntity.month.eq(month)
+                        .and(crewStatisticsEntity.crew.isActive.isTrue()))
+                .orderBy(crewStatisticsEntity.runCount.desc())
                 .limit(limit)
                 .fetch();
     }
@@ -36,22 +48,23 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
     public List<CrewStatisticsEntity> findTopCrewsByActiveMembers(String month, int limit) {
         return queryFactory
                 .selectFrom(crewStatisticsEntity)
-                .where(crewStatisticsEntity.month.eq(month))
-                .orderBy(crewStatisticsEntity.monthlyActiveMembers.desc())
+                .where(crewStatisticsEntity.month.eq(month)
+                        .and(crewStatisticsEntity.crew.isActive.isTrue()))
+                .orderBy(crewStatisticsEntity.activeMembers.desc())
                 .limit(limit)
                 .fetch();
     }
 
     @Override
     public CrewGrowthDto calculateCrewGrowth(Long crewId, String currentMonth, String previousMonth) {
-        // 현재 달 통계
+        // 현재 달 통계 조회
         CrewStatisticsEntity currentStats = queryFactory
                 .selectFrom(crewStatisticsEntity)
                 .where(crewStatisticsEntity.crew.id.eq(crewId)
                         .and(crewStatisticsEntity.month.eq(currentMonth)))
                 .fetchOne();
 
-        // 이전 달 통계
+        // 이전 달 통계 조회
         CrewStatisticsEntity previousStats = queryFactory
                 .selectFrom(crewStatisticsEntity)
                 .where(crewStatisticsEntity.crew.id.eq(crewId)
@@ -64,8 +77,8 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
 
         // 성장률 계산
         Double distanceGrowthRate = 0.0;
-        Integer memberGrowthCount = 0;
-        Double paceImprovement = 0.0;
+        Integer activeMembers = currentStats.getActiveMembers();
+        Double paceChange = 0.0;
 
         if (previousStats != null) {
             // 거리 성장률 계산 (%)
@@ -75,18 +88,15 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
                                     previousStats.getTotalDistance().doubleValue()) * 100;
             }
 
-            // 멤버 증가 수
-            memberGrowthCount = currentStats.getMonthlyActiveMembers() - previousStats.getMonthlyActiveMembers();
-
             // 페이스 변화 (양수: 느려짐, 음수: 빨라짐)
             if (previousStats.getAvgPaceSeconds() != null && currentStats.getAvgPaceSeconds() != null) {
-                paceImprovement = currentStats.getAvgPaceSeconds().doubleValue() -
-                                previousStats.getAvgPaceSeconds().doubleValue();
+                paceChange = currentStats.getAvgPaceSeconds().doubleValue() -
+                           previousStats.getAvgPaceSeconds().doubleValue();
             }
         }
 
         return new CrewGrowthDto(crewId, currentMonth, previousMonth,
-                               distanceGrowthRate, memberGrowthCount, paceImprovement);
+                               distanceGrowthRate, activeMembers, paceChange);
     }
 
     @Override
@@ -115,7 +125,7 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
                 .orderBy(crewStatisticsEntity.totalDistance.desc())
                 .fetch();
 
-        // 이전 달 계산 (202412 -> 202411)
+        // 이전 달 계산
         String previousMonth = calculatePreviousMonth(month);
         List<Long> previousRanking = queryFactory
                 .select(crewStatisticsEntity.crew.id)
@@ -154,7 +164,7 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
                         Expressions.constant(month),
                         crewStatisticsEntity.crew.id.countDistinct().intValue(),
                         crewStatisticsEntity.totalDistance.sum(),
-                        crewStatisticsEntity.monthlyActiveMembers.sum(),
+                        crewStatisticsEntity.activeMembers.sum(),
                         crewStatisticsEntity.avgPaceSeconds.avg()
                 ))
                 .from(crewStatisticsEntity)
