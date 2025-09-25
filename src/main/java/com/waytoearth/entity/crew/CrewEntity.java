@@ -10,7 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "crews")
+@Table(name = "crews",
+       uniqueConstraints = {
+           @UniqueConstraint(columnNames = {"name"}, name = "uk_crew_name")
+       })
+@org.hibernate.annotations.Check(constraints = "max_members > 0 AND max_members <= 1000 AND current_members >= 0 AND current_members <= max_members")
 @Getter
 @Setter
 @NoArgsConstructor
