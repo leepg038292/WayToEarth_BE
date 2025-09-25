@@ -223,7 +223,7 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
                 .where(crewMemberEntity.crew.id.eq(crewId)
                         .and(crewMemberEntity.isActive.isTrue()))
                 .groupBy(crewMemberEntity.user.id, crewMemberEntity.user.nickname)
-                .orderBy(runningRecord.distance.sum().coalesce(0.0).desc())
+                .orderBy(runningRecord.distance.sum().coalesce(BigDecimal.ZERO).desc())
                 .limit(limit)
                 .fetch();
     }
@@ -248,7 +248,7 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
                 .where(crewMemberEntity.crew.id.eq(crewId)
                         .and(crewMemberEntity.isActive.isTrue()))
                 .groupBy(crewMemberEntity.user.id, crewMemberEntity.user.nickname)
-                .orderBy(runningRecord.distance.sum().coalesce(0.0).desc())
+                .orderBy(runningRecord.distance.sum().coalesce(BigDecimal.ZERO).desc())
                 .limit(1)
                 .fetchOne();
     }

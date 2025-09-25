@@ -45,6 +45,11 @@ public class CrewEntity extends BaseTimeEntity {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Schema(description = "현재 멤버 수", example = "10")
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer currentMembers = 0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
     @Schema(description = "크루장")
@@ -70,6 +75,16 @@ public class CrewEntity extends BaseTimeEntity {
     }
 
     public int getCurrentMemberCount() {
-        return members.size();
+        return (int) members.stream()
+                .filter(member -> member.getIsActive())
+                .count();
+    }
+
+    public void incrementMemberCount() {
+        this.currentMembers = getCurrentMemberCount();
+    }
+
+    public void decrementMemberCount() {
+        this.currentMembers = getCurrentMemberCount();
     }
 }

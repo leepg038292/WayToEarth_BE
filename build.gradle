@@ -21,8 +21,8 @@ ext {
 	querydslVersion = "5.0.0"
 }
 
-// QueryDSL 빌드 옵션
-def generated = 'src/main/generated'
+// QueryDSL 빌드 옵션 - build/generated로 이동
+def generated = 'build/generated/querydsl'
 
 // querydsl QClass 파일 생성 위치를 지정
 tasks.withType(JavaCompile).configureEach {

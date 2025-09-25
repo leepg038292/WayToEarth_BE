@@ -25,6 +25,7 @@ public class CrewServiceImpl implements CrewService {
     private final CrewRepository crewRepository;
     private final CrewMemberRepository crewMemberRepository;
     private final UserRepository userRepository;
+    private final CrewStatisticsService crewStatisticsService;
 
     @Override
     @Transactional
@@ -49,6 +50,9 @@ public class CrewServiceImpl implements CrewService {
         // 크루 소유자를 멤버로 추가
         CrewMemberEntity ownerMember = CrewMemberEntity.createOwner(savedCrew, owner);
         crewMemberRepository.save(ownerMember);
+
+        // 현재 멤버 수 업데이트
+        savedCrew.incrementMemberCount();
 
         log.info("크루가 생성되었습니다. crewId: {}, ownerId: {}", savedCrew.getId(), user.getUserId());
         return savedCrew;
@@ -169,9 +173,9 @@ public class CrewServiceImpl implements CrewService {
         CrewEntity crew = CrewEntity.builder()
                 .name(crewData.getName())
                 .description(crewData.getDescription())
-                .region(crewData.getRegion())
                 .maxMembers(crewData.getMaxMembers())
                 .profileImageUrl(crewData.getProfileImageUrl())
+                .owner(user)
                 .isActive(true)
                 .currentMembers(1) // 생성자가 첫 멤버
                 .build();
@@ -181,6 +185,9 @@ public class CrewServiceImpl implements CrewService {
         // 크루 생성자를 OWNER로 추가
         CrewMemberEntity owner = CrewMemberEntity.createOwner(savedCrew, user);
         crewMemberRepository.save(owner);
+
+        // 현재 멤버 수 업데이트 (실제 멤버 수로 동기화)
+        savedCrew.incrementMemberCount();
 
         log.info("새 크루가 생성되었습니다. crewId: {}, name: {}, ownerId: {}",
                 savedCrew.getId(), savedCrew.getName(), userId);
@@ -198,7 +205,6 @@ public class CrewServiceImpl implements CrewService {
 
         if (updateData.getName() != null) crew.setName(updateData.getName());
         if (updateData.getDescription() != null) crew.setDescription(updateData.getDescription());
-        if (updateData.getRegion() != null) crew.setRegion(updateData.getRegion());
         if (updateData.getMaxMembers() != null) crew.setMaxMembers(updateData.getMaxMembers());
         if (updateData.getProfileImageUrl() != null) crew.setProfileImageUrl(updateData.getProfileImageUrl());
 

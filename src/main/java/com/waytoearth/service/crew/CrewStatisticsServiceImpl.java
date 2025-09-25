@@ -89,7 +89,7 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
         // duration에서 pace 계산 (초)
         BigDecimal paceSeconds = BigDecimal.valueOf(duration).divide(distanceBd, 2, BigDecimal.ROUND_HALF_UP);
 
-        stats.updateWithNewRun(distanceBd, paceSeconds, 1);
+        stats.updateWithMemberRun(distanceBd, paceSeconds, false);
 
         log.info("러닝 완료 후 통계가 업데이트되었습니다. crewId: {}, userId: {}, month: {}, distance: {}",
                 crewId, userId, month, distance);
@@ -111,7 +111,11 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
             Optional<CrewStatisticsEntity> statsOpt = getMonthlyStatistics(crewId, month);
             if (statsOpt.isPresent()) {
                 CrewStatisticsEntity stats = statsOpt.get();
-                stats.setMvpUserId(currentMvp.getUserId());
+                // MVP 사용자 조회하여 설정
+                User mvpUser = userRepository.findById(currentMvp.getUserId())
+                        .orElseThrow(() -> new RuntimeException("MVP 사용자를 찾을 수 없습니다. userId: " + currentMvp.getUserId()));
+                stats.setMvpUser(mvpUser);
+                stats.setMvpDistance(currentMvp.getTotalDistance());
 
                 log.info("월간 MVP가 갱신되었습니다. crewId: {}, month: {}, mvpUserId: {}",
                         crewId, month, currentMvp.getUserId());
@@ -237,12 +241,6 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
     public Optional<CrewMemberRankingDto> getMvpInCrew(Long crewId, String month) {
         CrewMemberRankingDto mvp = statisticsRepository.findMvpInCrew(crewId, month);
         return Optional.ofNullable(mvp);
-    }
-
-    // Private helper methods
-    private CrewEntity getCrewEntity(Long crewId) {
-        return crewRepository.findById(crewId)
-                .orElseThrow(() -> new RuntimeException("크루를 찾을 수 없습니다. crewId: " + crewId));
     }
 
     private User getUserEntity(Long userId) {
