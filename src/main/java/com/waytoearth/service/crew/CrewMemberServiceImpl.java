@@ -30,15 +30,11 @@ public class CrewMemberServiceImpl implements CrewMemberService {
 
     @Override
     public Page<CrewMemberEntity> getCrewMembers(Long crewId, Pageable pageable) {
-        CrewEntity crew = getCrewEntity(crewId);
-        List<CrewMemberEntity> members = crewMemberRepository.findByCrewAndIsActiveTrueOrderByJoinedAtAsc(crew);
+        // 크루 존재 확인
+        getCrewEntity(crewId);
 
-        // List를 Page로 변환 (간단한 구현)
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), members.size());
-        List<CrewMemberEntity> pageContent = members.subList(start, end);
-
-        return new PageImpl<>(pageContent, pageable, members.size());
+        // DB 네이티브 페이징 사용으로 성능 최적화
+        return crewMemberRepository.findCrewMembersWithPaging(crewId, pageable);
     }
 
     @Override

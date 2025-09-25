@@ -155,16 +155,8 @@ public class CrewJoinServiceImpl implements CrewJoinService {
             throw new RuntimeException("가입 신청 목록 조회는 크루장만 가능합니다.");
         }
 
-        if (status != null) {
-            List<CrewJoinRequestEntity> requests = joinRequestRepository.findByCrewAndStatusOrderByCreatedAtAsc(crew, status);
-            // 간단한 페이징 구현
-            int start = (int) pageable.getOffset();
-            int end = Math.min((start + pageable.getPageSize()), requests.size());
-            List<CrewJoinRequestEntity> pageContent = requests.subList(start, end);
-            return new PageImpl<>(pageContent, pageable, requests.size());
-        } else {
-            throw new RuntimeException("상태 파라미터가 필요합니다.");
-        }
+        // DB 네이티브 페이징 사용으로 성능 최적화 (status null 허용)
+        return joinRequestRepository.findCrewJoinRequestsWithPaging(crewId, status, pageable);
     }
 
     @Override

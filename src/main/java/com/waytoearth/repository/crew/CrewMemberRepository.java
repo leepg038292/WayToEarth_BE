@@ -4,6 +4,8 @@ import com.waytoearth.entity.crew.CrewEntity;
 import com.waytoearth.entity.crew.CrewMemberEntity;
 import com.waytoearth.entity.enums.CrewRole;
 import com.waytoearth.entity.user.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -87,4 +89,16 @@ public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Lo
     @Query("UPDATE CrewMemberEntity cm SET cm.isActive = false " +
            "WHERE cm.crew.id = :crewId")
     int deactivateAllMembersInCrew(@Param("crewId") Long crewId);
+
+    //DB 페이징을 사용한 크루 멤버 조회 (성능 최적화)
+    @Query("SELECT cm FROM CrewMemberEntity cm " +
+           "JOIN FETCH cm.user " +
+           "WHERE cm.crew.id = :crewId AND cm.isActive = true")
+    Page<CrewMemberEntity> findCrewMembersWithPaging(@Param("crewId") Long crewId, Pageable pageable);
+
+    //DB 페이징을 사용한 일반 멤버만 조회 (크루장 제외)
+    @Query("SELECT cm FROM CrewMemberEntity cm " +
+           "JOIN FETCH cm.user " +
+           "WHERE cm.crew.id = :crewId AND cm.isActive = true AND cm.role = 'MEMBER'")
+    Page<CrewMemberEntity> findRegularMembersWithPaging(@Param("crewId") Long crewId, Pageable pageable);
 }
