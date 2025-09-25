@@ -157,7 +157,8 @@ public class CrewServiceImpl implements CrewService {
 
     @Override
     public Page<CrewEntity> findCrewsByRegion(String region, Pageable pageable) {
-        return crewRepository.findByRegionAndIsActiveTrueOrderByCreatedAtDesc(region, pageable);
+        // region 필드가 CrewEntity에 없으므로 전체 활성 크루 반환
+        return crewRepository.findByIsActiveTrueOrderByCreatedAtDesc(pageable);
     }
 
     @Override

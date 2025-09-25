@@ -65,6 +65,4 @@ public interface CrewRepository extends JpaRepository<CrewEntity, Long> {
      * 페이징 지원 메서드들
      */
     Page<CrewEntity> findByIsActiveTrueOrderByCreatedAtDesc(Pageable pageable);
-
-    Page<CrewEntity> findByRegionAndIsActiveTrueOrderByCreatedAtDesc(String region, Pageable pageable);
 }
