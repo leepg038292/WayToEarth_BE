@@ -54,6 +54,10 @@ public class CrewEntity extends BaseTimeEntity {
     @Builder.Default
     private Integer currentMembers = 0;
 
+    @Schema(description = "낙관적 잠금을 위한 버전 필드")
+    @Version
+    private Long version;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
     @Schema(description = "크루장")
