@@ -79,8 +79,8 @@ public class CrewServiceImpl implements CrewService {
 
     @Override
     public Page<CrewEntity> searchCrewsByName(String name, Pageable pageable) {
-        // 마찬가지로 추후 Repository에 Pageable 메서드 추가 필요
-        return crewRepository.findAll(pageable); // 임시
+        // N+1 방지 및 DB 네이티브 페이징 사용
+        return crewRepository.findByNameContainingWithOwner(name, pageable);
     }
 
     @Override
@@ -130,8 +130,8 @@ public class CrewServiceImpl implements CrewService {
     public Page<CrewEntity> getUserCrews(AuthenticatedUser user, Pageable pageable) {
         User userEntity = userRepository.findById(user.getUserId())
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        // Repository에 Pageable 지원 메서드 추가 필요 - 임시로 간단히 구현
-        return crewRepository.findAll(pageable); // 임시
+        // N+1 방지 및 DB 네이티브 페이징 사용
+        return crewRepository.findCrewsByUserWithOwnerPaged(userEntity, pageable);
     }
 
     @Override
