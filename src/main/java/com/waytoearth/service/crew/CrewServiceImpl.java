@@ -3,10 +3,13 @@ package com.waytoearth.service.crew;
 import com.waytoearth.entity.crew.CrewEntity;
 import com.waytoearth.entity.crew.CrewMemberEntity;
 import com.waytoearth.entity.user.User;
+import com.waytoearth.exception.CrewNotFoundException;
+import com.waytoearth.exception.UnauthorizedAccessException;
 import com.waytoearth.repository.crew.CrewRepository;
 import com.waytoearth.repository.crew.CrewMemberRepository;
 import com.waytoearth.repository.user.UserRepository;
 import com.waytoearth.security.AuthenticatedUser;
+import com.waytoearth.service.file.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -26,6 +29,7 @@ public class CrewServiceImpl implements CrewService {
     private final CrewMemberRepository crewMemberRepository;
     private final UserRepository userRepository;
     private final CrewStatisticsService crewStatisticsService;
+    private final FileService fileService;
 
     @Override
     @Transactional
@@ -234,5 +238,64 @@ public class CrewServiceImpl implements CrewService {
         if (!isCrewMember(crewId, userId)) {
             throw new RuntimeException("크루 멤버만 접근할 수 있습니다. crewId: " + crewId);
         }
+    }
+
+    @Override
+    @Transactional
+    public void removeCrewProfileImage(AuthenticatedUser user, Long crewId) {
+        // 크루 존재 확인
+        CrewEntity crew = crewRepository.findById(crewId)
+                .orElseThrow(() -> new CrewNotFoundException(crewId));
+
+        // 크루장 권한 확인
+        CrewMemberEntity membership = crewMemberRepository.findMembership(user.getUserId(), crewId)
+                .orElseThrow(() -> new UnauthorizedAccessException("크루 멤버가 아닙니다."));
+
+        if (!membership.isOwner()) {
+            throw new UnauthorizedAccessException("크루장만 프로필 이미지를 삭제할 수 있습니다.");
+        }
+
+        // 기존 이미지가 있다면 S3에서 삭제
+        if (crew.getProfileImageUrl() != null && !crew.getProfileImageUrl().isEmpty()) {
+            // URL에서 S3 키 추출 (예: crews/123/profile.jpg)
+            String imageKey = extractS3KeyFromUrl(crew.getProfileImageUrl());
+            if (imageKey != null) {
+                fileService.deleteObject(imageKey);
+            }
+        }
+
+        // 데이터베이스에서 프로필 이미지 URL 제거
+        crew.setProfileImageUrl(null);
+        crewRepository.save(crew);
+
+        log.info("[Crew Profile Image Delete] crewId={}, userId={}", crewId, user.getUserId());
+    }
+
+    /**
+     * S3 URL에서 오브젝트 키를 추출하는 유틸리티 메서드
+     * 예: https://bucket.s3.amazonaws.com/crews/123/profile.jpg → crews/123/profile.jpg
+     */
+    private String extractS3KeyFromUrl(String s3Url) {
+        if (s3Url == null || s3Url.isEmpty()) {
+            return null;
+        }
+
+        try {
+            // crews/로 시작하는 키 패턴 찾기
+            if (s3Url.contains("crews/")) {
+                int index = s3Url.indexOf("crews/");
+                String keyPart = s3Url.substring(index);
+                // 쿼리 파라미터 제거
+                int queryIndex = keyPart.indexOf('?');
+                if (queryIndex != -1) {
+                    keyPart = keyPart.substring(0, queryIndex);
+                }
+                return keyPart;
+            }
+        } catch (Exception e) {
+            log.warn("S3 URL에서 키 추출 실패: {}", s3Url, e);
+        }
+
+        return null;
     }
 }

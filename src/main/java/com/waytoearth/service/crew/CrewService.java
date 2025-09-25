@@ -88,4 +88,9 @@ public interface CrewService {
      * 크루 멤버십 검증 (예외 발생)
      */
     void validateCrewMembership(Long userId, Long crewId);
+
+    /**
+     * 크루 프로필 이미지 삭제 (크루장만 가능)
+     */
+    void removeCrewProfileImage(AuthenticatedUser user, Long crewId);
 }
