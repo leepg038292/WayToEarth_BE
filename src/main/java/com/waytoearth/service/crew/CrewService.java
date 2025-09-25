@@ -58,4 +58,34 @@ public interface CrewService {
      * 크루 멤버인지 확인
      */
     boolean isCrewMember(Long crewId, Long userId);
+
+    /**
+     * 지역별 크루 조회
+     */
+    Page<CrewEntity> findCrewsByRegion(String region, Pageable pageable);
+
+    /**
+     * 활성화된 모든 크루 조회
+     */
+    Page<CrewEntity> findAllActiveCrews(Pageable pageable);
+
+    /**
+     * 크루 생성 (간단 버전)
+     */
+    CrewEntity createCrew(Long userId, CrewEntity crewData);
+
+    /**
+     * 크루 정보 수정 (간단 버전)
+     */
+    CrewEntity updateCrew(Long userId, Long crewId, CrewEntity updateData);
+
+    /**
+     * 크루 삭제 (간단 버전)
+     */
+    void deleteCrew(Long userId, Long crewId);
+
+    /**
+     * 크루 멤버십 검증 (예외 발생)
+     */
+    void validateCrewMembership(Long userId, Long crewId);
 }

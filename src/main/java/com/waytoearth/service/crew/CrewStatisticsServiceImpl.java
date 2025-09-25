@@ -1,6 +1,8 @@
 package com.waytoearth.service.crew;
 
 import com.waytoearth.dto.response.crew.CrewStatisticsSummaryDto;
+import com.waytoearth.dto.response.crew.CrewMemberRankingDto;
+import com.waytoearth.dto.response.crew.CrewRankingDto;
 import com.waytoearth.entity.crew.CrewEntity;
 import com.waytoearth.entity.crew.CrewStatisticsEntity;
 import com.waytoearth.entity.user.User;
@@ -101,23 +103,41 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
     public void updateMvpForMonth(Long crewId, String month) {
         CrewEntity crew = getCrewEntity(crewId);
 
-        // TODO: MVP 기능은 러닝 데이터와 연결되면 구현
-        // 현재는 생략
-        log.info("월간 MVP 갱신 기능은 추후 구현 예정. crewId: {}, month: {}", crewId, month);
+        // 현재 MVP 조회
+        CrewMemberRankingDto currentMvp = statisticsRepository.findMvpInCrew(crewId, month);
+
+        if (currentMvp != null) {
+            // CrewStatisticsEntity의 mvpUserId 업데이트
+            Optional<CrewStatisticsEntity> statsOpt = getMonthlyStatistics(crewId, month);
+            if (statsOpt.isPresent()) {
+                CrewStatisticsEntity stats = statsOpt.get();
+                stats.setMvpUserId(currentMvp.getUserId());
+
+                log.info("월간 MVP가 갱신되었습니다. crewId: {}, month: {}, mvpUserId: {}",
+                        crewId, month, currentMvp.getUserId());
+            }
+        }
     }
 
     @Override
-    public List<CrewStatisticsSummaryDto> getCrewRankingByDistance(String month, int limit) {
-        List<CrewStatisticsEntity> topCrews = statisticsRepository.findTopCrewsByDistance(month, limit);
-        return topCrews.stream()
-                .map(stats -> new CrewStatisticsSummaryDto(
-                        stats.getMonth(),
-                        1, // 크루 수
-                        stats.getTotalDistance().doubleValue(),
-                        stats.getActiveMembers(),
-                        stats.getAvgPaceSeconds() != null ? stats.getAvgPaceSeconds().doubleValue() : 0.0
-                ))
-                .toList();
+    public List<CrewRankingDto> getCrewRankingByDistance(String month, int limit) {
+        List<CrewRankingDto> ranking = statisticsRepository.findCrewRankingByActualDistance(month, limit);
+
+        // 랭킹 순위 설정 (1, 2, 3, ...)
+        for (int i = 0; i < ranking.size(); i++) {
+            CrewRankingDto crew = ranking.get(i);
+            CrewRankingDto withRank = new CrewRankingDto(
+                    crew.getMonth(),
+                    crew.getCrewId(),
+                    crew.getCrewName(),
+                    crew.getTotalDistance(),
+                    crew.getRunCount(),
+                    i + 1 // 랭킹은 1부터 시작
+            );
+            ranking.set(i, withRank);
+        }
+
+        return ranking;
     }
 
     @Override
@@ -183,6 +203,40 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
             log.info("크루 삭제에 따른 통계 데이터가 정리되었습니다. crewId: {}, deletedCount: {}",
                     crewId, allStats.size());
         }
+    }
+
+    // Private helper methods
+    private CrewEntity getCrewEntity(Long crewId) {
+        return crewRepository.findById(crewId)
+                .orElseThrow(() -> new RuntimeException("크루를 찾을 수 없습니다. crewId: " + crewId));
+    }
+
+    @Override
+    public List<CrewMemberRankingDto> getMemberRankingInCrew(Long crewId, String month, int limit) {
+        List<CrewMemberRankingDto> ranking = statisticsRepository.findMemberRankingInCrew(crewId, month, limit);
+
+        // 랭킹 순위 설정 (1, 2, 3, ...)
+        for (int i = 0; i < ranking.size(); i++) {
+            // CrewMemberRankingDto는 immutable이므로 새 객체 생성
+            CrewMemberRankingDto member = ranking.get(i);
+            CrewMemberRankingDto withRank = new CrewMemberRankingDto(
+                    member.getMonth(),
+                    member.getUserId(),
+                    member.getUserName(),
+                    member.getTotalDistance(),
+                    member.getRunCount(),
+                    i + 1 // 랭킹은 1부터 시작
+            );
+            ranking.set(i, withRank);
+        }
+
+        return ranking;
+    }
+
+    @Override
+    public Optional<CrewMemberRankingDto> getMvpInCrew(Long crewId, String month) {
+        CrewMemberRankingDto mvp = statisticsRepository.findMvpInCrew(crewId, month);
+        return Optional.ofNullable(mvp);
     }
 
     // Private helper methods

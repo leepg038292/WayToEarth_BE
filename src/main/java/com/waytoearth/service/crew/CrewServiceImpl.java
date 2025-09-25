@@ -150,4 +150,82 @@ public class CrewServiceImpl implements CrewService {
     public boolean isCrewMember(Long crewId, Long userId) {
         return crewMemberRepository.isUserMemberOfCrew(userId, crewId);
     }
+
+    @Override
+    public Page<CrewEntity> findCrewsByRegion(String region, Pageable pageable) {
+        return crewRepository.findByRegionAndIsActiveTrueOrderByCreatedAtDesc(region, pageable);
+    }
+
+    @Override
+    public Page<CrewEntity> findAllActiveCrews(Pageable pageable) {
+        return crewRepository.findByIsActiveTrueOrderByCreatedAtDesc(pageable);
+    }
+
+    @Override
+    public CrewEntity createCrew(Long userId, CrewEntity crewData) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다. userId: " + userId));
+
+        CrewEntity crew = CrewEntity.builder()
+                .name(crewData.getName())
+                .description(crewData.getDescription())
+                .region(crewData.getRegion())
+                .maxMembers(crewData.getMaxMembers())
+                .profileImageUrl(crewData.getProfileImageUrl())
+                .isActive(true)
+                .currentMembers(1) // 생성자가 첫 멤버
+                .build();
+
+        CrewEntity savedCrew = crewRepository.save(crew);
+
+        // 크루 생성자를 OWNER로 추가
+        CrewMemberEntity owner = CrewMemberEntity.createOwner(savedCrew, user);
+        crewMemberRepository.save(owner);
+
+        log.info("새 크루가 생성되었습니다. crewId: {}, name: {}, ownerId: {}",
+                savedCrew.getId(), savedCrew.getName(), userId);
+
+        return savedCrew;
+    }
+
+    @Override
+    public CrewEntity updateCrew(Long userId, Long crewId, CrewEntity updateData) {
+        CrewEntity crew = getCrewById(crewId);
+
+        if (!isCrewOwner(crewId, userId)) {
+            throw new RuntimeException("크루 정보 수정은 크루장만 가능합니다.");
+        }
+
+        if (updateData.getName() != null) crew.setName(updateData.getName());
+        if (updateData.getDescription() != null) crew.setDescription(updateData.getDescription());
+        if (updateData.getRegion() != null) crew.setRegion(updateData.getRegion());
+        if (updateData.getMaxMembers() != null) crew.setMaxMembers(updateData.getMaxMembers());
+        if (updateData.getProfileImageUrl() != null) crew.setProfileImageUrl(updateData.getProfileImageUrl());
+
+        log.info("크루 정보가 수정되었습니다. crewId: {}, userId: {}", crewId, userId);
+        return crew;
+    }
+
+    @Override
+    public void deleteCrew(Long userId, Long crewId) {
+        CrewEntity crew = getCrewById(crewId);
+
+        if (!isCrewOwner(crewId, userId)) {
+            throw new RuntimeException("크루 삭제는 크루장만 가능합니다.");
+        }
+
+        crew.setIsActive(false);
+
+        // 관련 통계 정리
+        crewStatisticsService.cleanupStatisticsForCrew(crewId);
+
+        log.info("크루가 삭제되었습니다. crewId: {}, userId: {}", crewId, userId);
+    }
+
+    @Override
+    public void validateCrewMembership(Long userId, Long crewId) {
+        if (!isCrewMember(crewId, userId)) {
+            throw new RuntimeException("크루 멤버만 접근할 수 있습니다. crewId: " + crewId);
+        }
+    }
 }

@@ -6,15 +6,20 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.waytoearth.dto.response.crew.CrewGrowthDto;
 import com.waytoearth.dto.response.crew.CrewRankingComparisonDto;
 import com.waytoearth.dto.response.crew.CrewStatisticsSummaryDto;
+import com.waytoearth.dto.response.crew.CrewMemberRankingDto;
+import com.waytoearth.dto.response.crew.CrewRankingDto;
 import com.waytoearth.entity.crew.CrewEntity;
 import com.waytoearth.entity.crew.CrewStatisticsEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static com.waytoearth.entity.crew.QCrewEntity.crewEntity;
 import static com.waytoearth.entity.crew.QCrewStatisticsEntity.crewStatisticsEntity;
+import static com.waytoearth.entity.crew.QCrewMemberEntity.crewMemberEntity;
+import static com.waytoearth.entity.running.QRunningRecord.runningRecord;
 
 @Repository
 @RequiredArgsConstructor
@@ -169,6 +174,82 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
                 ))
                 .from(crewStatisticsEntity)
                 .where(crewStatisticsEntity.month.eq(month))
+                .fetchOne();
+    }
+
+    @Override
+    public List<CrewRankingDto> findCrewRankingByActualDistance(String month, int limit) {
+        return queryFactory
+                .select(Projections.constructor(
+                        CrewRankingDto.class,
+                        Expressions.constant(month),
+                        crewEntity.id,
+                        crewEntity.name,
+                        runningRecord.distance.sum().coalesce(BigDecimal.ZERO),
+                        runningRecord.id.countDistinct().intValue(),
+                        Expressions.constant(0) // rank는 서비스에서 처리
+                ))
+                .from(crewEntity)
+                .leftJoin(crewMemberEntity).on(crewMemberEntity.crew.eq(crewEntity)
+                        .and(crewMemberEntity.isActive.isTrue()))
+                .leftJoin(runningRecord).on(runningRecord.user.eq(crewMemberEntity.user)
+                        .and(runningRecord.isCompleted.isTrue())
+                        .and(runningRecord.startedAt.year().eq(Integer.parseInt(month.substring(0, 4))))
+                        .and(runningRecord.startedAt.month().eq(Integer.parseInt(month.substring(4, 6)))))
+                .where(crewEntity.isActive.isTrue())
+                .groupBy(crewEntity.id, crewEntity.name)
+                .orderBy(runningRecord.distance.sum().coalesce(BigDecimal.ZERO).desc())
+                .limit(limit)
+                .fetch();
+    }
+
+    @Override
+    public List<CrewMemberRankingDto> findMemberRankingInCrew(Long crewId, String month, int limit) {
+        return queryFactory
+                .select(Projections.constructor(
+                        CrewMemberRankingDto.class,
+                        Expressions.constant(month),
+                        crewMemberEntity.user.id,
+                        crewMemberEntity.user.nickname,
+                        runningRecord.distance.sum().coalesce(BigDecimal.ZERO),
+                        runningRecord.id.countDistinct().intValue(),
+                        Expressions.constant(0) // rank는 서비스에서 처리
+                ))
+                .from(crewMemberEntity)
+                .leftJoin(runningRecord).on(runningRecord.user.eq(crewMemberEntity.user)
+                        .and(runningRecord.isCompleted.isTrue())
+                        .and(runningRecord.startedAt.year().eq(Integer.parseInt(month.substring(0, 4))))
+                        .and(runningRecord.startedAt.month().eq(Integer.parseInt(month.substring(4, 6)))))
+                .where(crewMemberEntity.crew.id.eq(crewId)
+                        .and(crewMemberEntity.isActive.isTrue()))
+                .groupBy(crewMemberEntity.user.id, crewMemberEntity.user.nickname)
+                .orderBy(runningRecord.distance.sum().coalesce(0.0).desc())
+                .limit(limit)
+                .fetch();
+    }
+
+    @Override
+    public CrewMemberRankingDto findMvpInCrew(Long crewId, String month) {
+        return queryFactory
+                .select(Projections.constructor(
+                        CrewMemberRankingDto.class,
+                        Expressions.constant(month),
+                        crewMemberEntity.user.id,
+                        crewMemberEntity.user.nickname,
+                        runningRecord.distance.sum().coalesce(BigDecimal.ZERO),
+                        runningRecord.id.countDistinct().intValue(),
+                        Expressions.constant(1) // MVP는 1등
+                ))
+                .from(crewMemberEntity)
+                .leftJoin(runningRecord).on(runningRecord.user.eq(crewMemberEntity.user)
+                        .and(runningRecord.isCompleted.isTrue())
+                        .and(runningRecord.startedAt.year().eq(Integer.parseInt(month.substring(0, 4))))
+                        .and(runningRecord.startedAt.month().eq(Integer.parseInt(month.substring(4, 6)))))
+                .where(crewMemberEntity.crew.id.eq(crewId)
+                        .and(crewMemberEntity.isActive.isTrue()))
+                .groupBy(crewMemberEntity.user.id, crewMemberEntity.user.nickname)
+                .orderBy(runningRecord.distance.sum().coalesce(0.0).desc())
+                .limit(1)
                 .fetchOne();
     }
 

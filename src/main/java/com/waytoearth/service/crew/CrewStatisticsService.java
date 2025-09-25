@@ -1,6 +1,8 @@
 package com.waytoearth.service.crew;
 
 import com.waytoearth.dto.response.crew.CrewStatisticsSummaryDto;
+import com.waytoearth.dto.response.crew.CrewMemberRankingDto;
+import com.waytoearth.dto.response.crew.CrewRankingDto;
 import com.waytoearth.entity.crew.CrewStatisticsEntity;
 import com.waytoearth.entity.user.User;
 
@@ -43,7 +45,7 @@ public interface CrewStatisticsService {
     /**
      * 크루 랭킹 조회 (거리 기준)
      */
-    List<CrewStatisticsSummaryDto> getCrewRankingByDistance(String month, int limit);
+    List<CrewRankingDto> getCrewRankingByDistance(String month, int limit);
 
     /**
      * 크루 랭킹 조회 (러닝 횟수 기준)
@@ -69,4 +71,14 @@ public interface CrewStatisticsService {
      * 크루 삭제 시 관련 통계 정리
      */
     void cleanupStatisticsForCrew(Long crewId);
+
+    /**
+     * 크루 내 멤버별 거리 랭킹 조회
+     */
+    List<CrewMemberRankingDto> getMemberRankingInCrew(Long crewId, String month, int limit);
+
+    /**
+     * 크루의 월간 MVP 조회
+     */
+    Optional<CrewMemberRankingDto> getMvpInCrew(Long crewId, String month);
 }

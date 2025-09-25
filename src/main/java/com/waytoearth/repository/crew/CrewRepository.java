@@ -2,6 +2,8 @@ package com.waytoearth.repository.crew;
 
 import com.waytoearth.entity.crew.CrewEntity;
 import com.waytoearth.entity.user.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -58,4 +60,11 @@ public interface CrewRepository extends JpaRepository<CrewEntity, Long> {
            "WHERE c.isActive = true " +
            "ORDER BY c.createdAt DESC")
     List<CrewEntity> findActiveCrewsWithOwner();
+
+    /**
+     * 페이징 지원 메서드들
+     */
+    Page<CrewEntity> findByIsActiveTrueOrderByCreatedAtDesc(Pageable pageable);
+
+    Page<CrewEntity> findByRegionAndIsActiveTrueOrderByCreatedAtDesc(String region, Pageable pageable);
 }
