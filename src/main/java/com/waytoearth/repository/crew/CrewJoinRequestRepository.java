@@ -49,6 +49,12 @@ public interface CrewJoinRequestRepository extends JpaRepository<CrewJoinRequest
            "WHERE jr.crew.owner.id = :ownerId AND jr.status = 'PENDING'")
     int countPendingRequestsForOwner(@Param("ownerId") Long ownerId);
 
+    //크루 삭제 시 대기중인 모든 신청을 거절로 변경
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE CrewJoinRequestEntity jr SET jr.status = 'REJECTED' " +
+           "WHERE jr.crew.id = :crewId AND jr.status = 'PENDING'")
+    int rejectAllPendingRequests(@Param("crewId") Long crewId);
+
     //사용자의 모든 신청 내역 (크루 정보 포함)
     @Query("SELECT jr FROM CrewJoinRequestEntity jr " +
            "JOIN FETCH jr.crew " +

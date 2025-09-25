@@ -7,6 +7,7 @@ import com.waytoearth.exception.CrewNotFoundException;
 import com.waytoearth.exception.UnauthorizedAccessException;
 import com.waytoearth.repository.crew.CrewRepository;
 import com.waytoearth.repository.crew.CrewMemberRepository;
+import com.waytoearth.repository.crew.CrewJoinRequestRepository;
 import com.waytoearth.repository.user.UserRepository;
 import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.service.file.FileService;
@@ -27,6 +28,7 @@ public class CrewServiceImpl implements CrewService {
 
     private final CrewRepository crewRepository;
     private final CrewMemberRepository crewMemberRepository;
+    private final CrewJoinRequestRepository crewJoinRequestRepository;
     private final UserRepository userRepository;
     private final CrewStatisticsService crewStatisticsService;
     private final FileService fileService;
@@ -218,6 +220,7 @@ public class CrewServiceImpl implements CrewService {
     }
 
     @Override
+    @Transactional
     public void deleteCrew(Long userId, Long crewId) {
         CrewEntity crew = getCrewById(crewId);
 
@@ -225,12 +228,27 @@ public class CrewServiceImpl implements CrewService {
             throw new RuntimeException("크루 삭제는 크루장만 가능합니다.");
         }
 
+        // 1. 크루 비활성화
         crew.setIsActive(false);
 
-        // 관련 통계 정리
+        // 2. 모든 멤버 비활성화 (소프트 삭제)
+        crewMemberRepository.deactivateAllMembersInCrew(crewId);
+
+        // 3. 진행 중인 가입 신청 모두 거절로 변경
+        crewJoinRequestRepository.rejectAllPendingRequests(crewId);
+
+        // 4. 관련 통계 정리
         crewStatisticsService.cleanupStatisticsForCrew(crewId);
 
-        log.info("크루가 삭제되었습니다. crewId: {}, userId: {}", crewId, userId);
+        // 5. S3에서 프로필 이미지 삭제
+        if (crew.getProfileImageUrl() != null && !crew.getProfileImageUrl().isEmpty()) {
+            String imageKey = extractS3KeyFromUrl(crew.getProfileImageUrl());
+            if (imageKey != null) {
+                fileService.deleteObject(imageKey);
+            }
+        }
+
+        log.info("크루와 연관 데이터가 모두 삭제되었습니다. crewId: {}, userId: {}", crewId, userId);
     }
 
     @Override

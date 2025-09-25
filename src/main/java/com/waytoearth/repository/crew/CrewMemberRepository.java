@@ -81,4 +81,10 @@ public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Lo
     @Query("SELECT cm FROM CrewMemberEntity cm " +
            "WHERE cm.user.id = :userId AND cm.crew.id = :crewId")
     Optional<CrewMemberEntity> findMembership(@Param("userId") Long userId, @Param("crewId") Long crewId);
+
+    //크루의 모든 멤버 비활성화 (크루 삭제 시 사용)
+    @Modifying
+    @Query("UPDATE CrewMemberEntity cm SET cm.isActive = false " +
+           "WHERE cm.crew.id = :crewId")
+    int deactivateAllMembersInCrew(@Param("crewId") Long crewId);
 }
