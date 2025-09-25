@@ -21,6 +21,19 @@ ext {
 	querydslVersion = "5.0.0"
 }
 
+// QueryDSL 빌드 옵션 - build/generated로 이동
+def generated = 'build/generated/querydsl'
+
+// querydsl QClass 파일 생성 위치를 지정
+tasks.withType(JavaCompile).configureEach {
+	options.getGeneratedSourceOutputDirectory().set(file(generated))
+}
+
+// java source set 에 querydsl QClass 위치 추가
+sourceSets {
+	main.java.srcDirs += [ generated ]
+}
+
 // 공통 .env 로딩 함수 정의
 def loadDotenvTo(task) {
 	def envFile = file('.env')

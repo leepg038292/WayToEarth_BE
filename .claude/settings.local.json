@@ -6,7 +6,8 @@
       "Bash(taskkill:*)",
       "Bash(git add:*)",
       "Bash(curl:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
