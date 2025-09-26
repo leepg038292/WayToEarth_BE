@@ -1,7 +1,9 @@
 package com.waytoearth.config.websocket;
 
 import com.waytoearth.websocket.CrewChatWebSocketHandler;
+import com.waytoearth.websocket.WebSocketAuthInterceptor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.*;
 
@@ -11,11 +13,16 @@ import org.springframework.web.socket.config.annotation.*;
 public class WebSocketConfig implements WebSocketConfigurer {
 
     private final CrewChatWebSocketHandler crewChatWebSocketHandler;
+    private final WebSocketAuthInterceptor webSocketAuthInterceptor;
+
+    @Value("${app.cors.allowed-origins:http://localhost:3000}")
+    private String allowedOrigins;
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(crewChatWebSocketHandler, "/ws/crew/{crewId}/chat")
-                .setAllowedOrigins("*") // TODO: 프로덕션에서는 특정 도메인으로 제한
+                .setAllowedOrigins(allowedOrigins.split(","))
+                .addInterceptors(webSocketAuthInterceptor)
                 .withSockJS();
     }
 }

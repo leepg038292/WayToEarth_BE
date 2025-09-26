@@ -230,25 +230,13 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
     }
 
     private Long extractUserIdFromSession(WebSocketSession session) {
-        // TODO: JWT 토큰이나 세션에서 사용자 ID 추출
-        // 현재는 임시로 attributes에서 가져옴 (인증 로직 필요)
+        // WebSocketAuthInterceptor에서 설정한 userId 사용
         Object userId = session.getAttributes().get("userId");
         if (userId instanceof Long) {
             return (Long) userId;
         }
 
-        // 임시: 쿼리 파라미터에서 userId 추출
-        try {
-            URI sessionUri = session.getUri();
-            String query = sessionUri.getQuery();
-            if (query != null && query.contains("userId=")) {
-                String userIdStr = query.split("userId=")[1].split("&")[0];
-                return Long.parseLong(userIdStr);
-            }
-        } catch (Exception e) {
-            log.error("사용자 ID 추출 실패", e);
-        }
-
+        log.error("WebSocket 세션에서 userId를 찾을 수 없습니다. 인증 실패");
         return null;
     }
 }
