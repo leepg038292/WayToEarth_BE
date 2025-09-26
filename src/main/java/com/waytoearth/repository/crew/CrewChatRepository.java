@@ -15,27 +15,15 @@ import java.util.List;
 public interface CrewChatRepository extends JpaRepository<CrewChatEntity, Long> {
 
     @Query("""
-        SELECT new com.waytoearth.dto.response.crew.CrewChatMessageDto(
-            c.id,
-            c.crew.id,
-            c.sender.id,
-            c.sender.nickname,
-            c.message,
-            c.messageType,
-            c.sentAt,
-            CASE WHEN c.sender.id = :userId THEN true
-                 ELSE EXISTS(SELECT 1 FROM CrewChatReadStatusEntity r
-                           WHERE r.message = c AND r.reader.id = :userId) END,
-            SIZE(c.readStatus)
-        )
-        FROM CrewChatEntity c
+        SELECT c FROM CrewChatEntity c
+        JOIN FETCH c.sender
         WHERE c.crew.id = :crewId
         AND c.isDeleted = false
         ORDER BY c.sentAt DESC
         """)
-    Page<CrewChatMessageDto> findChatMessagesWithReadStatus(@Param("crewId") Long crewId,
-                                                            @Param("userId") Long userId,
-                                                            Pageable pageable);
+    Page<CrewChatEntity> findChatEntitiesWithReadStatus(@Param("crewId") Long crewId,
+                                                        @Param("userId") Long userId,
+                                                        Pageable pageable);
 
     @Query("""
         SELECT c FROM CrewChatEntity c
@@ -63,28 +51,13 @@ public interface CrewChatRepository extends JpaRepository<CrewChatEntity, Long> 
     int countUnreadMessages(@Param("crewId") Long crewId, @Param("userId") Long userId);
 
     @Query("""
-        SELECT new com.waytoearth.dto.response.crew.CrewChatMessageDto(
-            c.id,
-            c.crew.id,
-            c.sender.id,
-            c.sender.nickname,
-            c.message,
-            c.messageType,
-            c.sentAt,
-            CASE WHEN c.sender.id = :userId THEN true
-                 ELSE EXISTS(SELECT 1 FROM CrewChatReadStatusEntity r
-                           WHERE r.message = c AND r.reader.id = :userId) END,
-            SIZE(c.readStatus)
-        )
-        FROM CrewChatEntity c
+        SELECT c FROM CrewChatEntity c
+        JOIN FETCH c.sender
         WHERE c.crew.id = :crewId
         AND c.isDeleted = false
         ORDER BY c.sentAt DESC
-        LIMIT :limit
         """)
-    List<CrewChatMessageDto> findRecentMessages(@Param("crewId") Long crewId,
-                                               @Param("userId") Long userId,
-                                               @Param("limit") int limit);
+    List<CrewChatEntity> findRecentChatEntities(@Param("crewId") Long crewId, Pageable pageable);
 
     @Query("""
         SELECT c FROM CrewChatEntity c

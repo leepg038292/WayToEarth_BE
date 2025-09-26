@@ -11,7 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "crew_chats")
+@Table(name = "crew_chats",
+       indexes = {
+           @Index(name = "idx_crew_chat_crew_sent_at", columnList = "crew_id, sent_at"),
+           @Index(name = "idx_crew_chat_crew_deleted", columnList = "crew_id, is_deleted"),
+           @Index(name = "idx_crew_chat_sender", columnList = "sender_id")
+       })
 @Getter
 @Setter
 @NoArgsConstructor
@@ -65,6 +70,11 @@ public class CrewChatEntity extends BaseTimeEntity {
         SYSTEM,         // 시스템 메시지 (입장/퇴장 등)
         ANNOUNCEMENT    // 공지사항 (크루장 전용)
     }
+
+    @Schema(description = "활성 여부", example = "true")
+    @Column(name = "is_active", nullable = false)
+    @Builder.Default
+    private Boolean isActive = true;
 
     @PrePersist
     protected void onCreate() {

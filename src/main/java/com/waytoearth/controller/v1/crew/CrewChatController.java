@@ -1,17 +1,15 @@
 package com.waytoearth.controller.v1.crew;
 
-import com.waytoearth.common.response.ApiResponse;
+import com.waytoearth.dto.response.common.ApiResponse;
 import com.waytoearth.dto.response.crew.CrewChatMessageDto;
 import com.waytoearth.entity.crew.CrewChatNotificationSettingEntity;
-import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.security.AuthUser;
+import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.service.crew.CrewChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -38,7 +36,7 @@ public class CrewChatController {
             @PathVariable @Parameter(description = "크루 ID") Long crewId,
             @PageableDefault(size = 50, sort = "sentAt") Pageable pageable) {
 
-        Page<CrewChatMessageDto> messages = crewChatService.getChatMessages(crewId, me.getId(), pageable);
+        Page<CrewChatMessageDto> messages = crewChatService.getChatMessages(crewId, me.getUserId(), pageable);
 
         return ResponseEntity.ok(ApiResponse.success(messages, "채팅 메시지를 조회했습니다."));
     }
@@ -50,7 +48,7 @@ public class CrewChatController {
             @PathVariable @Parameter(description = "크루 ID") Long crewId,
             @RequestParam(defaultValue = "20") @Parameter(description = "조회할 메시지 수") int limit) {
 
-        List<CrewChatMessageDto> messages = crewChatService.getRecentMessages(crewId, me.getId(), limit);
+        List<CrewChatMessageDto> messages = crewChatService.getRecentMessages(crewId, me.getUserId(), limit);
 
         return ResponseEntity.ok(ApiResponse.success(messages, "최근 채팅 메시지를 조회했습니다."));
     }
@@ -62,7 +60,7 @@ public class CrewChatController {
             @PathVariable @Parameter(description = "크루 ID") Long crewId,
             @PathVariable @Parameter(description = "메시지 ID") Long messageId) {
 
-        crewChatService.markMessageAsRead(messageId, me.getId());
+        crewChatService.markMessageAsRead(messageId, me.getUserId());
 
         return ResponseEntity.ok(ApiResponse.success(null, "메시지를 읽음으로 처리했습니다."));
     }
@@ -74,7 +72,7 @@ public class CrewChatController {
             @PathVariable @Parameter(description = "크루 ID") Long crewId,
             @RequestBody @Parameter(description = "메시지 ID 목록") List<Long> messageIds) {
 
-        crewChatService.markMessagesAsRead(crewId, me.getId(), messageIds);
+        crewChatService.markMessagesAsRead(crewId, me.getUserId(), messageIds);
 
         return ResponseEntity.ok(ApiResponse.success(null, "메시지들을 읽음으로 처리했습니다."));
     }
@@ -86,7 +84,7 @@ public class CrewChatController {
             @PathVariable @Parameter(description = "크루 ID") Long crewId,
             @PathVariable @Parameter(description = "기준 메시지 ID") Long afterMessageId) {
 
-        crewChatService.markAllMessagesAsReadAfter(crewId, me.getId(), afterMessageId);
+        crewChatService.markAllMessagesAsReadAfter(crewId, me.getUserId(), afterMessageId);
 
         return ResponseEntity.ok(ApiResponse.success(null, "모든 메시지를 읽음으로 처리했습니다."));
     }
@@ -97,7 +95,7 @@ public class CrewChatController {
             @AuthUser AuthenticatedUser me,
             @PathVariable @Parameter(description = "크루 ID") Long crewId) {
 
-        int unreadCount = crewChatService.getUnreadMessageCount(crewId, me.getId());
+        int unreadCount = crewChatService.getUnreadMessageCount(crewId, me.getUserId());
 
         return ResponseEntity.ok(ApiResponse.success(unreadCount, "읽지 않은 메시지 수를 조회했습니다."));
     }
@@ -109,7 +107,7 @@ public class CrewChatController {
             @PathVariable @Parameter(description = "크루 ID") Long crewId,
             @PathVariable @Parameter(description = "메시지 ID") Long messageId) {
 
-        crewChatService.deleteMessage(messageId, me.getId());
+        crewChatService.deleteMessage(messageId, me.getUserId());
 
         return ResponseEntity.ok(ApiResponse.success(null, "메시지를 삭제했습니다."));
     }
@@ -120,7 +118,7 @@ public class CrewChatController {
             @AuthUser AuthenticatedUser me,
             @PathVariable @Parameter(description = "크루 ID") Long crewId) {
 
-        CrewChatNotificationSettingEntity settings = crewChatService.getNotificationSetting(crewId, me.getId());
+        CrewChatNotificationSettingEntity settings = crewChatService.getNotificationSetting(crewId, me.getUserId());
 
         return ResponseEntity.ok(ApiResponse.success(settings, "알림 설정을 조회했습니다."));
     }
@@ -133,7 +131,7 @@ public class CrewChatController {
             @RequestBody @Valid NotificationSettingsRequest request) {
 
         CrewChatNotificationSettingEntity settings = crewChatService.updateNotificationSetting(
-                crewId, me.getId(), request.isEnabled, request.notificationType, request.isMuted);
+                crewId, me.getUserId(), request.isEnabled, request.notificationType, request.isMuted);
 
         return ResponseEntity.ok(ApiResponse.success(settings, "알림 설정을 업데이트했습니다."));
     }

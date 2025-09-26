@@ -7,9 +7,11 @@ import com.waytoearth.exception.CrewNotFoundException;
 import com.waytoearth.exception.UnauthorizedAccessException;
 import com.waytoearth.repository.crew.*;
 import com.waytoearth.repository.user.UserRepository;
+import com.waytoearth.util.MessageSanitizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +33,7 @@ public class CrewChatServiceImpl implements CrewChatService {
     private final CrewRepository crewRepository;
     private final CrewMemberRepository crewMemberRepository;
     private final UserRepository userRepository;
+    private final MessageSanitizer messageSanitizer;
 
     @Override
     @Transactional
@@ -51,10 +55,13 @@ public class CrewChatServiceImpl implements CrewChatService {
             }
         }
 
+        // 메시지 내용 정제 (추가 보안)
+        String sanitizedMessage = messageSanitizer.sanitizeMessage(message);
+
         CrewChatEntity chatMessage = CrewChatEntity.builder()
                 .crew(crew)
                 .sender(sender)
-                .message(message)
+                .message(sanitizedMessage)
                 .messageType(messageType != null ? messageType : CrewChatEntity.MessageType.TEXT)
                 .sentAt(LocalDateTime.now())
                 .build();
@@ -71,7 +78,19 @@ public class CrewChatServiceImpl implements CrewChatService {
     public Page<CrewChatMessageDto> getChatMessages(Long crewId, Long userId, Pageable pageable) {
         validateCrewMember(crewId, userId);
 
-        return crewChatRepository.findChatMessagesWithReadStatus(crewId, userId, pageable);
+        Page<CrewChatEntity> entities = crewChatRepository.findChatEntitiesWithReadStatus(crewId, userId, pageable);
+
+        return entities.map(entity -> CrewChatMessageDto.builder()
+                .messageId(entity.getId())
+                .crewId(entity.getCrew().getId())
+                .senderId(entity.getSender().getId())
+                .senderName(entity.getSender().getNickname())
+                .message(entity.getMessage())
+                .messageType(entity.getMessageType())
+                .sentAt(entity.getSentAt())
+                .isRead(entity.isReadBy(userId))
+                .readCount(entity.getReadStatus().size())
+                .build());
     }
 
     @Override
@@ -238,7 +257,22 @@ public class CrewChatServiceImpl implements CrewChatService {
     public List<CrewChatMessageDto> getRecentMessages(Long crewId, Long userId, int limit) {
         validateCrewMember(crewId, userId);
 
-        return crewChatRepository.findRecentMessages(crewId, userId, limit);
+        Pageable pageable = PageRequest.of(0, limit);
+        List<CrewChatEntity> entities = crewChatRepository.findRecentChatEntities(crewId, pageable);
+
+        return entities.stream()
+                .map(entity -> CrewChatMessageDto.builder()
+                        .messageId(entity.getId())
+                        .crewId(entity.getCrew().getId())
+                        .senderId(entity.getSender().getId())
+                        .senderName(entity.getSender().getNickname())
+                        .message(entity.getMessage())
+                        .messageType(entity.getMessageType())
+                        .sentAt(entity.getSentAt())
+                        .isRead(entity.isReadBy(userId))
+                        .readCount(entity.getReadStatus().size())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private CrewEntity getCrewEntity(Long crewId) {
@@ -252,7 +286,7 @@ public class CrewChatServiceImpl implements CrewChatService {
     }
 
     private void validateCrewMember(Long crewId, Long userId) {
-        if (!crewMemberRepository.existsByCrewIdAndUserIdAndIsActiveTrue(crewId, userId)) {
+        if (!crewMemberRepository.isUserMemberOfCrew(userId, crewId)) {
             throw new UnauthorizedAccessException("크루 멤버가 아닙니다.");
         }
     }

@@ -9,6 +9,8 @@ import com.waytoearth.repository.crew.CrewMemberRepository;
 import com.waytoearth.repository.crew.CrewRepository;
 import com.waytoearth.repository.user.UserRepository;
 import com.waytoearth.service.crew.CrewChatService;
+import com.waytoearth.util.MessageSanitizer;
+import com.waytoearth.util.ChatRateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -30,6 +32,8 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
     private final CrewRepository crewRepository;
     private final CrewMemberRepository crewMemberRepository;
     private final UserRepository userRepository;
+    private final MessageSanitizer messageSanitizer;
+    private final ChatRateLimiter chatRateLimiter;
 
     // 크루별 연결된 세션들을 관리 (crewId -> Map<userId, WebSocketSession>)
     private final Map<Long, Map<Long, WebSocketSession>> crewConnections = new ConcurrentHashMap<>();
@@ -46,7 +50,7 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
         }
 
         // 크루 멤버십 확인
-        if (!crewMemberRepository.existsByCrewIdAndUserIdAndIsActiveTrue(crewId, userId)) {
+        if (!crewMemberRepository.isUserMemberOfCrew(userId, crewId)) {
             session.close(CloseStatus.NOT_ACCEPTABLE.withReason("Not a crew member"));
             return;
         }
@@ -85,19 +89,39 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
 
             ChatMessage chatMessage = objectMapper.readValue(message.getPayload(), ChatMessage.class);
 
+            // Rate Limiting 검증
+            if (!chatRateLimiter.canSendMessage(userId)) {
+                sendErrorMessage(session, "메시지 전송 속도가 너무 빠릅니다. 잠시 후 다시 시도해주세요.");
+                return;
+            }
+
             // 메시지 유효성 검증
             if (chatMessage.getMessage() == null || chatMessage.getMessage().trim().isEmpty()) {
+                sendErrorMessage(session, "메시지 내용이 비어있습니다.");
                 return;
             }
 
-            if (chatMessage.getMessage().length() > 1000) {
-                sendErrorMessage(session, "메시지는 1000자를 초과할 수 없습니다.");
+            // 메시지 길이 검증
+            if (!messageSanitizer.isValidLength(chatMessage.getMessage())) {
+                sendErrorMessage(session, "메시지는 1자 이상 1000자 이하여야 합니다.");
                 return;
             }
 
-            // 메시지 저장
+            // 스팸 메시지 검증
+            if (messageSanitizer.isSpamMessage(chatMessage.getMessage())) {
+                sendErrorMessage(session, "스팸성 메시지는 전송할 수 없습니다.");
+                return;
+            }
+
+            // 메시지 내용 정제 (XSS 방지)
+            String sanitizedMessage = messageSanitizer.sanitizeMessage(chatMessage.getMessage());
+
+            // 메시지 저장 (정제된 메시지 사용)
             CrewChatEntity savedMessage = crewChatService.saveMessage(crewId, userId,
-                    chatMessage.getMessage(), chatMessage.getMessageType());
+                    sanitizedMessage, chatMessage.getMessageType());
+
+            // Rate Limiting 기록
+            chatRateLimiter.recordMessage(userId);
 
             // 응답 메시지 구성
             User sender = userRepository.findById(userId).orElse(null);
