@@ -12,6 +12,9 @@ import com.waytoearth.repository.crew.CrewMemberRepository;
 import com.waytoearth.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -207,6 +210,83 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
             log.info("크루 삭제에 따른 통계 데이터가 정리되었습니다. crewId: {}, deletedCount: {}",
                     crewId, allStats.size());
         }
+    }
+
+    /**
+     * 동시성 안전한 통계 업데이트 메서드 (Lost Update 방지)
+     * 원자적 SQL 업데이트와 낙관적 잠금을 함께 사용
+     */
+    @Override
+    @Transactional
+    @Retryable(value = {OptimisticLockingFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 100))
+    public void updateWithMemberRunSafe(Long crewId, String month, BigDecimal memberDistance,
+                                       BigDecimal memberPaceSeconds, boolean isNewActiveMember) {
+
+        // 1. 먼저 통계 레코드가 있는지 확인하고 생성
+        getOrCreateMonthlyStatistics(crewId, month);
+
+        // 2. 원자적 SQL 업데이트로 기본 통계 업데이트
+        int updateCount = statisticsRepository.updateStatisticsAtomically(
+                crewId, month, 1, memberDistance, isNewActiveMember);
+
+        if (updateCount == 0) {
+            log.warn("통계 원자적 업데이트 실패 - crewId: {}, month: {}", crewId, month);
+            throw new RuntimeException("통계 업데이트에 실패했습니다.");
+        }
+
+        // 3. 평균 페이스 계산은 별도 트랜잭션에서 처리 (복잡한 계산이므로 읽기 후 계산 후 업데이트)
+        updateAveragePaceSafe(crewId, month, memberDistance, memberPaceSeconds);
+
+        log.debug("안전한 통계 업데이트 완료 - crewId: {}, month: {}, distance: {}",
+                  crewId, month, memberDistance);
+    }
+
+    /**
+     * 평균 페이스 안전 업데이트 (복잡한 계산 필요)
+     */
+    private void updateAveragePaceSafe(Long crewId, String month, BigDecimal memberDistance, BigDecimal memberPaceSeconds) {
+        CrewEntity crew = getCrewEntity(crewId);
+        Optional<CrewStatisticsEntity> statsOpt = statisticsRepository.findByCrewAndMonth(crew, month);
+
+        if (statsOpt.isPresent()) {
+            CrewStatisticsEntity stats = statsOpt.get();
+
+            // 새로운 평균 페이스 계산
+            BigDecimal newAvgPace;
+            if (stats.getAvgPaceSeconds() == null) {
+                newAvgPace = memberPaceSeconds;
+            } else {
+                // 거리 기반 가중평균 계산
+                BigDecimal currentTotalDistance = stats.getTotalDistance();
+                BigDecimal previousDistance = currentTotalDistance.subtract(memberDistance);
+
+                BigDecimal totalWeightedPace = stats.getAvgPaceSeconds().multiply(previousDistance);
+                BigDecimal newWeightedPace = memberPaceSeconds.multiply(memberDistance);
+                newAvgPace = totalWeightedPace.add(newWeightedPace)
+                        .divide(currentTotalDistance, 2, BigDecimal.ROUND_HALF_UP);
+            }
+
+            // 원자적 평균 페이스 업데이트
+            statisticsRepository.updateAveragePace(crewId, month, newAvgPace);
+        }
+    }
+
+    /**
+     * 동시성 안전한 크루 멤버 수 증가/감소
+     */
+    @Override
+    @Transactional
+    @Retryable(value = {OptimisticLockingFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 50))
+    public boolean updateCrewMemberCountSafe(Long crewId, int delta) {
+        int updateCount = statisticsRepository.updateCurrentMembersAtomically(crewId, delta);
+
+        if (updateCount == 0) {
+            log.warn("크루 멤버 수 원자적 업데이트 실패 - crewId: {}, delta: {}", crewId, delta);
+            return false; // 정원 초과나 0 미만이 되려고 했음
+        }
+
+        log.debug("크루 멤버 수 안전 업데이트 완료 - crewId: {}, delta: {}", crewId, delta);
+        return true;
     }
 
     // Private helper methods

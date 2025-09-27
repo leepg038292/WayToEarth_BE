@@ -1,7 +1,7 @@
 package com.waytoearth.repository.crew;
 
+import com.waytoearth.dto.response.crew.CrewChatMessageDto;
 import com.waytoearth.entity.crew.CrewChatEntity;
-import com.waytoearth.entity.crew.CrewEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,33 +9,63 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface CrewChatRepository extends JpaRepository<CrewChatEntity, Long> {
 
-    Page<CrewChatEntity> findByCrewAndIsActiveTrueOrderByCreatedAtDesc(CrewEntity crew, Pageable pageable);
+    @Query("""
+        SELECT c FROM CrewChatEntity c
+        JOIN FETCH c.sender
+        WHERE c.crew.id = :crewId
+        AND c.isDeleted = false
+        ORDER BY c.sentAt DESC
+        """)
+    Page<CrewChatEntity> findChatEntitiesWithReadStatus(@Param("crewId") Long crewId,
+                                                        @Param("userId") Long userId,
+                                                        Pageable pageable);
 
-    Optional<CrewChatEntity> findFirstByCrewAndIsActiveTrueOrderByCreatedAtDesc(CrewEntity crew);
+    @Query("""
+        SELECT c FROM CrewChatEntity c
+        WHERE c.crew.id = :crewId
+        AND c.id > :afterMessageId
+        AND c.isDeleted = false
+        AND c.sender.id != :userId
+        AND NOT EXISTS(SELECT 1 FROM CrewChatReadStatusEntity r
+                      WHERE r.message = c AND r.reader.id = :userId)
+        ORDER BY c.sentAt ASC
+        """)
+    List<CrewChatEntity> findUnreadMessagesAfter(@Param("crewId") Long crewId,
+                                                 @Param("userId") Long userId,
+                                                 @Param("afterMessageId") Long afterMessageId);
 
-    List<CrewChatEntity> findByCrewAndIsActiveTrueAndCreatedAtAfterOrderByCreatedAtAsc(
-            CrewEntity crew, LocalDateTime after);
+    @Query("""
+        SELECT COUNT(c)
+        FROM CrewChatEntity c
+        WHERE c.crew.id = :crewId
+        AND c.isDeleted = false
+        AND c.sender.id != :userId
+        AND NOT EXISTS(SELECT 1 FROM CrewChatReadStatusEntity r
+                      WHERE r.message = c AND r.reader.id = :userId)
+        """)
+    int countUnreadMessages(@Param("crewId") Long crewId, @Param("userId") Long userId);
 
-    //N+1 해결을 위한 발신자 정보 포함 조회
-    @Query("SELECT cc FROM CrewChatEntity cc " +
-           "JOIN FETCH cc.sender " +
-           "WHERE cc.crew = :crew AND cc.isActive = true " +
-           "ORDER BY cc.createdAt DESC")
-    Page<CrewChatEntity> findRecentMessagesWithSender(@Param("crew") CrewEntity crew, Pageable pageable);
+    @Query("""
+        SELECT c FROM CrewChatEntity c
+        JOIN FETCH c.sender
+        WHERE c.crew.id = :crewId
+        AND c.isDeleted = false
+        ORDER BY c.sentAt DESC
+        """)
+    List<CrewChatEntity> findRecentChatEntities(@Param("crewId") Long crewId, Pageable pageable);
 
-    //실시간 업데이트용 (발신자 정보 포함)
-    @Query("SELECT cc FROM CrewChatEntity cc " +
-           "JOIN FETCH cc.sender " +
-           "WHERE cc.crew.id = :crewId AND cc.isActive = true " +
-           "AND cc.createdAt > :timestamp " +
-           "ORDER BY cc.createdAt ASC")
-    List<CrewChatEntity> findMessagesAfter(@Param("crewId") Long crewId,
-                                          @Param("timestamp") LocalDateTime timestamp);
+    @Query("""
+        SELECT c FROM CrewChatEntity c
+        WHERE c.crew.id = :crewId
+        AND c.isDeleted = false
+        ORDER BY c.sentAt DESC
+        """)
+    List<CrewChatEntity> findByCrewIdOrderBySentAtDesc(@Param("crewId") Long crewId);
+
+    void deleteAllByCrew_Id(Long crewId);
 }

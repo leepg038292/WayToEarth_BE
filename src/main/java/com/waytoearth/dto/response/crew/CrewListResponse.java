@@ -1,0 +1,61 @@
+package com.waytoearth.dto.response.crew;
+
+import com.waytoearth.entity.crew.CrewEntity;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Schema(description = "크루 목록 응답")
+public class CrewListResponse {
+
+    @Schema(description = "크루 ID", example = "1")
+    private Long id;
+
+    @Schema(description = "크루 이름", example = "서울 러닝 크루")
+    private String name;
+
+    @Schema(description = "크루 소개", example = "함께 달리며 건강한 라이프스타일을 추구하는 크루입니다")
+    private String description;
+
+    @Schema(description = "최대 인원", example = "20")
+    private Integer maxMembers;
+
+    @Schema(description = "현재 멤버 수", example = "10")
+    private Integer currentMembers;
+
+    @Schema(description = "프로필 이미지 URL", example = "https://example.com/crew-profile.jpg")
+    private String profileImageUrl;
+
+    @Schema(description = "크루장 닉네임", example = "김러너")
+    private String ownerNickname;
+
+    @Schema(description = "생성일", example = "2024-01-15T10:30:00")
+    private LocalDateTime createdAt;
+
+    @Schema(description = "가입 가능 여부", example = "true")
+    private Boolean canJoin;
+
+    public static CrewListResponse from(CrewEntity crew, Boolean canJoin) {
+        return new CrewListResponse(
+                crew.getId(),
+                crew.getName(),
+                crew.getDescription(),
+                crew.getMaxMembers(),
+                crew.getCurrentMembers(),
+                crew.getProfileImageUrl(),
+                crew.getOwner().getNickname(),
+                crew.getCreatedAt(),
+                canJoin
+        );
+    }
+
+    public static CrewListResponse from(CrewEntity crew) {
+        return from(crew, null);
+    }
+}

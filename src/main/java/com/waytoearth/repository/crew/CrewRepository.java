@@ -61,8 +61,36 @@ public interface CrewRepository extends JpaRepository<CrewEntity, Long> {
            "ORDER BY c.createdAt DESC")
     List<CrewEntity> findActiveCrewsWithOwner();
 
+    //크루 이름으로 검색 (활성 크루만) - N+1 방지
+    @Query("SELECT c FROM CrewEntity c " +
+           "JOIN FETCH c.owner " +
+           "WHERE c.name LIKE %:keyword% AND c.isActive = true " +
+           "ORDER BY c.createdAt DESC")
+    List<CrewEntity> searchByNameKeywordWithOwner(@Param("keyword") String keyword);
+
+    //사용자가 속한 크루 조회 - N+1 방지
+    @Query("SELECT DISTINCT c FROM CrewEntity c " +
+           "JOIN FETCH c.owner " +
+           "JOIN c.members m " +
+           "WHERE m.user = :user AND m.isActive = true AND c.isActive = true " +
+           "ORDER BY c.createdAt DESC")
+    List<CrewEntity> findCrewsByUserWithOwner(@Param("user") User user);
+
     /**
      * 페이징 지원 메서드들
      */
     Page<CrewEntity> findByIsActiveTrueOrderByCreatedAtDesc(Pageable pageable);
+
+    //페이징 지원 크루 검색 - N+1 방지
+    @Query("SELECT c FROM CrewEntity c " +
+           "JOIN FETCH c.owner " +
+           "WHERE c.name LIKE %:keyword% AND c.isActive = true")
+    Page<CrewEntity> findByNameContainingWithOwner(@Param("keyword") String keyword, Pageable pageable);
+
+    //페이징 지원 사용자 크루 조회 - N+1 방지
+    @Query("SELECT DISTINCT c FROM CrewEntity c " +
+           "JOIN FETCH c.owner " +
+           "JOIN c.members m " +
+           "WHERE m.user = :user AND m.isActive = true AND c.isActive = true")
+    Page<CrewEntity> findCrewsByUserWithOwnerPaged(@Param("user") User user, Pageable pageable);
 }

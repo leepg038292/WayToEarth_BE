@@ -10,7 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "crews")
+@Table(name = "crews",
+       uniqueConstraints = {
+           @UniqueConstraint(columnNames = {"name"}, name = "uk_crew_name")
+       })
+@org.hibernate.annotations.Check(constraints = "max_members > 0 AND max_members <= 1000 AND current_members >= 0 AND current_members <= max_members")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -49,6 +53,10 @@ public class CrewEntity extends BaseTimeEntity {
     @Column(nullable = false)
     @Builder.Default
     private Integer currentMembers = 0;
+
+    @Schema(description = "낙관적 잠금을 위한 버전 필드")
+    @Version
+    private Long version;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)

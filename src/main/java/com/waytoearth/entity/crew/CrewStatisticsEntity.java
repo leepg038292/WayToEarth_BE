@@ -61,6 +61,10 @@ public class CrewStatisticsEntity extends BaseTimeEntity {
     @Column(precision = 10, scale = 2)
     private BigDecimal mvpDistance;
 
+    @Schema(description = "낙관적 잠금을 위한 버전 필드")
+    @Version
+    private Long version;
+
     public String getFormattedAvgPace() {
         if (avgPaceSeconds == null) {
             return "00:00";

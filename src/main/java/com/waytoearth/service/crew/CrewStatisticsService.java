@@ -6,6 +6,7 @@ import com.waytoearth.dto.response.crew.CrewRankingDto;
 import com.waytoearth.entity.crew.CrewStatisticsEntity;
 import com.waytoearth.entity.user.User;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -81,4 +82,15 @@ public interface CrewStatisticsService {
      * 크루의 월간 MVP 조회
      */
     Optional<CrewMemberRankingDto> getMvpInCrew(Long crewId, String month);
+
+    /**
+     * 동시성 안전한 통계 업데이트 (Lost Update 방지)
+     */
+    void updateWithMemberRunSafe(Long crewId, String month, BigDecimal memberDistance,
+                                BigDecimal memberPaceSeconds, boolean isNewActiveMember);
+
+    /**
+     * 동시성 안전한 크루 멤버 수 증가/감소
+     */
+    boolean updateCrewMemberCountSafe(Long crewId, int delta);
 }
