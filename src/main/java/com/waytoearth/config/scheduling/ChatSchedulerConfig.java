@@ -1,4 +1,4 @@
-package com.waytoearth.config;
+package com.waytoearth.config.scheduling;
 
 import com.waytoearth.util.ChatRateLimiter;
 import lombok.RequiredArgsConstructor;
