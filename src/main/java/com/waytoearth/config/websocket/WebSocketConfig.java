@@ -15,14 +15,14 @@ public class WebSocketConfig implements WebSocketConfigurer {
     private final CrewChatWebSocketHandler crewChatWebSocketHandler;
     private final WebSocketAuthInterceptor webSocketAuthInterceptor;
 
-    @Value("${app.cors.allowed-origins:http://localhost:3000,http://127.0.0.1:5500}")
+    @Value("${app.cors.allowed-origins:https://api.waytoearth.cloud}")
     private String allowedOrigins;
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(crewChatWebSocketHandler, "/ws/crew/{crewId}/chat")
-                .setAllowedOrigins(allowedOrigins.split(","))
-                .addInterceptors(webSocketAuthInterceptor);
-//                .withSockJS();
+                .addInterceptors(webSocketAuthInterceptor)
+                .setAllowedOriginPatterns(allowedOrigins.split(","));
     }
+
 }
