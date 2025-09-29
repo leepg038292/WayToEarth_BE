@@ -10,6 +10,7 @@ import com.waytoearth.repository.crew.CrewRepository;
 import com.waytoearth.repository.crew.CrewStatisticsRepository;
 import com.waytoearth.repository.crew.CrewMemberRepository;
 import com.waytoearth.repository.user.UserRepository;
+import com.waytoearth.service.ranking.CrewRankingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -34,6 +35,7 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
     private final CrewRepository crewRepository;
     private final CrewMemberRepository crewMemberRepository;
     private final UserRepository userRepository;
+    private final CrewRankingService crewRankingService;
 
     @Override
     @Transactional
@@ -100,6 +102,9 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
 
         // MVP 갱신 (비동기적으로 처리할 수도 있음)
         updateMvpForMonth(crewId, month);
+
+        // Redis 랭킹 실시간 업데이트
+        updateRedisRankingAfterRun(crewId, userId, month);
     }
 
     @Override
