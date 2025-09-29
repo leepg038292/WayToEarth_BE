@@ -30,16 +30,87 @@ public class CrewRankingServiceImpl implements CrewRankingService {
     public List<CrewMemberRankingDto> getMemberRankingInCrew(Long crewId, String month, int limit) {
         String rankingKey = RankingKeyUtil.memberRankingKey(crewId, month);
 
-        // Redis ZSet에서 상위 랭킹 조회 (점수 내림차순)
+        // Redis ZSet에서 상위 랭킹 조회
         Set<ZSetOperations.TypedTuple<Object>> rankingSet =
             redisTemplate.opsForZSet().reverseRangeWithScores(rankingKey, 0, limit - 1);
 
         if (rankingSet == null || rankingSet.isEmpty()) {
             log.info("Redis에 랭킹 데이터가 없어 DB에서 조회합니다. crewId: {}, month: {}", crewId, month);
-            // Redis에 데이터가 없으면 DB에서 조회 후 Redis에 캐싱
             return getMemberRankingFromDB(crewId, month, limit);
         }
 
+        return convertToMemberRankingDto(rankingSet, month);
+    }
+
+    @Override
+    public List<CrewRankingDto> getCrewRanking(String month, int limit) {
+        String rankingKey = RankingKeyUtil.crewRankingKey(month);
+
+        Set<ZSetOperations.TypedTuple<Object>> rankingSet =
+            redisTemplate.opsForZSet().reverseRangeWithScores(rankingKey, 0, limit - 1);
+
+        if (rankingSet == null || rankingSet.isEmpty()) {
+            log.info("Redis에 크루 랭킹 데이터가 없어 DB에서 조회합니다. month: {}", month);
+            return getCrewRankingFromDB(month, limit);
+        }
+
+        return convertToCrewRankingDto(rankingSet, month);
+    }
+
+    @Override
+    public void updateMemberRanking(Long crewId, Long userId, String month, Double newTotalDistance) {
+        String rankingKey = RankingKeyUtil.memberRankingKey(crewId, month);
+        redisTemplate.opsForZSet().add(rankingKey, userId.toString(), newTotalDistance);
+        log.debug("멤버 랭킹 업데이트 완료. crewId: {}, userId: {}, month: {}, distance: {}",
+                crewId, userId, month, newTotalDistance);
+    }
+
+    @Override
+    public void updateCrewRanking(Long crewId, String month, Double newTotalDistance) {
+        String rankingKey = RankingKeyUtil.crewRankingKey(month);
+        redisTemplate.opsForZSet().add(rankingKey, crewId.toString(), newTotalDistance);
+        log.debug("크루 랭킹 업데이트 완료. crewId: {}, month: {}, distance: {}",
+                crewId, month, newTotalDistance);
+    }
+
+    @Override
+    public void rebuildRankingFromDB(String month) {
+        log.info("월별 랭킹 데이터를 DB에서 재구축 시작. month: {}", month);
+        // TODO: DB에서 해당 월의 모든 랭킹 데이터를 조회하여 Redis에 저장
+        log.info("월별 랭킹 데이터 재구축 완료. month: {}", month);
+    }
+
+    private List<CrewMemberRankingDto> getMemberRankingFromDB(Long crewId, String month, int limit) {
+        List<CrewMemberRankingDto> ranking = statisticsRepository.findMemberRankingInCrew(crewId, month, limit);
+
+        // Redis에 캐싱
+        String rankingKey = RankingKeyUtil.memberRankingKey(crewId, month);
+        for (CrewMemberRankingDto member : ranking) {
+            redisTemplate.opsForZSet().add(rankingKey,
+                member.getUserId().toString(),
+                member.getTotalDistance().doubleValue());
+        }
+
+        log.info("DB에서 조회한 멤버 랭킹을 Redis에 캐싱했습니다. crewId: {}, month: {}", crewId, month);
+        return ranking;
+    }
+
+    private List<CrewRankingDto> getCrewRankingFromDB(String month, int limit) {
+        List<CrewRankingDto> ranking = statisticsRepository.findCrewRankingByActualDistance(month, limit);
+
+        // Redis에 캐싱
+        String rankingKey = RankingKeyUtil.crewRankingKey(month);
+        for (CrewRankingDto crew : ranking) {
+            redisTemplate.opsForZSet().add(rankingKey,
+                crew.getCrewId().toString(),
+                crew.getTotalDistance().doubleValue());
+        }
+
+        log.info("DB에서 조회한 크루 랭킹을 Redis에 캐싱했습니다. month: {}", month);
+        return ranking;
+    }
+
+    private List<CrewMemberRankingDto> convertToMemberRankingDto(Set<ZSetOperations.TypedTuple<Object>> rankingSet, String month) {
         List<CrewMemberRankingDto> ranking = new ArrayList<>();
         int rank = 1;
 
@@ -47,7 +118,6 @@ public class CrewRankingServiceImpl implements CrewRankingService {
             Long userId = Long.valueOf(tuple.getValue().toString());
             Double totalDistance = tuple.getScore();
 
-            // 사용자 정보 조회
             User user = userRepository.findById(userId).orElse(null);
             if (user != null) {
                 ranking.add(new CrewMemberRankingDto(
@@ -61,24 +131,10 @@ public class CrewRankingServiceImpl implements CrewRankingService {
             }
         }
 
-        log.info("Redis에서 크루 멤버 랭킹 조회 완료. crewId: {}, month: {}, 조회된 수: {}",
-                crewId, month, ranking.size());
         return ranking;
     }
 
-    @Override
-    public List<CrewRankingDto> getCrewRanking(String month, int limit) {
-        String rankingKey = RankingKeyUtil.crewRankingKey(month);
-
-        // Redis ZSet에서 상위 크루 랭킹 조회
-        Set<ZSetOperations.TypedTuple<Object>> rankingSet =
-            redisTemplate.opsForZSet().reverseRangeWithScores(rankingKey, 0, limit - 1);
-
-        if (rankingSet == null || rankingSet.isEmpty()) {
-            log.info("Redis에 크루 랭킹 데이터가 없어 DB에서 조회합니다. month: {}", month);
-            return getCrewRankingFromDB(month, limit);
-        }
-
+    private List<CrewRankingDto> convertToCrewRankingDto(Set<ZSetOperations.TypedTuple<Object>> rankingSet, String month) {
         List<CrewRankingDto> ranking = new ArrayList<>();
         int rank = 1;
 
@@ -97,76 +153,6 @@ public class CrewRankingServiceImpl implements CrewRankingService {
             ));
         }
 
-        log.info("Redis에서 크루 랭킹 조회 완료. month: {}, 조회된 수: {}", month, ranking.size());
-        return ranking;
-    }
-
-    @Override
-    public void updateMemberRanking(Long crewId, Long userId, String month, Double newTotalDistance) {
-        String rankingKey = RankingKeyUtil.memberRankingKey(crewId, month);
-
-        // Redis ZSet에 사용자의 새로운 거리 점수 업데이트
-        redisTemplate.opsForZSet().add(rankingKey, userId.toString(), newTotalDistance);
-
-        log.debug("멤버 랭킹 업데이트 완료. crewId: {}, userId: {}, month: {}, distance: {}",
-                crewId, userId, month, newTotalDistance);
-    }
-
-    @Override
-    public void updateCrewRanking(Long crewId, String month, Double newTotalDistance) {
-        String rankingKey = RankingKeyUtil.crewRankingKey(month);
-
-        // Redis ZSet에 크루의 새로운 거리 점수 업데이트
-        redisTemplate.opsForZSet().add(rankingKey, crewId.toString(), newTotalDistance);
-
-        log.debug("크루 랭킹 업데이트 완료. crewId: {}, month: {}, distance: {}",
-                crewId, month, newTotalDistance);
-    }
-
-    @Override
-    public void rebuildRankingFromDB(String month) {
-        log.info("월별 랭킹 데이터를 DB에서 재구축 시작. month: {}", month);
-
-        // TODO: DB에서 해당 월의 모든 랭킹 데이터를 조회하여 Redis에 저장
-        // 1. 모든 크루의 멤버 랭킹 재구축
-        // 2. 모든 크루 랭킹 재구축
-
-        log.info("월별 랭킹 데이터 재구축 완료. month: {}", month);
-    }
-
-    /**
-     * DB에서 멤버 랭킹 조회 후 Redis에 캐싱
-     */
-    private List<CrewMemberRankingDto> getMemberRankingFromDB(Long crewId, String month, int limit) {
-        List<CrewMemberRankingDto> ranking = statisticsRepository.findMemberRankingInCrew(crewId, month, limit);
-
-        // Redis에 캐싱
-        String rankingKey = RankingKeyUtil.memberRankingKey(crewId, month);
-        for (CrewMemberRankingDto member : ranking) {
-            redisTemplate.opsForZSet().add(rankingKey,
-                member.getUserId().toString(),
-                member.getTotalDistance().doubleValue());
-        }
-
-        log.info("DB에서 조회한 멤버 랭킹을 Redis에 캐싱했습니다. crewId: {}, month: {}", crewId, month);
-        return ranking;
-    }
-
-    /**
-     * DB에서 크루 랭킹 조회 후 Redis에 캐싱
-     */
-    private List<CrewRankingDto> getCrewRankingFromDB(String month, int limit) {
-        List<CrewRankingDto> ranking = statisticsRepository.findCrewRankingByActualDistance(month, limit);
-
-        // Redis에 캐싱
-        String rankingKey = RankingKeyUtil.crewRankingKey(month);
-        for (CrewRankingDto crew : ranking) {
-            redisTemplate.opsForZSet().add(rankingKey,
-                crew.getCrewId().toString(),
-                crew.getTotalDistance().doubleValue());
-        }
-
-        log.info("DB에서 조회한 크루 랭킹을 Redis에 캐싱했습니다. month: {}", month);
         return ranking;
     }
 }

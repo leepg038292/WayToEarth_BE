@@ -134,23 +134,8 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
 
     @Override
     public List<CrewRankingDto> getCrewRankingByDistance(String month, int limit) {
-        List<CrewRankingDto> ranking = statisticsRepository.findCrewRankingByActualDistance(month, limit);
-
-        // 랭킹 순위 설정 (1, 2, 3, ...)
-        for (int i = 0; i < ranking.size(); i++) {
-            CrewRankingDto crew = ranking.get(i);
-            CrewRankingDto withRank = new CrewRankingDto(
-                    crew.getMonth(),
-                    crew.getCrewId(),
-                    crew.getCrewName(),
-                    crew.getTotalDistance(),
-                    crew.getRunCount(),
-                    i + 1 // 랭킹은 1부터 시작
-            );
-            ranking.set(i, withRank);
-        }
-
-        return ranking;
+        // Redis 우선 조회! 고성능 랭킹 시스템
+        return crewRankingService.getCrewRanking(month, limit);
     }
 
     @Override
@@ -303,30 +288,61 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
 
     @Override
     public List<CrewMemberRankingDto> getMemberRankingInCrew(Long crewId, String month, int limit) {
-        List<CrewMemberRankingDto> ranking = statisticsRepository.findMemberRankingInCrew(crewId, month, limit);
-
-        // 랭킹 순위 설정 (1, 2, 3, ...)
-        for (int i = 0; i < ranking.size(); i++) {
-            // CrewMemberRankingDto는 immutable이므로 새 객체 생성
-            CrewMemberRankingDto member = ranking.get(i);
-            CrewMemberRankingDto withRank = new CrewMemberRankingDto(
-                    member.getMonth(),
-                    member.getUserId(),
-                    member.getUserName(),
-                    member.getTotalDistance(),
-                    member.getRunCount(),
-                    i + 1 // 랭킹은 1부터 시작
-            );
-            ranking.set(i, withRank);
-        }
-
-        return ranking;
+        // Redis 우선 조회! 고성능 랭킹 시스템
+        return crewRankingService.getMemberRankingInCrew(crewId, month, limit);
     }
 
     @Override
     public Optional<CrewMemberRankingDto> getMvpInCrew(Long crewId, String month) {
         CrewMemberRankingDto mvp = statisticsRepository.findMvpInCrew(crewId, month);
         return Optional.ofNullable(mvp);
+    }
+
+    /**
+     * 러닝 완료 후 Redis 랭킹 실시간 업데이트
+     */
+    private void updateRedisRankingAfterRun(Long crewId, Long userId, String month) {
+        try {
+            // 1. 사용자의 월간 누적 거리 조회
+            BigDecimal userTotalDistance = getUserMonthlyTotalDistance(crewId, userId, month);
+
+            // 2. 크루 내 멤버 랭킹 업데이트
+            crewRankingService.updateMemberRanking(crewId, userId, month, userTotalDistance.doubleValue());
+
+            // 3. 크루 전체 거리 조회 및 크루 랭킹 업데이트
+            BigDecimal crewTotalDistance = getCrewMonthlyTotalDistance(crewId, month);
+            crewRankingService.updateCrewRanking(crewId, month, crewTotalDistance.doubleValue());
+
+            log.debug("Redis 랭킹 업데이트 완료. crewId: {}, userId: {}, month: {}, userDistance: {}, crewDistance: {}",
+                    crewId, userId, month, userTotalDistance, crewTotalDistance);
+
+        } catch (Exception e) {
+            log.error("Redis 랭킹 업데이트 실패. crewId: {}, userId: {}, month: {}, error: {}",
+                    crewId, userId, month, e.getMessage(), e);
+            // Redis 오류가 메인 로직을 방해하지 않도록 예외를 먹음
+        }
+    }
+
+    /**
+     * 사용자의 월간 누적 거리 조회
+     */
+    private BigDecimal getUserMonthlyTotalDistance(Long crewId, Long userId, String month) {
+        // 해당 월의 사용자 러닝 기록 합계를 직접 계산
+        // CrewMemberRankingDto에서 이미 같은 정보를 제공하므로 간소화
+        List<CrewMemberRankingDto> ranking = statisticsRepository.findMemberRankingInCrew(crewId, month, 100);
+        return ranking.stream()
+                .filter(member -> member.getUserId().equals(userId))
+                .findFirst()
+                .map(CrewMemberRankingDto::getTotalDistance)
+                .orElse(BigDecimal.ZERO);
+    }
+
+    /**
+     * 크루의 월간 전체 거리 조회
+     */
+    private BigDecimal getCrewMonthlyTotalDistance(Long crewId, String month) {
+        CrewStatisticsEntity stats = getMonthlyStatistics(crewId, month).orElse(null);
+        return stats != null ? stats.getTotalDistance() : BigDecimal.ZERO;
     }
 
     private User getUserEntity(Long userId) {
