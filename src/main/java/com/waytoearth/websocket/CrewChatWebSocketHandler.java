@@ -89,7 +89,7 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
 
             ChatMessage chatMessage = objectMapper.readValue(message.getPayload(), ChatMessage.class);
 
-            // Rate Limiting 검증
+            // Rate Limiting 검증 (이제 검증과 기록이 원자적으로 처리됨)
             if (!chatRateLimiter.canSendMessage(userId)) {
                 sendErrorMessage(session, "메시지 전송 속도가 너무 빠릅니다. 잠시 후 다시 시도해주세요.");
                 return;
@@ -120,8 +120,7 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
             CrewChatEntity savedMessage = crewChatService.saveMessage(crewId, userId,
                     sanitizedMessage, chatMessage.getMessageType());
 
-            // Rate Limiting 기록
-            chatRateLimiter.recordMessage(userId);
+            // Rate Limiting 기록은 이미 canSendMessage에서 처리됨
 
             // 응답 메시지 구성
             User sender = userRepository.findById(userId).orElse(null);
