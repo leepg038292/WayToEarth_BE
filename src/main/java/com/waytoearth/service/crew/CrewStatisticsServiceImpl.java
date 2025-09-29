@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -163,8 +164,8 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
 
     @Override
     public List<CrewStatisticsSummaryDto> getCrewRankingByGrowth(String currentMonth, String previousMonth, int limit) {
-        // TODO: 성장률 랭킹은 추후 구현
-        return List.of();
+        // 현재는 월간 누적 거리 랭킹만 사용, 성장률 랭킹은 향후 필요시 구현
+        return Collections.emptyList();
     }
 
     @Override
