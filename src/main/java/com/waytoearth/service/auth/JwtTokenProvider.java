@@ -22,7 +22,7 @@ public class JwtTokenProvider {
     public JwtTokenProvider(
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.expiration:86400000}") long expiration) {
-        log.info("Loaded JWT secret: {}", secret);// 기본값 24시간
+        log.info("JWT configuration initialized with expiration: {}ms", expiration);
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
         this.jwtExpirationMs = expiration;
     }
