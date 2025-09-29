@@ -1,23 +1,37 @@
-# WebSocket 인증 가이드
+# WebSocket 연결 가이드
+
+## 🔗 연결 엔드포인트
+
+### ✅ **방법 1: 순수 WebSocket (권장)**
+```javascript
+// 순수 WebSocket 연결
+const ws = new WebSocket('ws://your-server.com/ws/crew/123/chat');
+// 헤더에서 토큰 전송 (서버에서 Authorization 헤더 확인)
+```
+
+### ✅ **방법 2: SockJS (백업용)**
+```javascript
+// SockJS 연결
+const socket = new SockJS('http://your-server.com/sockjs/crew/123/chat');
+// 프로토콜에서 토큰 전송
+```
 
 ## 🔒 보안 토큰 전송 방법
 
-### ✅ **권장 방법 1: Authorization 헤더 사용**
-
+### ✅ **순수 WebSocket - Authorization 헤더**
 ```javascript
-// JavaScript WebSocket 연결
-const ws = new WebSocket('ws://localhost:8080/ws/crew/123/chat', [], {
+// React Native / Node.js
+const ws = new WebSocket('ws://your-server.com/ws/crew/123/chat', [], {
     headers: {
         'Authorization': 'Bearer ' + yourJwtToken
     }
 });
 ```
 
-### ✅ **권장 방법 2: Sec-WebSocket-Protocol 헤더 사용 (SockJS 호환)**
-
+### ✅ **SockJS - Protocol 헤더**
 ```javascript
-// SockJS 연결 시
-const socket = new SockJS('/ws/crew/123/chat', [], {
+// 브라우저에서 SockJS
+const socket = new SockJS('http://your-server.com/sockjs/crew/123/chat', null, {
     protocols_whitelist: ['Bearer.' + yourJwtToken]
 });
 ```

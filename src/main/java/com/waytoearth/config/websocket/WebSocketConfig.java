@@ -20,7 +20,13 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        // 순수 WebSocket 연결 (권장)
         registry.addHandler(crewChatWebSocketHandler, "/ws/crew/{crewId}/chat")
+                .addInterceptors(webSocketAuthInterceptor)
+                .setAllowedOriginPatterns(allowedOrigins.split(","));
+
+        // SockJS 연결 (백업용)
+        registry.addHandler(crewChatWebSocketHandler, "/sockjs/crew/{crewId}/chat")
                 .addInterceptors(webSocketAuthInterceptor)
                 .setAllowedOriginPatterns(allowedOrigins.split(","))
                 .withSockJS()
