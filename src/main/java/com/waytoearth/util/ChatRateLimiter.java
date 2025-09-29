@@ -19,21 +19,28 @@ public class ChatRateLimiter {
     private final Map<Long, MessageRate> userRates = new ConcurrentHashMap<>();
 
     /**
-     * 사용자의 메시지 전송 가능 여부 확인
+     * 사용자의 메시지 전송 가능 여부 확인 및 기록 (원자적 연산)
      */
     public boolean canSendMessage(Long userId) {
         MessageRate rate = userRates.computeIfAbsent(userId, k -> new MessageRate());
-        return rate.canSendMessage();
+
+        // synchronized로 check-then-act 패턴의 race condition 방지
+        synchronized (rate) {
+            if (rate.canSendMessage()) {
+                rate.recordMessage();
+                return true;
+            }
+            return false;
+        }
     }
 
     /**
-     * 사용자의 메시지 전송 기록
+     * 사용자의 메시지 전송 기록 (사용하지 않음 - canSendMessage에서 통합 처리)
+     * @deprecated canSendMessage 메서드에서 원자적으로 처리됨
      */
+    @Deprecated
     public void recordMessage(Long userId) {
-        MessageRate rate = userRates.get(userId);
-        if (rate != null) {
-            rate.recordMessage();
-        }
+        // 더 이상 사용하지 않음 - canSendMessage에서 통합 처리
     }
 
     /**

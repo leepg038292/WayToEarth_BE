@@ -53,28 +53,20 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
     }
 
     private String extractTokenFromRequest(ServerHttpRequest request) {
-        URI uri = request.getURI();
-        String query = uri.getQuery();
-
-        if (query != null && query.contains("token=")) {
-            try {
-                String[] params = query.split("&");
-                for (String param : params) {
-                    if (param.startsWith("token=")) {
-                        return param.split("=")[1];
-                    }
-                }
-            } catch (Exception e) {
-                log.error("토큰 추출 실패", e);
-            }
-        }
-
-        // Authorization 헤더에서 토큰 추출 시도
+        // 보안상 Authorization 헤더만 사용 (URL 쿼리 파라미터 사용 금지)
         String authHeader = request.getHeaders().getFirst("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7);
         }
 
+        // SEC-INFO 헤더에서도 토큰 확인 (SockJS fallback)
+        String secInfoHeader = request.getHeaders().getFirst("Sec-WebSocket-Protocol");
+        if (secInfoHeader != null && secInfoHeader.startsWith("Bearer.")) {
+            return secInfoHeader.substring(7); // "Bearer." 제거
+        }
+
+        log.warn("WebSocket 연결에서 Authorization 헤더를 찾을 수 없음: {}",
+                request.getURI().getPath());
         return null;
     }
 }

@@ -22,7 +22,11 @@ public class WebSocketConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(crewChatWebSocketHandler, "/ws/crew/{crewId}/chat")
                 .addInterceptors(webSocketAuthInterceptor)
-                .setAllowedOriginPatterns(allowedOrigins.split(","));
+                .setAllowedOriginPatterns(allowedOrigins.split(","))
+                .withSockJS()
+                .setHeartbeatTime(25000)  // 25초마다 하트비트 전송
+                .setDisconnectDelay(5000) // 5초 연결 끊김 감지
+                .setSessionCookieNeeded(false);
     }
 
 }

@@ -34,6 +34,7 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
     private final UserRepository userRepository;
     private final MessageSanitizer messageSanitizer;
     private final ChatRateLimiter chatRateLimiter;
+    private final WebSocketSessionManager sessionManager;
 
     // 크루별 연결된 세션들을 관리 (crewId -> Map<userId, WebSocketSession>)
     private final Map<Long, Map<Long, WebSocketSession>> crewConnections = new ConcurrentHashMap<>();
@@ -57,6 +58,9 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
 
         // 세션 저장
         crewConnections.computeIfAbsent(crewId, k -> new ConcurrentHashMap<>()).put(userId, session);
+
+        // 세션 활동 시간 기록
+        sessionManager.updateSessionActivity(session);
 
         log.info("웹소켓 연결 성공 - crewId: {}, userId: {}", crewId, userId);
 
@@ -87,9 +91,12 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
                 return;
             }
 
+            // 세션 활동 시간 업데이트
+            sessionManager.updateSessionActivity(session);
+
             ChatMessage chatMessage = objectMapper.readValue(message.getPayload(), ChatMessage.class);
 
-            // Rate Limiting 검증
+            // Rate Limiting 검증 (이제 검증과 기록이 원자적으로 처리됨)
             if (!chatRateLimiter.canSendMessage(userId)) {
                 sendErrorMessage(session, "메시지 전송 속도가 너무 빠릅니다. 잠시 후 다시 시도해주세요.");
                 return;
@@ -120,8 +127,7 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
             CrewChatEntity savedMessage = crewChatService.saveMessage(crewId, userId,
                     sanitizedMessage, chatMessage.getMessageType());
 
-            // Rate Limiting 기록
-            chatRateLimiter.recordMessage(userId);
+            // Rate Limiting 기록은 이미 canSendMessage에서 처리됨
 
             // 응답 메시지 구성
             User sender = userRepository.findById(userId).orElse(null);
@@ -161,6 +167,9 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
                     crewConnections.remove(crewId);
                 }
             }
+
+            // 세션 매니저에서 제거
+            sessionManager.removeSession(session);
 
             log.info("웹소켓 연결 종료 - crewId: {}, userId: {}", crewId, userId);
 
@@ -211,14 +220,17 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
             }
 
             try {
-                if (session.isOpen()) {
+                if (session.isOpen() && !sessionManager.isSessionExpired(session)) {
                     session.sendMessage(new TextMessage(messageJson));
                     return false;
                 } else {
-                    return true; // 닫힌 세션은 제거
+                    // 닫힌 세션이거나 타임아웃된 세션은 제거
+                    sessionManager.removeSession(session);
+                    return true;
                 }
             } catch (Exception e) {
                 log.warn("메시지 전송 실패 - crewId: {}, userId: {}", crewId, userId, e);
+                sessionManager.removeSession(session);
                 return true; // 오류 발생한 세션은 제거
             }
         });
