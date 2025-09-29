@@ -101,22 +101,33 @@ public class CrewChatServiceImpl implements CrewChatService {
 
         validateCrewMember(message.getCrew().getId(), userId);
 
-        // 이미 읽음 처리된 경우 중복 방지
-        if (message.isReadBy(userId)) {
-            return;
+        // DB unique constraint를 활용한 안전한 읽음 처리
+        try {
+            // 이미 읽음 처리된 경우 조회
+            if (crewChatReadStatusRepository.existsByMessage_IdAndReader_Id(messageId, userId)) {
+                return; // 이미 읽음 처리됨
+            }
+
+            User reader = getUserEntity(userId);
+
+            CrewChatReadStatusEntity readStatus = CrewChatReadStatusEntity.builder()
+                    .message(message)
+                    .reader(reader)
+                    .readAt(LocalDateTime.now())
+                    .build();
+
+            crewChatReadStatusRepository.save(readStatus);
+
+            log.debug("메시지 읽음 처리 완료 - messageId: {}, userId: {}", messageId, userId);
+
+        } catch (Exception e) {
+            // unique constraint 위반 시 이미 읽음 처리된 것으로 간주
+            if (e.getMessage() != null && e.getMessage().contains("uk_chat_read_status")) {
+                log.debug("메시지 이미 읽음 처리됨 - messageId: {}, userId: {}", messageId, userId);
+                return;
+            }
+            throw e; // 다른 예외는 재던짐
         }
-
-        User reader = getUserEntity(userId);
-
-        CrewChatReadStatusEntity readStatus = CrewChatReadStatusEntity.builder()
-                .message(message)
-                .reader(reader)
-                .readAt(LocalDateTime.now())
-                .build();
-
-        crewChatReadStatusRepository.save(readStatus);
-
-        log.debug("메시지 읽음 처리 완료 - messageId: {}, userId: {}", messageId, userId);
     }
 
     @Override
@@ -127,15 +138,29 @@ public class CrewChatServiceImpl implements CrewChatService {
         User reader = getUserEntity(userId);
 
         for (Long messageId : messageIds) {
-            Optional<CrewChatEntity> messageOpt = crewChatRepository.findById(messageId);
-            if (messageOpt.isPresent() && !messageOpt.get().isReadBy(userId)) {
-                CrewChatReadStatusEntity readStatus = CrewChatReadStatusEntity.builder()
-                        .message(messageOpt.get())
-                        .reader(reader)
-                        .readAt(LocalDateTime.now())
-                        .build();
+            try {
+                // 이미 읽음 처리된 경우 스킵
+                if (crewChatReadStatusRepository.existsByMessage_IdAndReader_Id(messageId, userId)) {
+                    continue;
+                }
 
-                crewChatReadStatusRepository.save(readStatus);
+                Optional<CrewChatEntity> messageOpt = crewChatRepository.findById(messageId);
+                if (messageOpt.isPresent()) {
+                    CrewChatReadStatusEntity readStatus = CrewChatReadStatusEntity.builder()
+                            .message(messageOpt.get())
+                            .reader(reader)
+                            .readAt(LocalDateTime.now())
+                            .build();
+
+                    crewChatReadStatusRepository.save(readStatus);
+                }
+            } catch (Exception e) {
+                // unique constraint 위반 시 이미 읽음 처리된 것으로 간주하고 계속 진행
+                if (e.getMessage() != null && e.getMessage().contains("uk_chat_read_status")) {
+                    log.debug("메시지 이미 읽음 처리됨 - messageId: {}, userId: {}", messageId, userId);
+                    continue;
+                }
+                log.error("다중 메시지 읽음 처리 중 오류 - messageId: {}, userId: {}", messageId, userId, e);
             }
         }
 
@@ -152,7 +177,12 @@ public class CrewChatServiceImpl implements CrewChatService {
         User reader = getUserEntity(userId);
 
         for (CrewChatEntity message : unreadMessages) {
-            if (!message.isReadBy(userId)) {
+            try {
+                // 이미 읽음 처리된 경우 스킵
+                if (crewChatReadStatusRepository.existsByMessage_IdAndReader_Id(message.getId(), userId)) {
+                    continue;
+                }
+
                 CrewChatReadStatusEntity readStatus = CrewChatReadStatusEntity.builder()
                         .message(message)
                         .reader(reader)
@@ -160,6 +190,14 @@ public class CrewChatServiceImpl implements CrewChatService {
                         .build();
 
                 crewChatReadStatusRepository.save(readStatus);
+
+            } catch (Exception e) {
+                // unique constraint 위반 시 이미 읽음 처리된 것으로 간주하고 계속 진행
+                if (e.getMessage() != null && e.getMessage().contains("uk_chat_read_status")) {
+                    log.debug("메시지 이미 읽음 처리됨 - messageId: {}, userId: {}", message.getId(), userId);
+                    continue;
+                }
+                log.error("일괄 메시지 읽음 처리 중 오류 - messageId: {}, userId: {}", message.getId(), userId, e);
             }
         }
 
