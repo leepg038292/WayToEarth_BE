@@ -22,7 +22,7 @@ public class ChatRateLimiter {
      * 사용자의 메시지 전송 가능 여부 확인 및 기록 (원자적 연산)
      */
     public boolean canSendMessage(Long userId) {
-        MessageRate rate = userRates.computeIfAbsent(userId, k -> new MessageRate());
+        MessageRate rate = userRates.computeIfAbsent(userId, k -> new MessageRate(userId));
 
         // synchronized로 check-then-act 패턴의 race condition 방지
         synchronized (rate) {
@@ -57,11 +57,16 @@ public class ChatRateLimiter {
     }
 
     private static class MessageRate {
+        private final Long userId;
         private int messagesThisMinute = 0;
         private int messagesThisSecond = 0;
         private LocalDateTime lastMinuteReset = LocalDateTime.now();
         private LocalDateTime lastSecondReset = LocalDateTime.now();
         private LocalDateTime lastMessageTime = LocalDateTime.now();
+
+        MessageRate(Long userId) {
+            this.userId = userId;
+        }
 
         boolean canSendMessage() {
             LocalDateTime now = LocalDateTime.now();
@@ -81,13 +86,13 @@ public class ChatRateLimiter {
             // 제한 확인
             if (messagesThisSecond >= MAX_MESSAGES_PER_SECOND) {
                 log.warn("초당 메시지 제한 초과 - userId: {}, messages: {}",
-                         System.identityHashCode(this), messagesThisSecond);
+                         userId, messagesThisSecond);
                 return false;
             }
 
             if (messagesThisMinute >= MAX_MESSAGES_PER_MINUTE) {
                 log.warn("분당 메시지 제한 초과 - userId: {}, messages: {}",
-                         System.identityHashCode(this), messagesThisMinute);
+                         userId, messagesThisMinute);
                 return false;
             }
 
