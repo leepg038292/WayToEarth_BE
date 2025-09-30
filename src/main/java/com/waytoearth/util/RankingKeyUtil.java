@@ -34,4 +34,23 @@ public class RankingKeyUtil {
     public static String monthlyRankingPattern(String month) {
         return RANKING_PREFIX + "*:" + month;
     }
+
+    /**
+     * 크루 멤버 러닝 횟수 저장 키 (Hash)
+     * @param crewId 크루 ID
+     * @param month 월 (YYYY-MM)
+     * @return Redis key (예: waytoearth:ranking:runcount:member:123:2024-03)
+     */
+    public static String memberRunCountKey(Long crewId, String month) {
+        return RANKING_PREFIX + "runcount:member:" + crewId + ":" + month;
+    }
+
+    /**
+     * 크루 전체 러닝 횟수 저장 키 (Hash)
+     * @param month 월 (YYYY-MM)
+     * @return Redis key (예: waytoearth:ranking:runcount:crew:2024-03)
+     */
+    public static String crewRunCountKey(String month) {
+        return RANKING_PREFIX + "runcount:crew:" + month;
+    }
 }
