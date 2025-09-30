@@ -2,7 +2,9 @@ package com.waytoearth.service.ranking;
 
 import com.waytoearth.dto.response.crew.CrewMemberRankingDto;
 import com.waytoearth.dto.response.crew.CrewRankingDto;
+import com.waytoearth.entity.crew.CrewEntity;
 import com.waytoearth.entity.user.User;
+import com.waytoearth.repository.crew.CrewRepository;
 import com.waytoearth.repository.crew.CrewStatisticsRepository;
 import com.waytoearth.repository.user.UserRepository;
 import com.waytoearth.util.RankingKeyUtil;
@@ -25,6 +27,7 @@ public class CrewRankingServiceImpl implements CrewRankingService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final CrewStatisticsRepository statisticsRepository;
     private final UserRepository userRepository;
+    private final CrewRepository crewRepository;
 
     @Override
     public List<CrewMemberRankingDto> getMemberRankingInCrew(Long crewId, String month, int limit) {
@@ -149,17 +152,30 @@ public class CrewRankingServiceImpl implements CrewRankingService {
 
     private List<CrewRankingDto> convertToCrewRankingDto(Set<ZSetOperations.TypedTuple<Object>> rankingSet, String month) {
         List<CrewRankingDto> ranking = new ArrayList<>();
-        int rank = 1;
 
+        if (rankingSet == null || rankingSet.isEmpty()) {
+            return ranking;
+        }
+
+        // N+1 문제 해결: 모든 crewId를 한번에 조회
+        List<Long> crewIds = rankingSet.stream()
+            .map(tuple -> Long.valueOf(tuple.getValue().toString()))
+            .toList();
+
+        List<CrewEntity> crews = crewRepository.findAllById(crewIds);
+        java.util.Map<Long, String> crewNameMap = crews.stream()
+            .collect(java.util.stream.Collectors.toMap(CrewEntity::getId, CrewEntity::getName));
+
+        int rank = 1;
         for (ZSetOperations.TypedTuple<Object> tuple : rankingSet) {
             Long crewId = Long.valueOf(tuple.getValue().toString());
             Double totalDistance = tuple.getScore();
 
-            // TODO: 크루 정보 조회 (크루명 등)
+            String crewName = crewNameMap.getOrDefault(crewId, "알 수 없는 크루");
             ranking.add(new CrewRankingDto(
                 month,
                 crewId,
-                "크루명", // TODO: 실제 크루명 조회
+                crewName,
                 BigDecimal.valueOf(totalDistance),
                 0, // 러닝 횟수
                 rank++
