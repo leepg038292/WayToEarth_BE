@@ -33,6 +33,26 @@ public interface CrewRankingService {
     void updateCrewRanking(Long crewId, String month, Double newTotalDistance);
 
     /**
+     * 멤버 러닝 횟수 업데이트 (원자적 증가)
+     */
+    void incrementMemberRunCount(Long crewId, Long userId, String month);
+
+    /**
+     * 크루 러닝 횟수 업데이트 (원자적 증가)
+     */
+    void incrementCrewRunCount(Long crewId, String month);
+
+    /**
+     * 멤버 러닝 횟수 조회
+     */
+    Integer getMemberRunCount(Long crewId, Long userId, String month);
+
+    /**
+     * 크루 러닝 횟수 조회
+     */
+    Integer getCrewRunCount(Long crewId, String month);
+
+    /**
      * DB 데이터로 Redis 랭킹 재구축
      */
     void rebuildRankingFromDB(String month);
