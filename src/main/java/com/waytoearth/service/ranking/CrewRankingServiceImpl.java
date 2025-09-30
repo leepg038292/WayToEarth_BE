@@ -16,7 +16,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Slf4j
@@ -154,11 +156,11 @@ public class CrewRankingServiceImpl implements CrewRankingService {
             .toList();
 
         List<User> users = userRepository.findAllById(userIds);
-        java.util.Map<Long, String> userNicknameMap = users.stream()
+        Map<Long, String> userNicknameMap = users.stream()
             .collect(java.util.stream.Collectors.toMap(User::getId, User::getNickname));
 
         // Redis에서 러닝 횟수 조회
-        java.util.Map<Long, Integer> runCountMap = new java.util.HashMap<>();
+        Map<Long, Integer> runCountMap = new HashMap<>();
         for (Long userId : userIds) {
             runCountMap.put(userId, getMemberRunCount(crewId, userId, month));
         }
@@ -197,11 +199,11 @@ public class CrewRankingServiceImpl implements CrewRankingService {
             .toList();
 
         List<CrewEntity> crews = crewRepository.findAllById(crewIds);
-        java.util.Map<Long, String> crewNameMap = crews.stream()
+        Map<Long, String> crewNameMap = crews.stream()
             .collect(java.util.stream.Collectors.toMap(CrewEntity::getId, CrewEntity::getName));
 
         // Redis에서 러닝 횟수 조회
-        java.util.Map<Long, Integer> runCountMap = new java.util.HashMap<>();
+        Map<Long, Integer> runCountMap = new HashMap<>();
         for (Long crewId : crewIds) {
             runCountMap.put(crewId, getCrewRunCount(crewId, month));
         }
