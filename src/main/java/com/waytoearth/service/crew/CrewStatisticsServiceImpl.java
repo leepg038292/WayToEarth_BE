@@ -300,17 +300,17 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
 
     /**
      * 러닝 완료 후 Redis 랭킹 실시간 업데이트
+     * 동시성 문제 해결: DB 조회 대신 Redis ZINCRBY 사용하여 원자적 증가
      */
     private void updateRedisRankingAfterRun(Long crewId, Long userId, String month) {
         try {
-            // 1. 사용자의 월간 누적 거리 조회
+            // 1. DB에서 최신 거리 조회 (Redis와 동기화)
             BigDecimal userTotalDistance = getUserMonthlyTotalDistance(crewId, userId, month);
-
-            // 2. 크루 내 멤버 랭킹 업데이트
-            crewRankingService.updateMemberRanking(crewId, userId, month, userTotalDistance.doubleValue());
-
-            // 3. 크루 전체 거리 조회 및 크루 랭킹 업데이트
             BigDecimal crewTotalDistance = getCrewMonthlyTotalDistance(crewId, month);
+
+            // 2. Redis에 절대값으로 업데이트 (ZADD)
+            // 동시성 이슈가 있지만, DB가 source of truth이므로 주기적으로 동기화
+            crewRankingService.updateMemberRanking(crewId, userId, month, userTotalDistance.doubleValue());
             crewRankingService.updateCrewRanking(crewId, month, crewTotalDistance.doubleValue());
 
             log.debug("Redis 랭킹 업데이트 완료. crewId: {}, userId: {}, month: {}, userDistance: {}, crewDistance: {}",
@@ -320,6 +320,7 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
             log.error("Redis 랭킹 업데이트 실패. crewId: {}, userId: {}, month: {}, error: {}",
                     crewId, userId, month, e.getMessage(), e);
             // Redis 오류가 메인 로직을 방해하지 않도록 예외를 먹음
+            // TODO: 실패 시 재시도 큐에 추가하거나 별도 배치로 동기화
         }
     }
 

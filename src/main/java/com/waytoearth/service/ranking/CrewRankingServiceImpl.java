@@ -112,18 +112,31 @@ public class CrewRankingServiceImpl implements CrewRankingService {
 
     private List<CrewMemberRankingDto> convertToMemberRankingDto(Set<ZSetOperations.TypedTuple<Object>> rankingSet, String month) {
         List<CrewMemberRankingDto> ranking = new ArrayList<>();
-        int rank = 1;
 
+        if (rankingSet == null || rankingSet.isEmpty()) {
+            return ranking;
+        }
+
+        // N+1 문제 해결: 모든 userId를 한번에 조회
+        List<Long> userIds = rankingSet.stream()
+            .map(tuple -> Long.valueOf(tuple.getValue().toString()))
+            .toList();
+
+        List<User> users = userRepository.findAllById(userIds);
+        java.util.Map<Long, String> userNicknameMap = users.stream()
+            .collect(java.util.stream.Collectors.toMap(User::getId, User::getNickname));
+
+        int rank = 1;
         for (ZSetOperations.TypedTuple<Object> tuple : rankingSet) {
             Long userId = Long.valueOf(tuple.getValue().toString());
             Double totalDistance = tuple.getScore();
 
-            User user = userRepository.findById(userId).orElse(null);
-            if (user != null) {
+            String nickname = userNicknameMap.get(userId);
+            if (nickname != null) {
                 ranking.add(new CrewMemberRankingDto(
                     month,
                     userId,
-                    user.getNickname(),
+                    nickname,
                     BigDecimal.valueOf(totalDistance),
                     0, // 러닝 횟수는 별도 조회 필요시 추가
                     rank++

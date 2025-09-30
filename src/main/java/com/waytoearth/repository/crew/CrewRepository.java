@@ -79,6 +79,10 @@ public interface CrewRepository extends JpaRepository<CrewEntity, Long> {
     /**
      * 페이징 지원 메서드들
      */
+    @Query("SELECT c FROM CrewEntity c " +
+           "JOIN FETCH c.owner " +
+           "WHERE c.isActive = true " +
+           "ORDER BY c.createdAt DESC")
     Page<CrewEntity> findByIsActiveTrueOrderByCreatedAtDesc(Pageable pageable);
 
     //페이징 지원 크루 검색 - N+1 방지
