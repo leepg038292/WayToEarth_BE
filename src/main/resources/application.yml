@@ -31,6 +31,20 @@ spring:
             user-info-uri: ${KAKAO_USER_INFO_URI}
             user-name-attribute: id
 
+  # Redis 설정
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:""}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: 2000ms
+
 # 공통 설정
 kakao:
   client-id: ${KAKAO_CLIENT_ID}
@@ -52,3 +66,9 @@ cloud:
 weather:
   openweather:
     api-key: ${OPENWEATHER_API_KEY:}
+
+# 캐시 설정
+cache:
+  redis:
+    time-to-live: 3600000 # 1시간 (밀리초)
+    key-prefix: "waytoearth:"

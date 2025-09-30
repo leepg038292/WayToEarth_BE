@@ -107,7 +107,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
 	// Redis (ElastiCache 연동용)
-	//implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
 
 	// Actuator (헬스체크용 - ALB/배포 환경에서 필요)
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
