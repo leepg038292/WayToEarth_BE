@@ -42,7 +42,7 @@ public class CrewRankingServiceImpl implements CrewRankingService {
             return getMemberRankingFromDB(crewId, month, limit);
         }
 
-        return convertToMemberRankingDto(rankingSet, month);
+        return convertToMemberRankingDto(crewId, rankingSet, month);
     }
 
     @Override
@@ -74,6 +74,34 @@ public class CrewRankingServiceImpl implements CrewRankingService {
         redisTemplate.opsForZSet().add(rankingKey, crewId.toString(), newTotalDistance);
         log.debug("크루 랭킹 업데이트 완료. crewId: {}, month: {}, distance: {}",
                 crewId, month, newTotalDistance);
+    }
+
+    @Override
+    public void incrementMemberRunCount(Long crewId, Long userId, String month) {
+        String runCountKey = RankingKeyUtil.memberRunCountKey(crewId, month);
+        redisTemplate.opsForHash().increment(runCountKey, userId.toString(), 1);
+        log.debug("멤버 러닝 횟수 증가. crewId: {}, userId: {}, month: {}", crewId, userId, month);
+    }
+
+    @Override
+    public void incrementCrewRunCount(Long crewId, String month) {
+        String runCountKey = RankingKeyUtil.crewRunCountKey(month);
+        redisTemplate.opsForHash().increment(runCountKey, crewId.toString(), 1);
+        log.debug("크루 러닝 횟수 증가. crewId: {}, month: {}", crewId, month);
+    }
+
+    @Override
+    public Integer getMemberRunCount(Long crewId, Long userId, String month) {
+        String runCountKey = RankingKeyUtil.memberRunCountKey(crewId, month);
+        Object count = redisTemplate.opsForHash().get(runCountKey, userId.toString());
+        return count != null ? Integer.valueOf(count.toString()) : 0;
+    }
+
+    @Override
+    public Integer getCrewRunCount(Long crewId, String month) {
+        String runCountKey = RankingKeyUtil.crewRunCountKey(month);
+        Object count = redisTemplate.opsForHash().get(runCountKey, crewId.toString());
+        return count != null ? Integer.valueOf(count.toString()) : 0;
     }
 
     @Override
@@ -113,7 +141,7 @@ public class CrewRankingServiceImpl implements CrewRankingService {
         return ranking;
     }
 
-    private List<CrewMemberRankingDto> convertToMemberRankingDto(Set<ZSetOperations.TypedTuple<Object>> rankingSet, String month) {
+    private List<CrewMemberRankingDto> convertToMemberRankingDto(Long crewId, Set<ZSetOperations.TypedTuple<Object>> rankingSet, String month) {
         List<CrewMemberRankingDto> ranking = new ArrayList<>();
 
         if (rankingSet == null || rankingSet.isEmpty()) {
@@ -129,6 +157,12 @@ public class CrewRankingServiceImpl implements CrewRankingService {
         java.util.Map<Long, String> userNicknameMap = users.stream()
             .collect(java.util.stream.Collectors.toMap(User::getId, User::getNickname));
 
+        // Redis에서 러닝 횟수 조회
+        java.util.Map<Long, Integer> runCountMap = new java.util.HashMap<>();
+        for (Long userId : userIds) {
+            runCountMap.put(userId, getMemberRunCount(crewId, userId, month));
+        }
+
         int rank = 1;
         for (ZSetOperations.TypedTuple<Object> tuple : rankingSet) {
             Long userId = Long.valueOf(tuple.getValue().toString());
@@ -141,7 +175,7 @@ public class CrewRankingServiceImpl implements CrewRankingService {
                     userId,
                     nickname,
                     BigDecimal.valueOf(totalDistance),
-                    0, // 러닝 횟수는 별도 조회 필요시 추가
+                    runCountMap.getOrDefault(userId, 0),
                     rank++
                 ));
             }
@@ -166,6 +200,12 @@ public class CrewRankingServiceImpl implements CrewRankingService {
         java.util.Map<Long, String> crewNameMap = crews.stream()
             .collect(java.util.stream.Collectors.toMap(CrewEntity::getId, CrewEntity::getName));
 
+        // Redis에서 러닝 횟수 조회
+        java.util.Map<Long, Integer> runCountMap = new java.util.HashMap<>();
+        for (Long crewId : crewIds) {
+            runCountMap.put(crewId, getCrewRunCount(crewId, month));
+        }
+
         int rank = 1;
         for (ZSetOperations.TypedTuple<Object> tuple : rankingSet) {
             Long crewId = Long.valueOf(tuple.getValue().toString());
@@ -177,7 +217,7 @@ public class CrewRankingServiceImpl implements CrewRankingService {
                 crewId,
                 crewName,
                 BigDecimal.valueOf(totalDistance),
-                0, // 러닝 횟수
+                runCountMap.getOrDefault(crewId, 0),
                 rank++
             ));
         }
