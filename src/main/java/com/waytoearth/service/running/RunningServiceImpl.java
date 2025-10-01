@@ -14,6 +14,7 @@ import com.waytoearth.repository.user.UserRepository;
 import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.service.emblem.EmblemService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,8 +23,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -33,6 +37,8 @@ public class RunningServiceImpl implements RunningService {
     private final RunningRouteRepository runningRouteRepository;
     private final UserRepository userRepository;
     private final EmblemService emblemService;  // 엠블럼 자동 지급
+    private final com.waytoearth.repository.crew.CrewMemberRepository crewMemberRepository;  // 크루 통계 연동
+    private final com.waytoearth.service.crew.CrewStatisticsService crewStatisticsService;  // 크루 통계 업데이트
 
     @Override
     public RunningStartResponse startRunning(AuthenticatedUser authUser, RunningStartRequest request) {
@@ -139,6 +145,9 @@ public class RunningServiceImpl implements RunningService {
         RunningRecord savedRecord = runningRecordRepository.save(record);
         runningRecordRepository.flush();
 
+        // 크루 통계 업데이트 (크루 랭킹, MVP, Redis 캐시 자동 갱신)
+        updateCrewStatisticsIfMember(user.getId(), distanceKm.doubleValue(), request.getDurationSeconds());
+
         var awardResult = emblemService.scanAndAward(user.getId(), "DISTANCE");
 
         return RunningCompleteResponse.builder()
@@ -232,6 +241,45 @@ public class RunningServiceImpl implements RunningService {
                         r.getRunningType().name()      // ✅ 추가
                 )
         );
+    }
+
+    /**
+     * 사용자가 크루 멤버인 경우 크루 통계 업데이트
+     * - 크루 월간 통계 (거리, 횟수, 페이스) 업데이트
+     * - 크루 MVP 갱신
+     * - Redis 랭킹 실시간 업데이트
+     */
+    private void updateCrewStatisticsIfMember(Long userId, Double distanceKm, Integer durationSeconds) {
+        try {
+            // 사용자가 속한 활성 크루 조회
+            List<com.waytoearth.entity.crew.CrewMemberEntity> memberships =
+                    crewMemberRepository.findByUserIdWithCrew(userId);
+
+            if (memberships.isEmpty()) {
+                return; // 크루 미가입 사용자는 스킵
+            }
+
+            String month = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
+                    .format(DateTimeFormatter.ofPattern("yyyyMM"));
+
+            for (com.waytoearth.entity.crew.CrewMemberEntity membership : memberships) {
+                if (membership.getIsActive() && membership.getCrew().getIsActive()) {
+                    crewStatisticsService.updateStatisticsAfterRun(
+                            membership.getCrew().getId(),
+                            userId,
+                            month,
+                            distanceKm,
+                            durationSeconds.longValue()
+                    );
+
+                    log.info("크루 통계 업데이트 완료: crewId={}, userId={}, distance={}km",
+                            membership.getCrew().getId(), userId, distanceKm);
+                }
+            }
+        } catch (Exception e) {
+            // 크루 통계 업데이트 실패 시에도 러닝 완료는 성공 처리
+            log.error("크루 통계 업데이트 중 오류 발생: userId={}, error={}", userId, e.getMessage(), e);
+        }
     }
 }
 
