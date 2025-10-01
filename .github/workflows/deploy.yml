@@ -102,7 +102,6 @@ jobs:
               -e JWT_EXPIRATION="${{ vars.JWT_EXPIRATION }}" \
               -e REDIS_HOST="${{ secrets.REDIS_HOST }}" \
               -e REDIS_PORT="${{ vars.REDIS_PORT }}" \
-              -e REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}" \
               "$IMAGE_NAME"
 
             echo "🧹 안 쓰는 이미지 정리"
