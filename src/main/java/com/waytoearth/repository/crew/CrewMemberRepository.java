@@ -28,6 +28,13 @@ public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Lo
 
     List<CrewMemberEntity> findByUserAndIsActiveTrueOrderByJoinedAtDesc(User user);
 
+    // userId로 활성 크루 조회 (크루 정보 포함, 통계 업데이트용)
+    @Query("SELECT cm FROM CrewMemberEntity cm " +
+           "JOIN FETCH cm.crew " +
+           "WHERE cm.user.id = :userId AND cm.isActive = true " +
+           "ORDER BY cm.joinedAt DESC")
+    List<CrewMemberEntity> findByUserIdWithCrew(@Param("userId") Long userId);
+
     boolean existsByCrewAndUserAndIsActiveTrue(CrewEntity crew, User user);
 
     long countByCrewAndIsActiveTrue(CrewEntity crew);
