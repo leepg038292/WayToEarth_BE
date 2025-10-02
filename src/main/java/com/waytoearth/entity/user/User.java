@@ -66,6 +66,9 @@ public class User extends BaseTimeEntity {
     @Builder.Default
     private Integer totalRunningCount = 0;
 
+    @Version
+    private Long version;
+
 
     // 온보딩 완료 메서드
     public void completeOnboarding(String nickname, String residence, AgeGroup ageGroup,
