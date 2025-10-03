@@ -138,12 +138,13 @@ public class RunningServiceImpl implements RunningService {
             );
         }
 
-        User user = record.getUser();
-        user.updateRunningStats(distanceKm);
-        userRepository.save(user);
-
         RunningRecord savedRecord = runningRecordRepository.save(record);
         runningRecordRepository.flush();
+
+        // 동시성 안전한 원자적 통계 업데이트
+        userRepository.updateRunningStatsAtomic(authUser.getUserId(), distanceKm);
+
+        User user = record.getUser();
 
         // 크루 통계 업데이트 (크루 랭킹, MVP, Redis 캐시 자동 갱신)
         updateCrewStatisticsIfMember(user.getId(), distanceKm.doubleValue(), request.getDurationSeconds());
