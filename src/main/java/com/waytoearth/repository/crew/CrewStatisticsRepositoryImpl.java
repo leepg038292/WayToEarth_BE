@@ -253,6 +253,23 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
                 .fetchOne();
     }
 
+    @Override
+    public BigDecimal findUserMonthlyDistanceInCrew(Long crewId, Long userId, String month) {
+        BigDecimal result = queryFactory
+                .select(runningRecord.distance.sum().coalesce(BigDecimal.ZERO))
+                .from(runningRecord)
+                .join(crewMemberEntity).on(crewMemberEntity.user.id.eq(runningRecord.user.id))
+                .where(crewMemberEntity.crew.id.eq(crewId)
+                        .and(crewMemberEntity.user.id.eq(userId))
+                        .and(crewMemberEntity.isActive.isTrue())
+                        .and(runningRecord.isCompleted.isTrue())
+                        .and(runningRecord.startedAt.year().eq(Integer.parseInt(month.substring(0, 4))))
+                        .and(runningRecord.startedAt.month().eq(Integer.parseInt(month.substring(4, 6)))))
+                .fetchOne();
+
+        return result != null ? result : BigDecimal.ZERO;
+    }
+
     private String calculatePreviousMonth(String month) {
         int year = Integer.parseInt(month.substring(0, 4));
         int monthNum = Integer.parseInt(month.substring(4, 6));

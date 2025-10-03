@@ -335,17 +335,10 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
     }
 
     /**
-     * 사용자의 월간 누적 거리 조회
+     * 사용자의 월간 누적 거리 조회 (N+1 쿼리 최적화)
      */
     private BigDecimal getUserMonthlyTotalDistance(Long crewId, Long userId, String month) {
-        // 해당 월의 사용자 러닝 기록 합계를 직접 계산
-        // CrewMemberRankingDto에서 이미 같은 정보를 제공하므로 간소화
-        List<CrewMemberRankingDto> ranking = statisticsRepository.findMemberRankingInCrew(crewId, month, 100);
-        return ranking.stream()
-                .filter(member -> member.getUserId().equals(userId))
-                .findFirst()
-                .map(CrewMemberRankingDto::getTotalDistance)
-                .orElse(BigDecimal.ZERO);
+        return statisticsRepository.findUserMonthlyDistanceInCrew(crewId, userId, month);
     }
 
     /**
