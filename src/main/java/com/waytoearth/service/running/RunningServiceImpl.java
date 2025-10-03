@@ -23,8 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -37,8 +35,7 @@ public class RunningServiceImpl implements RunningService {
     private final RunningRouteRepository runningRouteRepository;
     private final UserRepository userRepository;
     private final EmblemService emblemService;  // 엠블럼 자동 지급
-    private final com.waytoearth.repository.crew.CrewMemberRepository crewMemberRepository;  // 크루 통계 연동
-    private final com.waytoearth.service.crew.CrewStatisticsService crewStatisticsService;  // 크루 통계 업데이트
+    private final com.waytoearth.service.crew.CrewStatisticsUpdater crewStatisticsUpdater;  // 크루 통계 업데이트 (재시도 포함)
 
     @Override
     public RunningStartResponse startRunning(AuthenticatedUser authUser, RunningStartRequest request) {
@@ -85,7 +82,7 @@ public class RunningServiceImpl implements RunningService {
 
     @Override
     public void pauseRunning(AuthenticatedUser authUser, RunningPauseResumeRequest request) {
-        RunningRecord record = runningRecordRepository.findBySessionId(request.getSessionId())
+        RunningRecord record = runningRecordRepository.findBySessionIdWithLock(request.getSessionId())
                 .orElseThrow(() -> new IllegalArgumentException("세션을 찾을 수 없습니다."));
 
         if (!record.getUser().getId().equals(authUser.getUserId())) {
@@ -102,7 +99,7 @@ public class RunningServiceImpl implements RunningService {
             throw new IllegalArgumentException("sessionId는 필수입니다.");
         }
 
-        RunningRecord record = runningRecordRepository.findBySessionId(request.getSessionId())
+        RunningRecord record = runningRecordRepository.findBySessionIdWithLock(request.getSessionId())
                 .orElseThrow(() -> new IllegalArgumentException("세션을 찾을 수 없습니다."));
 
         if (!record.getUser().getId().equals(authUser.getUserId())) {
@@ -115,7 +112,7 @@ public class RunningServiceImpl implements RunningService {
 
     @Override
     public RunningCompleteResponse completeRunning(AuthenticatedUser authUser, RunningCompleteRequest request) {
-        RunningRecord record = runningRecordRepository.findBySessionId(request.getSessionId())
+        RunningRecord record = runningRecordRepository.findBySessionIdWithLock(request.getSessionId())
                 .orElseThrow(() -> new IllegalArgumentException("세션을 찾을 수 없습니다."));
 
         if (!record.getUser().getId().equals(authUser.getUserId())) {
@@ -138,15 +135,26 @@ public class RunningServiceImpl implements RunningService {
             );
         }
 
-        User user = record.getUser();
-        user.updateRunningStats(distanceKm);
-        userRepository.save(user);
-
         RunningRecord savedRecord = runningRecordRepository.save(record);
         runningRecordRepository.flush();
 
-        // 크루 통계 업데이트 (크루 랭킹, MVP, Redis 캐시 자동 갱신)
-        updateCrewStatisticsIfMember(user.getId(), distanceKm.doubleValue(), request.getDurationSeconds());
+        // 동시성 안전한 원자적 통계 업데이트
+        userRepository.updateRunningStatsAtomic(authUser.getUserId(), distanceKm);
+
+        User user = record.getUser();
+
+        // 크루 통계 업데이트 (크루 랭킹, MVP, Redis 캐시 자동 갱신) - 재시도 로직 포함
+        try {
+            crewStatisticsUpdater.updateCrewStatisticsIfMember(
+                    user.getId(),
+                    distanceKm.doubleValue(),
+                    request.getDurationSeconds()
+            );
+        } catch (Exception e) {
+            // 재시도 후에도 실패 시 로깅만 하고 러닝 완료는 유지
+            log.error("크루 통계 업데이트 실패 (재시도 완료됨): userId={}, error={}",
+                    user.getId(), e.getMessage());
+        }
 
         var awardResult = emblemService.scanAndAward(user.getId(), "DISTANCE");
 
@@ -243,43 +251,5 @@ public class RunningServiceImpl implements RunningService {
         );
     }
 
-    /**
-     * 사용자가 크루 멤버인 경우 크루 통계 업데이트
-     * - 크루 월간 통계 (거리, 횟수, 페이스) 업데이트
-     * - 크루 MVP 갱신
-     * - Redis 랭킹 실시간 업데이트
-     */
-    private void updateCrewStatisticsIfMember(Long userId, Double distanceKm, Integer durationSeconds) {
-        try {
-            // 사용자가 속한 활성 크루 조회
-            List<com.waytoearth.entity.crew.CrewMemberEntity> memberships =
-                    crewMemberRepository.findByUserIdWithCrew(userId);
-
-            if (memberships.isEmpty()) {
-                return; // 크루 미가입 사용자는 스킵
-            }
-
-            String month = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
-                    .format(DateTimeFormatter.ofPattern("yyyyMM"));
-
-            for (com.waytoearth.entity.crew.CrewMemberEntity membership : memberships) {
-                if (membership.getIsActive() && membership.getCrew().getIsActive()) {
-                    crewStatisticsService.updateStatisticsAfterRun(
-                            membership.getCrew().getId(),
-                            userId,
-                            month,
-                            distanceKm,
-                            durationSeconds.longValue()
-                    );
-
-                    log.info("크루 통계 업데이트 완료: crewId={}, userId={}, distance={}km",
-                            membership.getCrew().getId(), userId, distanceKm);
-                }
-            }
-        } catch (Exception e) {
-            // 크루 통계 업데이트 실패 시에도 러닝 완료는 성공 처리
-            log.error("크루 통계 업데이트 중 오류 발생: userId={}, error={}", userId, e.getMessage(), e);
-        }
-    }
 }
 

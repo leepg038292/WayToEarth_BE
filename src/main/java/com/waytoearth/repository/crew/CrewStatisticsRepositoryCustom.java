@@ -62,4 +62,9 @@ public interface CrewStatisticsRepositoryCustom {
      */
     CrewMemberRankingDto findMvpInCrew(Long crewId, String month);
 
+    /**
+     * 특정 사용자의 크루 내 월간 총 거리 조회 (N+1 방지)
+     */
+    java.math.BigDecimal findUserMonthlyDistanceInCrew(Long crewId, Long userId, String month);
+
 }

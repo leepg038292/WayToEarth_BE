@@ -98,11 +98,16 @@ public class CrewStatisticsEntity extends BaseTimeEntity {
         if (this.avgPaceSeconds == null) {
             this.avgPaceSeconds = memberPaceSeconds;
         } else {
-            // 거리 기반 가중평균으로 계산
-            BigDecimal totalWeightedPace = this.avgPaceSeconds.multiply(this.totalDistance.subtract(memberDistance));
-            BigDecimal newWeightedPace = memberPaceSeconds.multiply(memberDistance);
-            this.avgPaceSeconds = totalWeightedPace.add(newWeightedPace)
-                    .divide(this.totalDistance, 2, BigDecimal.ROUND_HALF_UP);
+            // division by zero 방지
+            if (this.totalDistance.compareTo(BigDecimal.ZERO) <= 0) {
+                this.avgPaceSeconds = memberPaceSeconds;
+            } else {
+                // 거리 기반 가중평균으로 계산
+                BigDecimal totalWeightedPace = this.avgPaceSeconds.multiply(this.totalDistance.subtract(memberDistance));
+                BigDecimal newWeightedPace = memberPaceSeconds.multiply(memberDistance);
+                this.avgPaceSeconds = totalWeightedPace.add(newWeightedPace)
+                        .divide(this.totalDistance, 2, BigDecimal.ROUND_HALF_UP);
+            }
         }
 
         // 새로운 활성 멤버인 경우 카운트 증가

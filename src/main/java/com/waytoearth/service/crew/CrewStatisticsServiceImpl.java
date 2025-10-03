@@ -92,8 +92,15 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
         // 통계 업데이트
         // distance를 BigDecimal로 변환
         BigDecimal distanceBd = BigDecimal.valueOf(distance);
-        // duration에서 pace 계산 (초)
-        BigDecimal paceSeconds = BigDecimal.valueOf(duration).divide(distanceBd, 2, BigDecimal.ROUND_HALF_UP);
+
+        // duration에서 pace 계산 (초) - division by zero 방지
+        BigDecimal paceSeconds;
+        if (distanceBd.compareTo(BigDecimal.ZERO) <= 0) {
+            log.warn("거리가 0 이하입니다. 통계 업데이트를 건너뜁니다. crewId: {}, userId: {}, distance: {}",
+                    crewId, userId, distance);
+            return;
+        }
+        paceSeconds = BigDecimal.valueOf(duration).divide(distanceBd, 2, BigDecimal.ROUND_HALF_UP);
 
         stats.updateWithMemberRun(distanceBd, paceSeconds, false);
 
@@ -249,12 +256,18 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
             } else {
                 // 거리 기반 가중평균 계산
                 BigDecimal currentTotalDistance = stats.getTotalDistance();
-                BigDecimal previousDistance = currentTotalDistance.subtract(memberDistance);
 
-                BigDecimal totalWeightedPace = stats.getAvgPaceSeconds().multiply(previousDistance);
-                BigDecimal newWeightedPace = memberPaceSeconds.multiply(memberDistance);
-                newAvgPace = totalWeightedPace.add(newWeightedPace)
-                        .divide(currentTotalDistance, 2, BigDecimal.ROUND_HALF_UP);
+                // division by zero 방지
+                if (currentTotalDistance.compareTo(BigDecimal.ZERO) <= 0) {
+                    newAvgPace = memberPaceSeconds;
+                } else {
+                    BigDecimal previousDistance = currentTotalDistance.subtract(memberDistance);
+
+                    BigDecimal totalWeightedPace = stats.getAvgPaceSeconds().multiply(previousDistance);
+                    BigDecimal newWeightedPace = memberPaceSeconds.multiply(memberDistance);
+                    newAvgPace = totalWeightedPace.add(newWeightedPace)
+                            .divide(currentTotalDistance, 2, BigDecimal.ROUND_HALF_UP);
+                }
             }
 
             // 원자적 평균 페이스 업데이트
@@ -335,17 +348,10 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
     }
 
     /**
-     * 사용자의 월간 누적 거리 조회
+     * 사용자의 월간 누적 거리 조회 (N+1 쿼리 최적화)
      */
     private BigDecimal getUserMonthlyTotalDistance(Long crewId, Long userId, String month) {
-        // 해당 월의 사용자 러닝 기록 합계를 직접 계산
-        // CrewMemberRankingDto에서 이미 같은 정보를 제공하므로 간소화
-        List<CrewMemberRankingDto> ranking = statisticsRepository.findMemberRankingInCrew(crewId, month, 100);
-        return ranking.stream()
-                .filter(member -> member.getUserId().equals(userId))
-                .findFirst()
-                .map(CrewMemberRankingDto::getTotalDistance)
-                .orElse(BigDecimal.ZERO);
+        return statisticsRepository.findUserMonthlyDistanceInCrew(crewId, userId, month);
     }
 
     /**
