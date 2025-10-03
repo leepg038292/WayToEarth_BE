@@ -61,10 +61,14 @@ jobs:
             docker push $IMAGE_NAME && break || (echo "Retrying push ($i/3)..." && sleep 15)
           done
 
+      # DNS 해석 확인용 디버깅 스텝
+      - name: Debug DNS Resolution
+        run: dig +short deploy.waytoearth.cloud
+
       - name: Deploy on EC2 via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.EC2_HOST }}   # deploy.waytoearth.cloud
+          host: ${{ secrets.EC2_HOST }}   # deploy.waytoearth.cloud 넣을 것
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
           script: |
