@@ -89,10 +89,10 @@ public class CrewEntity extends BaseTimeEntity {
     }
 
     public void incrementMemberCount() {
-        this.currentMembers = getCurrentMemberCount();
+        this.currentMembers++;
     }
 
     public void decrementMemberCount() {
-        this.currentMembers = getCurrentMemberCount();
+        this.currentMembers--;
     }
 }
