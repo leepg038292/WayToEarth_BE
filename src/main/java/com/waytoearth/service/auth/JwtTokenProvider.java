@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
@@ -23,7 +24,14 @@ public class JwtTokenProvider {
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.expiration:86400000}") long expiration) {
         log.info("JWT configuration initialized with expiration: {}ms", expiration);
-        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
+
+        // 비밀키 최소 길이 검증 (HMAC-SHA256: 256비트 = 32바이트)
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length < 32) {
+            throw new IllegalArgumentException("JWT secret key must be at least 32 bytes (256 bits) for HS256");
+        }
+
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
         this.jwtExpirationMs = expiration;
     }
 
