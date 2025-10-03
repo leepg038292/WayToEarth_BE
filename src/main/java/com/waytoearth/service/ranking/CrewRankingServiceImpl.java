@@ -109,8 +109,103 @@ public class CrewRankingServiceImpl implements CrewRankingService {
     @Override
     public void rebuildRankingFromDB(String month) {
         log.info("월별 랭킹 데이터를 DB에서 재구축 시작. month: {}", month);
-        // TODO: DB에서 해당 월의 모든 랭킹 데이터를 조회하여 Redis에 저장
-        log.info("월별 랭킹 데이터 재구축 완료. month: {}", month);
+
+        try {
+            // 1. 크루 랭킹 재구축
+            rebuildCrewRanking(month);
+
+            // 2. 각 크루의 멤버 랭킹 재구축
+            rebuildAllCrewMemberRankings(month);
+
+            log.info("월별 랭킹 데이터 재구축 완료. month: {}", month);
+        } catch (Exception e) {
+            log.error("랭킹 데이터 재구축 중 오류 발생. month: {}, error: {}", month, e.getMessage(), e);
+            throw new RuntimeException("랭킹 데이터 재구축 실패", e);
+        }
+    }
+
+    /**
+     * 크루 랭킹 재구축
+     */
+    private void rebuildCrewRanking(String month) {
+        String rankingKey = RankingKeyUtil.crewRankingKey(month);
+        String runCountKey = RankingKeyUtil.crewRunCountKey(month);
+
+        // 기존 Redis 데이터 삭제
+        redisTemplate.delete(rankingKey);
+        redisTemplate.delete(runCountKey);
+
+        // DB에서 모든 크루 랭킹 조회 (limit 없이 전체 조회)
+        List<CrewRankingDto> allCrewRankings = statisticsRepository.findCrewRankingByActualDistance(month, 1000);
+
+        if (allCrewRankings.isEmpty()) {
+            log.warn("DB에 해당 월의 크루 랭킹 데이터가 없습니다. month: {}", month);
+            return;
+        }
+
+        // Redis에 일괄 저장
+        for (CrewRankingDto crew : allCrewRankings) {
+            redisTemplate.opsForZSet().add(rankingKey,
+                    crew.getCrewId().toString(),
+                    crew.getTotalDistance().doubleValue());
+
+            redisTemplate.opsForHash().put(runCountKey,
+                    crew.getCrewId().toString(),
+                    crew.getRunCount());
+        }
+
+        log.info("크루 랭킹 재구축 완료. month: {}, count: {}", month, allCrewRankings.size());
+    }
+
+    /**
+     * 모든 크루의 멤버 랭킹 재구축
+     */
+    private void rebuildAllCrewMemberRankings(String month) {
+        // 활성 크루 목록 조회
+        List<CrewEntity> activeCrews = crewRepository.findAll().stream()
+                .filter(CrewEntity::getIsActive)
+                .toList();
+
+        int rebuiltCount = 0;
+        for (CrewEntity crew : activeCrews) {
+            rebuildCrewMemberRanking(crew.getId(), month);
+            rebuiltCount++;
+        }
+
+        log.info("전체 크루 멤버 랭킹 재구축 완료. month: {}, crewCount: {}", month, rebuiltCount);
+    }
+
+    /**
+     * 특정 크루의 멤버 랭킹 재구축
+     */
+    private void rebuildCrewMemberRanking(Long crewId, String month) {
+        String rankingKey = RankingKeyUtil.memberRankingKey(crewId, month);
+        String runCountKey = RankingKeyUtil.memberRunCountKey(crewId, month);
+
+        // 기존 Redis 데이터 삭제
+        redisTemplate.delete(rankingKey);
+        redisTemplate.delete(runCountKey);
+
+        // DB에서 해당 크루의 모든 멤버 랭킹 조회
+        List<CrewMemberRankingDto> memberRankings = statisticsRepository.findMemberRankingInCrew(crewId, month, 1000);
+
+        if (memberRankings.isEmpty()) {
+            return;
+        }
+
+        // Redis에 일괄 저장
+        for (CrewMemberRankingDto member : memberRankings) {
+            redisTemplate.opsForZSet().add(rankingKey,
+                    member.getUserId().toString(),
+                    member.getTotalDistance().doubleValue());
+
+            redisTemplate.opsForHash().put(runCountKey,
+                    member.getUserId().toString(),
+                    member.getRunCount());
+        }
+
+        log.debug("크루 멤버 랭킹 재구축 완료. crewId: {}, month: {}, memberCount: {}",
+                crewId, month, memberRankings.size());
     }
 
     private List<CrewMemberRankingDto> getMemberRankingFromDB(Long crewId, String month, int limit) {
