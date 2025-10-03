@@ -7,10 +7,13 @@ import com.waytoearth.repository.statistics.StatisticsRepositoryCustom;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.EntityGraph;
+
+import jakarta.persistence.LockModeType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,6 +28,11 @@ public interface RunningRecordRepository extends JpaRepository<RunningRecord, Lo
 
     // ===== 단건 조회 =====
     Optional<RunningRecord> findBySessionId(String sessionId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT r FROM RunningRecord r WHERE r.sessionId = :sessionId")
+    Optional<RunningRecord> findBySessionIdWithLock(@Param("sessionId") String sessionId);
+
     Optional<RunningRecord> findByIdAndUser(Long id, User user);
 
     // 진행 중인 세션(사용자당 0~1개가 정상)

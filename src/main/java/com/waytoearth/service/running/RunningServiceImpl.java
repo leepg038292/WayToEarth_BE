@@ -85,7 +85,7 @@ public class RunningServiceImpl implements RunningService {
 
     @Override
     public void pauseRunning(AuthenticatedUser authUser, RunningPauseResumeRequest request) {
-        RunningRecord record = runningRecordRepository.findBySessionId(request.getSessionId())
+        RunningRecord record = runningRecordRepository.findBySessionIdWithLock(request.getSessionId())
                 .orElseThrow(() -> new IllegalArgumentException("세션을 찾을 수 없습니다."));
 
         if (!record.getUser().getId().equals(authUser.getUserId())) {
@@ -102,7 +102,7 @@ public class RunningServiceImpl implements RunningService {
             throw new IllegalArgumentException("sessionId는 필수입니다.");
         }
 
-        RunningRecord record = runningRecordRepository.findBySessionId(request.getSessionId())
+        RunningRecord record = runningRecordRepository.findBySessionIdWithLock(request.getSessionId())
                 .orElseThrow(() -> new IllegalArgumentException("세션을 찾을 수 없습니다."));
 
         if (!record.getUser().getId().equals(authUser.getUserId())) {
@@ -115,7 +115,7 @@ public class RunningServiceImpl implements RunningService {
 
     @Override
     public RunningCompleteResponse completeRunning(AuthenticatedUser authUser, RunningCompleteRequest request) {
-        RunningRecord record = runningRecordRepository.findBySessionId(request.getSessionId())
+        RunningRecord record = runningRecordRepository.findBySessionIdWithLock(request.getSessionId())
                 .orElseThrow(() -> new IllegalArgumentException("세션을 찾을 수 없습니다."));
 
         if (!record.getUser().getId().equals(authUser.getUserId())) {
