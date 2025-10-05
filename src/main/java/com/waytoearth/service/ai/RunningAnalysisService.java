@@ -32,6 +32,9 @@ public class RunningAnalysisService {
     private final RunningRecordRepository runningRecordRepository;
     private final RunningFeedbackRepository runningFeedbackRepository;
 
+    @Value("${openai.min-completed-records}")
+    private int minCompletedRecords;
+
     /**
      * 러닝 기록 분석 및 피드백 생성
      * - 이미 분석된 기록은 기존 결과 반환
@@ -52,29 +55,46 @@ public class RunningAnalysisService {
             throw new InvalidParameterException("완료된 러닝 기록만 분석할 수 있습니다.");
         }
 
-        // 3. 이미 분석된 기록이 있는지 확인
+        // 3. 최소 완료 기록 수 검증
+        long completedCount = runningRecordRepository.countByUserAndIsCompletedTrue(user);
+        if (completedCount < minCompletedRecords) {
+            throw new InvalidParameterException(
+                    String.format("AI 분석을 위해서는 최소 %d회 이상의 완료된 러닝 기록이 필요합니다. (현재: %d회)",
+                            minCompletedRecords, completedCount)
+            );
+        }
+
+        // 4. 이미 분석된 기록이 있는지 확인
         return runningFeedbackRepository.findByRunningRecord(runningRecord)
                 .map(this::toResponse)
-                .orElseGet(() -> generateNewFeedback(runningRecord));
+                .orElseGet(() -> generateNewFeedback(runningRecord, user));
     }
 
     /**
      * 새로운 AI 피드백 생성
      */
-    private RunningAnalysisResponse generateNewFeedback(RunningRecord runningRecord) {
-        log.info("Generating new AI feedback for running record: {}", runningRecord.getId());
+    private RunningAnalysisResponse generateNewFeedback(RunningRecord currentRecord, User user) {
+        log.info("Generating new AI feedback for running record: {}", currentRecord.getId());
 
-        // 1. 프롬프트 생성
+        // 1. 과거 러닝 기록 조회 (최근 10개, 현재 기록 제외)
+        List<RunningRecord> recentRecords = runningRecordRepository
+                .findAllByUserIdAndIsCompletedTrueOrderByStartedAtDesc(user.getId())
+                .stream()
+                .filter(r -> !r.getId().equals(currentRecord.getId()))
+                .limit(10)
+                .toList();
+
+        // 2. 프롬프트 생성
         String systemPrompt = buildSystemPrompt();
-        String userPrompt = buildUserPrompt(runningRecord);
+        String userPrompt = buildUserPrompt(currentRecord, recentRecords);
 
-        // 2. OpenAI API 호출
+        // 3. OpenAI API 호출
         ChatCompletionResult result = openAIService.createChatCompletion(systemPrompt, userPrompt);
         String feedbackContent = openAIService.getCompletionText(result);
 
-        // 3. 피드백 저장
+        // 4. 피드백 저장
         RunningFeedback feedback = RunningFeedback.builder()
-                .runningRecord(runningRecord)
+                .runningRecord(currentRecord)
                 .feedbackContent(feedbackContent)
                 .modelName(result.getModel())
                 .promptTokens(result.getUsage().getPromptTokens())
