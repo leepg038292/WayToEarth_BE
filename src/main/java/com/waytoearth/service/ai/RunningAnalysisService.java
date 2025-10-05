@@ -6,16 +6,17 @@ import com.waytoearth.entity.running.RunningFeedback;
 import com.waytoearth.entity.running.RunningRecord;
 import com.waytoearth.entity.user.User;
 import com.waytoearth.exception.InvalidParameterException;
-import com.waytoearth.exception.UnauthorizedException;
 import com.waytoearth.repository.running.RunningFeedbackRepository;
 import com.waytoearth.repository.running.RunningRecordRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 /**
  * 러닝 기록 AI 분석 서비스

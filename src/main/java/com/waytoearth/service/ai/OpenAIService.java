@@ -5,9 +5,11 @@ import com.theokanning.openai.completion.chat.ChatCompletionResult;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.ChatMessageRole;
 import com.theokanning.openai.service.OpenAiService;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.Duration;
 import java.util.List;
@@ -20,19 +22,32 @@ import java.util.List;
 @Service
 public class OpenAIService {
 
-    private static final String DEFAULT_MODEL = "gpt-3.5-turbo";
-    private static final int DEFAULT_MAX_TOKENS = 500;
-    private static final double DEFAULT_TEMPERATURE = 0.7;
-    private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(30);
-
     private final OpenAiService openAiService;
     private final String model;
+    private final int maxTokens;
+    private final double temperature;
 
-    public OpenAIService(@Value("${openai.api-key}") String apiKey,
-                         @Value("${openai.model:" + DEFAULT_MODEL + "}") String model) {
-        this.openAiService = new OpenAiService(apiKey, DEFAULT_TIMEOUT);
+    public OpenAIService(
+            @Value("${openai.api-key}") String apiKey,
+            @Value("${openai.model}") String model,
+            @Value("${openai.max-tokens}") int maxTokens,
+            @Value("${openai.temperature}") double temperature,
+            @Value("${openai.timeout-seconds}") int timeoutSeconds) {
+
+        if (!StringUtils.hasText(apiKey)) {
+            throw new IllegalStateException("OpenAI API 키가 설정되지 않았습니다. application.yml 또는 환경 변수를 확인하세요.");
+        }
+
+        this.openAiService = new OpenAiService(apiKey, Duration.ofSeconds(timeoutSeconds));
         this.model = model;
-        log.info("OpenAI Service initialized with model: {}", model);
+        this.maxTokens = maxTokens;
+        this.temperature = temperature;
+    }
+
+    @PostConstruct
+    public void init() {
+        log.info("OpenAI Service initialized - Model: {}, MaxTokens: {}, Temperature: {}",
+                model, maxTokens, temperature);
     }
 
     /**
@@ -53,17 +68,24 @@ public class OpenAIService {
         ChatCompletionRequest request = ChatCompletionRequest.builder()
                 .model(model)
                 .messages(messages)
-                .maxTokens(DEFAULT_MAX_TOKENS)
-                .temperature(DEFAULT_TEMPERATURE)
+                .maxTokens(maxTokens)
+                .temperature(temperature)
                 .build();
 
         try {
             ChatCompletionResult result = openAiService.createChatCompletion(request);
-            log.info("Chat completion success - Tokens used: {}", result.getUsage().getTotalTokens());
+            log.info("Chat completion success - Model: {}, Tokens used: {}, Prompt: {}, Completion: {}",
+                    result.getModel(),
+                    result.getUsage().getTotalTokens(),
+                    result.getUsage().getPromptTokens(),
+                    result.getUsage().getCompletionTokens());
             return result;
+        } catch (com.theokanning.openai.OpenAiHttpException e) {
+            log.error("OpenAI HTTP error - Status: {}, Code: {}", e.statusCode, e.code, e);
+            throw new OpenAIServiceException("OpenAI API 호출 실패 (HTTP " + e.statusCode + "): " + e.getMessage(), e);
         } catch (Exception e) {
-            log.error("Failed to create chat completion", e);
-            throw new RuntimeException("OpenAI API 호출 실패: " + e.getMessage(), e);
+            log.error("Unexpected error during OpenAI API call", e);
+            throw new OpenAIServiceException("OpenAI API 호출 중 예기치 않은 오류 발생: " + e.getMessage(), e);
         }
     }
 
