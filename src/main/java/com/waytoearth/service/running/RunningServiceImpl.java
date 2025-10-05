@@ -8,6 +8,10 @@ import com.waytoearth.entity.running.RunningRecord;
 import com.waytoearth.entity.user.User;
 import com.waytoearth.entity.enums.RunningStatus;
 import com.waytoearth.entity.enums.RunningType;
+import com.waytoearth.exception.RunningRecordNotFoundException;
+import com.waytoearth.exception.RunningSessionNotFoundException;
+import com.waytoearth.exception.UnauthorizedAccessException;
+import com.waytoearth.exception.UserNotFoundException;
 import com.waytoearth.repository.running.RunningRecordRepository;
 import com.waytoearth.repository.running.RunningRouteRepository;
 import com.waytoearth.repository.user.UserRepository;
@@ -40,7 +44,7 @@ public class RunningServiceImpl implements RunningService {
     @Override
     public RunningStartResponse startRunning(AuthenticatedUser authUser, RunningStartRequest request) {
         User runner = userRepository.findById(authUser.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException(authUser.getUserId()));
 
         RunningRecord record = RunningRecord.builder()
                 .sessionId(request.getSessionId())
@@ -57,11 +61,15 @@ public class RunningServiceImpl implements RunningService {
 
     @Override
     public void updateRunning(AuthenticatedUser authUser, RunningUpdateRequest request) {
+        if (request.getSessionId() == null || request.getSessionId().isBlank()) {
+            throw new InvalidParameterException("sessionId는 필수입니다.");
+        }
+
         RunningRecord record = runningRecordRepository.findBySessionId(request.getSessionId())
-                .orElseThrow(() -> new IllegalArgumentException("세션을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RunningSessionNotFoundException("세션을 찾을 수 없습니다."));
 
         if (!record.getUser().getId().equals(authUser.getUserId())) {
-            throw new IllegalArgumentException("해당 세션에 대한 권한이 없습니다.");
+            throw new UnauthorizedAccessException("해당 세션에 대한 권한이 없습니다.");
         }
 
         record.setDistance(BigDecimal.valueOf(request.getDistanceMeters() / 1000.0));
@@ -82,11 +90,15 @@ public class RunningServiceImpl implements RunningService {
 
     @Override
     public void pauseRunning(AuthenticatedUser authUser, RunningPauseResumeRequest request) {
+        if (request.getSessionId() == null || request.getSessionId().isBlank()) {
+            throw new InvalidParameterException("sessionId는 필수입니다.");
+        }
+
         RunningRecord record = runningRecordRepository.findBySessionIdWithLock(request.getSessionId())
-                .orElseThrow(() -> new IllegalArgumentException("세션을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RunningSessionNotFoundException("세션을 찾을 수 없습니다."));
 
         if (!record.getUser().getId().equals(authUser.getUserId())) {
-            throw new IllegalArgumentException("해당 세션에 대한 권한이 없습니다.");
+            throw new UnauthorizedAccessException("해당 세션에 대한 권한이 없습니다.");
         }
 
         record.setStatus(RunningStatus.PAUSED);
@@ -96,14 +108,14 @@ public class RunningServiceImpl implements RunningService {
     @Override
     public void resumeRunning(AuthenticatedUser authUser, RunningPauseResumeRequest request) {
         if (request.getSessionId() == null || request.getSessionId().isBlank()) {
-            throw new IllegalArgumentException("sessionId는 필수입니다.");
+            throw new InvalidParameterException("sessionId는 필수입니다.");
         }
 
         RunningRecord record = runningRecordRepository.findBySessionIdWithLock(request.getSessionId())
-                .orElseThrow(() -> new IllegalArgumentException("세션을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RunningSessionNotFoundException("세션을 찾을 수 없습니다."));
 
         if (!record.getUser().getId().equals(authUser.getUserId())) {
-            throw new IllegalArgumentException("해당 세션에 대한 권한이 없습니다.");
+            throw new UnauthorizedAccessException("해당 세션에 대한 권한이 없습니다.");
         }
 
         record.setStatus(RunningStatus.RUNNING);
@@ -112,11 +124,15 @@ public class RunningServiceImpl implements RunningService {
 
     @Override
     public RunningCompleteResponse completeRunning(AuthenticatedUser authUser, RunningCompleteRequest request) {
+        if (request.getSessionId() == null || request.getSessionId().isBlank()) {
+            throw new InvalidParameterException("sessionId는 필수입니다.");
+        }
+
         RunningRecord record = runningRecordRepository.findBySessionIdWithLock(request.getSessionId())
-                .orElseThrow(() -> new IllegalArgumentException("세션을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RunningSessionNotFoundException("세션을 찾을 수 없습니다."));
 
         if (!record.getUser().getId().equals(authUser.getUserId())) {
-            throw new IllegalArgumentException("해당 세션에 대한 권한이 없습니다.");
+            throw new UnauthorizedAccessException("해당 세션에 대한 권한이 없습니다.");
         }
 
         BigDecimal distanceKm = BigDecimal.valueOf(request.getDistanceMeters() / 1000.0);
@@ -180,10 +196,10 @@ public class RunningServiceImpl implements RunningService {
     @Override
     public void updateTitle(AuthenticatedUser authUser, Long recordId, RunningTitleUpdateRequest request) {
         RunningRecord record = runningRecordRepository.findById(recordId)
-                .orElseThrow(() -> new IllegalArgumentException("기록을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RunningRecordNotFoundException(recordId));
 
         if (!record.getUser().getId().equals(authUser.getUserId())) {
-            throw new IllegalArgumentException("해당 기록에 대한 권한이 없습니다.");
+            throw new UnauthorizedAccessException("해당 기록에 대한 권한이 없습니다.");
         }
 
         record.setTitle(request.getTitle());
@@ -194,10 +210,10 @@ public class RunningServiceImpl implements RunningService {
     @Transactional(readOnly = true)
     public RunningCompleteResponse getDetail(AuthenticatedUser authUser, Long recordId) {
         RunningRecord r = runningRecordRepository.findWithRoutesById(recordId)
-                .orElseThrow(() -> new IllegalArgumentException("기록을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RunningRecordNotFoundException(recordId));
 
         if (!r.getUser().getId().equals(authUser.getUserId())) {
-            throw new IllegalArgumentException("해당 기록에 대한 권한이 없습니다.");
+            throw new UnauthorizedAccessException("해당 기록에 대한 권한이 없습니다.");
         }
 
         return RunningCompleteResponse.builder()
@@ -232,7 +248,7 @@ public class RunningServiceImpl implements RunningService {
     @Override
     public Page<RunningRecordSummaryResponse> getRecords(AuthenticatedUser authUser, Pageable pageable) {
         User user = userRepository.findById(authUser.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException(authUser.getUserId()));
 
         Page<RunningRecord> pageResult = runningRecordRepository
                 .findByUserAndIsCompletedTrueOrderByStartedAtDesc(user, pageable);
