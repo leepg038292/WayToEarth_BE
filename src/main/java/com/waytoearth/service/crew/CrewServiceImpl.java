@@ -4,7 +4,9 @@ import com.waytoearth.entity.crew.CrewEntity;
 import com.waytoearth.entity.crew.CrewMemberEntity;
 import com.waytoearth.entity.user.User;
 import com.waytoearth.exception.CrewNotFoundException;
+import com.waytoearth.exception.InvalidParameterException;
 import com.waytoearth.exception.UnauthorizedAccessException;
+import com.waytoearth.exception.UserNotFoundException;
 import com.waytoearth.repository.crew.CrewRepository;
 import com.waytoearth.repository.crew.CrewMemberRepository;
 import com.waytoearth.repository.crew.CrewJoinRequestRepository;
@@ -39,7 +41,7 @@ public class CrewServiceImpl implements CrewService {
                                 Integer maxMembers, String profileImageUrl) {
         // 사용자 조회
         User owner = userRepository.findById(user.getUserId())
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException(user.getUserId()));
 
         // 크루 생성
         CrewEntity crew = CrewEntity.builder()
@@ -67,7 +69,7 @@ public class CrewServiceImpl implements CrewService {
     @Override
     public CrewEntity getCrewById(Long crewId) {
         return crewRepository.findById(crewId)
-                .orElseThrow(() -> new RuntimeException("크루를 찾을 수 없습니다. crewId: " + crewId));
+                .orElseThrow(() -> new CrewNotFoundException("크루를 찾을 수 없습니다. crewId: " + crewId));
     }
 
     @Override
@@ -91,13 +93,13 @@ public class CrewServiceImpl implements CrewService {
 
         // 크루장인지 확인
         if (!isCrewOwner(crewId, user.getUserId())) {
-            throw new RuntimeException("크루 정보 수정은 크루장만 가능합니다.");
+            throw new UnauthorizedAccessException("크루 정보 수정은 크루장만 가능합니다.");
         }
 
         // 현재 멤버 수보다 적게 설정할 수 없음
         int currentMemberCount = crew.getCurrentMemberCount();
         if (maxMembers != null && maxMembers < currentMemberCount) {
-            throw new RuntimeException("현재 멤버 수(" + currentMemberCount + ")보다 적게 설정할 수 없습니다.");
+            throw new InvalidParameterException("현재 멤버 수(" + currentMemberCount + ")보다 적게 설정할 수 없습니다.");
         }
 
         // 정보 업데이트
@@ -117,7 +119,7 @@ public class CrewServiceImpl implements CrewService {
 
         // 크루장인지 확인
         if (!isCrewOwner(crewId, user.getUserId())) {
-            throw new RuntimeException("크루 삭제는 크루장만 가능합니다.");
+            throw new UnauthorizedAccessException("크루 삭제는 크루장만 가능합니다.");
         }
 
         // 소프트 삭제 (비활성화)
@@ -129,7 +131,7 @@ public class CrewServiceImpl implements CrewService {
     @Override
     public Page<CrewEntity> getUserCrews(AuthenticatedUser user, Pageable pageable) {
         User userEntity = userRepository.findById(user.getUserId())
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException(user.getUserId()));
         // N+1 방지 및 DB 네이티브 페이징 사용
         return crewRepository.findCrewsByUserWithOwnerPaged(userEntity, pageable);
     }
@@ -141,7 +143,7 @@ public class CrewServiceImpl implements CrewService {
 
         // 크루장인지 확인
         if (!isCrewOwner(crewId, user.getUserId())) {
-            throw new RuntimeException("크루 상태 변경은 크루장만 가능합니다.");
+            throw new UnauthorizedAccessException("크루 상태 변경은 크루장만 가능합니다.");
         }
 
         crew.setIsActive(!crew.getIsActive());

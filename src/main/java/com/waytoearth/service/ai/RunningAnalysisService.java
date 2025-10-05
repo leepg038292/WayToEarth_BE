@@ -8,6 +8,7 @@ import com.waytoearth.entity.user.User;
 import com.waytoearth.exception.InvalidParameterException;
 import com.waytoearth.repository.running.RunningFeedbackRepository;
 import com.waytoearth.repository.running.RunningRecordRepository;
+import com.waytoearth.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,7 @@ public class RunningAnalysisService {
     private final OpenAIService openAIService;
     private final RunningRecordRepository runningRecordRepository;
     private final RunningFeedbackRepository runningFeedbackRepository;
+    private final UserRepository userRepository;
 
     @Value("${openai.min-completed-records}")
     private int minCompletedRecords;
@@ -41,11 +43,15 @@ public class RunningAnalysisService {
      * - 미완료 기록은 분석 불가
      *
      * @param runningRecordId 러닝 기록 ID
-     * @param user            요청 사용자
+     * @param userId            요청 사용자
      * @return 분석 결과
      */
     @Transactional
-    public RunningAnalysisResponse analyzeRunning(Long runningRecordId, User user) {
+    public RunningAnalysisResponse analyzeRunning(Long runningRecordId, Long userId) {
+        // 0. 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InvalidParameterException("사용자를 찾을 수 없습니다."));
+
         // 1. 러닝 기록 조회 및 권한 검증
         RunningRecord runningRecord = runningRecordRepository.findByIdAndUser(runningRecordId, user)
                 .orElseThrow(() -> new InvalidParameterException("러닝 기록을 찾을 수 없거나 접근 권한이 없습니다."));
@@ -67,18 +73,18 @@ public class RunningAnalysisService {
         // 4. 이미 분석된 기록이 있는지 확인
         return runningFeedbackRepository.findByRunningRecord(runningRecord)
                 .map(this::toResponse)
-                .orElseGet(() -> generateNewFeedback(runningRecord, user));
+                .orElseGet(() -> generateNewFeedback(runningRecord, userId));
     }
 
     /**
      * 새로운 AI 피드백 생성
      */
-    private RunningAnalysisResponse generateNewFeedback(RunningRecord currentRecord, User user) {
+    private RunningAnalysisResponse generateNewFeedback(RunningRecord currentRecord, Long userId) {
         log.info("Generating new AI feedback for running record: {}", currentRecord.getId());
 
         // 1. 과거 러닝 기록 조회 (최근 10개, 현재 기록 제외)
         List<RunningRecord> recentRecords = runningRecordRepository
-                .findAllByUserIdAndIsCompletedTrueOrderByStartedAtDesc(user.getId())
+                .findAllByUserIdAndIsCompletedTrueOrderByStartedAtDesc(userId)
                 .stream()
                 .filter(r -> !r.getId().equals(currentRecord.getId()))
                 .limit(10)
@@ -97,9 +103,9 @@ public class RunningAnalysisService {
                 .runningRecord(currentRecord)
                 .feedbackContent(feedbackContent)
                 .modelName(result.getModel())
-                .promptTokens(result.getUsage().getPromptTokens())
-                .completionTokens(result.getUsage().getCompletionTokens())
-                .totalTokens(result.getUsage().getTotalTokens())
+                .promptTokens((int) result.getUsage().getPromptTokens())
+                .completionTokens((int) result.getUsage().getCompletionTokens())
+                .totalTokens((int) result.getUsage().getTotalTokens())
                 .build();
 
         feedback = runningFeedbackRepository.save(feedback);
