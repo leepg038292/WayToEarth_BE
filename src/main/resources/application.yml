@@ -81,6 +81,7 @@ openai:
 fcm:
   firebase:
     config-path: ${FCM_CONFIG_PATH:src/main/resources/firebase/firebase-service-account.json}
+    config-json: ${FCM_CONFIG_JSON:}
   notifications:
     enabled: ${FCM_ENABLED:true}
     scheduled:
