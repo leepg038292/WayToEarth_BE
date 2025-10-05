@@ -42,3 +42,4 @@ out/
 /src/main/generated/
 .claude/
 /WayToEarth-프로젝트-전체-분석.md
+/src/main/resources/firebase/waytoearth-firebase-adminsdk.json
