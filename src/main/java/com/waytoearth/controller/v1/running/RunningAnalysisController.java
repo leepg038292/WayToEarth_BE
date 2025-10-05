@@ -37,7 +37,7 @@ public class RunningAnalysisController {
 
         RunningAnalysisResponse response = runningAnalysisService.analyzeRunning(
                 runningRecordId,
-                user.getUser()
+                user.getUserId()
         );
 
         return ResponseEntity.ok(
@@ -56,7 +56,7 @@ public class RunningAnalysisController {
 
         RunningAnalysisResponse response = runningAnalysisService.analyzeRunning(
                 runningRecordId,
-                user.getUser()
+                user.getUserId()
         );
 
         return ResponseEntity.ok(
