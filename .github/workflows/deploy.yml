@@ -112,7 +112,7 @@ jobs:
               -e JWT_EXPIRATION="${{ vars.JWT_EXPIRATION }}" \
               -e REDIS_HOST="${{ secrets.REDIS_HOST }}" \
               -e REDIS_PORT="${{ vars.REDIS_PORT }}" \
-              -e FCM_CONFIG_JSON="${{ secrets.FCM_CONFIG_JSON }}" \
+              -e FCM_CONFIG_JSON='${{ secrets.FCM_CONFIG_JSON }}' \
               -e FCM_ENABLED="${{ vars.FCM_ENABLED }}" \
               "$IMAGE_NAME"
 
