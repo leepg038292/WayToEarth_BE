@@ -44,6 +44,11 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Create Firebase Service Account JSON
+        run: |
+          mkdir -p src/main/resources/firebase
+          echo '${{ secrets.FCM_CONFIG_JSON }}' > src/main/resources/firebase/firebase-service-account.json
+
       - name: Build with Gradle (Skip Tests)
         run: ./gradlew build -x test
 
@@ -107,6 +112,8 @@ jobs:
               -e JWT_EXPIRATION="${{ vars.JWT_EXPIRATION }}" \
               -e REDIS_HOST="${{ secrets.REDIS_HOST }}" \
               -e REDIS_PORT="${{ vars.REDIS_PORT }}" \
+              -e FCM_CONFIG_PATH="${{ vars.FCM_CONFIG_PATH }}" \
+              -e FCM_ENABLED="${{ vars.FCM_ENABLED }}" \
               "$IMAGE_NAME"
 
             echo "🧹 안 쓰는 이미지 정리"
