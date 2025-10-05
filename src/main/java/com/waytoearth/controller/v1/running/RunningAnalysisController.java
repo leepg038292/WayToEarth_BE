@@ -20,11 +20,11 @@ public class RunningAnalysisController {
     private final RunningAnalysisService runningAnalysisService;
 
     @Operation(
-            summary = "러닝 기록 AI 분석",
+            summary = "러닝 기록 AI 분석 생성",
             description = """
-                    완료된 러닝 기록을 AI로 분석하여 피드백을 제공합니다.
+                    완료된 러닝 기록을 AI로 분석하여 새로운 피드백을 생성합니다.
 
-                    - 이미 분석된 기록은 캐싱된 결과 반환
+                    - 이미 분석된 기록은 409 Conflict 반환
                     - 미완료 기록은 분석 불가
                     - 거리, 시간, 페이스, 칼로리 데이터 기반 분석
                     - 향후 케이던스, 심박수 데이터 추가 예정
@@ -35,7 +35,7 @@ public class RunningAnalysisController {
             @AuthUser AuthenticatedUser user,
             @PathVariable Long runningRecordId) {
 
-        RunningAnalysisResponse response = runningAnalysisService.analyzeRunning(
+        RunningAnalysisResponse response = runningAnalysisService.createNewAnalysis(
                 runningRecordId,
                 user.getUserId()
         );
@@ -47,14 +47,19 @@ public class RunningAnalysisController {
 
     @Operation(
             summary = "러닝 기록 AI 분석 조회",
-            description = "이미 생성된 AI 피드백을 조회합니다. 분석이 없으면 새로 생성합니다."
+            description = """
+                    이미 생성된 AI 피드백을 조회합니다.
+
+                    - 분석이 없으면 404 Not Found 반환
+                    - 캐싱된 데이터만 반환 (OpenAI API 호출 없음)
+                    """
     )
     @GetMapping("/{runningRecordId}")
     public ResponseEntity<ApiResponse<RunningAnalysisResponse>> getFeedback(
             @AuthUser AuthenticatedUser user,
             @PathVariable Long runningRecordId) {
 
-        RunningAnalysisResponse response = runningAnalysisService.analyzeRunning(
+        RunningAnalysisResponse response = runningAnalysisService.getExistingAnalysis(
                 runningRecordId,
                 user.getUserId()
         );
