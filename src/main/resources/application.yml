@@ -66,6 +66,15 @@ weather:
   openweather:
     api-key: ${OPENWEATHER_API_KEY:}
 
+# OpenAI API 설정
+openai:
+  api-key: ${OPENAI_API_KEY}
+  model: ${OPENAI_MODEL:gpt-3.5-turbo}
+  max-tokens: ${OPENAI_MAX_TOKENS:800}
+  temperature: ${OPENAI_TEMPERATURE:0.7}
+  timeout-seconds: ${OPENAI_TIMEOUT:30}
+  min-completed-records: ${OPENAI_MIN_RECORDS:5}
+
 # 캐시 설정
 cache:
   redis:
