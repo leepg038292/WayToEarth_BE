@@ -23,28 +23,39 @@ public class FcmConfig {
     @Value("${fcm.firebase.config-json:}")
     private String firebaseConfigJson;
 
+    @Value("${fcm.firebase.config-json-base64:}")
+    private String firebaseConfigJsonBase64;
+
     @PostConstruct
     public void initialize() {
         try {
             GoogleCredentials credentials;
 
-            // 1. JSON 환경변수 우선 (Docker 배포 시)
-            if (firebaseConfigJson != null && !firebaseConfigJson.isBlank()) {
+            // 1. Base64 인코딩된 JSON 우선 (Docker 배포 시)
+            if (firebaseConfigJsonBase64 != null && !firebaseConfigJsonBase64.isBlank()) {
+                log.info("🔧 Firebase 초기화: Base64 JSON 사용");
+                byte[] decodedJson = java.util.Base64.getDecoder().decode(firebaseConfigJsonBase64);
+                credentials = GoogleCredentials.fromStream(
+                    new ByteArrayInputStream(decodedJson)
+                );
+            }
+            // 2. 일반 JSON 환경변수
+            else if (firebaseConfigJson != null && !firebaseConfigJson.isBlank()) {
                 log.info("🔧 Firebase 초기화: 환경변수 JSON 사용");
                 credentials = GoogleCredentials.fromStream(
                     new ByteArrayInputStream(firebaseConfigJson.getBytes(StandardCharsets.UTF_8))
                 );
             }
-            // 2. 파일 경로 (로컬 개발 시)
+            // 3. 파일 경로 (로컬 개발 시)
             else if (firebaseConfigPath != null && !firebaseConfigPath.isBlank()) {
                 log.info("🔧 Firebase 초기화: 파일 경로 사용 ({})", firebaseConfigPath);
                 credentials = GoogleCredentials.fromStream(
                     new FileInputStream(firebaseConfigPath)
                 );
             }
-            // 3. 둘 다 없으면 에러
+            // 4. 둘 다 없으면 에러
             else {
-                throw new IllegalStateException("FCM 설정이 없습니다. fcm.firebase.config-json 또는 fcm.firebase.config-path를 설정하세요.");
+                throw new IllegalStateException("FCM 설정이 없습니다.");
             }
 
             FirebaseOptions options = FirebaseOptions.builder()

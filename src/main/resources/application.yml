@@ -80,8 +80,9 @@ openai:
 # Firebase Cloud Messaging (FCM) 설정
 fcm:
   firebase:
-    config-path: ${FCM_CONFIG_PATH:src/main/resources/firebase/firebase-service-account.json}
+    config-path: ${FCM_CONFIG_PATH:src/main/resources/firebase/waytoearth-firebase-adminsdk.json}
     config-json: ${FCM_CONFIG_JSON:}
+    config-json-base64: ${FCM_CONFIG_JSON_BASE64:}
   notifications:
     enabled: ${FCM_ENABLED:true}
     scheduled:
