@@ -114,52 +114,114 @@ public class RunningAnalysisService {
      */
     private String buildSystemPrompt() {
         return """
-                당신은 전문 러닝 코치입니다.
-                사용자의 러닝 기록을 분석하고, 긍정적이고 구체적인 피드백을 제공합니다.
+                당신은 데이터 기반으로 분석하는 전문 러닝 코치입니다.
+                사용자의 현재 러닝 기록과 과거 기록을 비교 분석하여, 구체적이고 실용적인 피드백을 제공합니다.
 
-                응답 가이드라인:
-                1. 3-5문장으로 간결하게 작성
-                2. 운동 성과에 대한 칭찬 1-2문장
-                3. 개선 가능한 점 또는 다음 목표 제안 1-2문장
-                4. 격려와 동기부여로 마무리
-                5. 친근하고 긍정적인 톤 유지
+                분석 우선순위:
+                1. **성장 패턴 분석**: 과거 대비 거리, 페이스, 지속성 개선도 파악
+                2. **강점 강화**: 잘하고 있는 부분을 구체적 수치로 칭찬
+                3. **개선 제안**: 다음 목표를 명확하게 제시 (예: "페이스를 10초 단축", "거리 1km 연장")
+                4. **동기부여**: 긍정적이고 격려하는 톤으로 마무리
+
+                응답 형식:
+                - 4-6문장으로 작성
+                - 구체적인 수치 언급 (거리, 페이스, 시간 등)
+                - 과거 기록과 비교 시 "이전 평균 대비", "최근 기록과 비교" 같은 표현 사용
+                - 반말 사용, 친근한 톤 유지
+                - 이모지 사용 금지
 
                 [향후 확장 예정]
-                - 케이던스 분석
+                - 케이던스 분석 (보폭 효율성)
                 - 심박수 기반 운동 강도 평가
-                - 페이스 변화 패턴 분석
+                - 페이스 변화 패턴 분석 (일관성)
                 """;
     }
 
     /**
-     * 사용자 프롬프트 생성
+     * 사용자 프롬프트 생성 (과거 기록 포함)
      * - 실제 러닝 데이터를 포함
      */
-    private String buildUserPrompt(RunningRecord record) {
+    private String buildUserPrompt(RunningRecord currentRecord, List<RunningRecord> recentRecords) {
+        StringBuilder prompt = new StringBuilder();
+
+        // 1. 현재 기록
+        prompt.append("## 오늘 러닝 기록\n");
+        prompt.append(formatRecordDetails(currentRecord));
+        prompt.append("\n\n");
+
+        // 2. 과거 기록 통계
+        if (!recentRecords.isEmpty()) {
+            prompt.append("## 최근 러닝 기록 (참고용)\n");
+
+            // 평균 계산
+            double avgDistance = recentRecords.stream()
+                    .map(RunningRecord::getDistance)
+                    .filter(d -> d != null)
+                    .mapToDouble(BigDecimal::doubleValue)
+                    .average()
+                    .orElse(0.0);
+
+            double avgPace = recentRecords.stream()
+                    .map(RunningRecord::getAveragePaceSeconds)
+                    .filter(p -> p != null && p > 0)
+                    .mapToInt(Integer::intValue)
+                    .average()
+                    .orElse(0.0);
+
+            prompt.append(String.format("- 최근 %d회 평균 거리: %.2f km\n", recentRecords.size(), avgDistance));
+            prompt.append(String.format("- 최근 %d회 평균 페이스: %s\n", recentRecords.size(), formatPace((int) avgPace)));
+
+            // 최고 기록
+            RunningRecord bestDistance = recentRecords.stream()
+                    .max((r1, r2) -> {
+                        BigDecimal d1 = r1.getDistance() != null ? r1.getDistance() : BigDecimal.ZERO;
+                        BigDecimal d2 = r2.getDistance() != null ? r2.getDistance() : BigDecimal.ZERO;
+                        return d1.compareTo(d2);
+                    })
+                    .orElse(null);
+
+            if (bestDistance != null && bestDistance.getDistance() != null) {
+                prompt.append(String.format("- 최장 거리 기록: %.2f km\n", bestDistance.getDistance()));
+            }
+
+            RunningRecord bestPace = recentRecords.stream()
+                    .filter(r -> r.getAveragePaceSeconds() != null && r.getAveragePaceSeconds() > 0)
+                    .min((r1, r2) -> Integer.compare(r1.getAveragePaceSeconds(), r2.getAveragePaceSeconds()))
+                    .orElse(null);
+
+            if (bestPace != null) {
+                prompt.append(String.format("- 최고 페이스 기록: %s\n", formatPace(bestPace.getAveragePaceSeconds())));
+            }
+        }
+
+        prompt.append("\n## 요청\n");
+        prompt.append("위 데이터를 바탕으로 오늘 러닝에 대한 구체적인 피드백을 제공해주세요.\n");
+        prompt.append("과거 기록과 비교하여 성장한 부분과 개선할 부분을 분석해주세요.");
+
+        return prompt.toString();
+    }
+
+    /**
+     * 러닝 기록 상세 정보 포맷
+     */
+    private String formatRecordDetails(RunningRecord record) {
         BigDecimal distance = record.getDistance() != null ? record.getDistance() : BigDecimal.ZERO;
         Integer duration = record.getDuration() != null ? record.getDuration() : 0;
         Integer pace = record.getAveragePaceSeconds() != null ? record.getAveragePaceSeconds() : 0;
         Integer calories = record.getCalories() != null ? record.getCalories() : 0;
 
-        String paceFormatted = formatPace(pace);
-        String durationFormatted = formatDuration(duration);
-
         return String.format("""
-                다음 러닝 기록을 분석해주세요:
-
                 - 거리: %s km
                 - 시간: %s
                 - 평균 페이스: %s
                 - 칼로리: %d kcal
                 - 러닝 타입: %s
-
-                위 데이터를 바탕으로 사용자에게 피드백을 제공해주세요.
                 """,
                 distance.setScale(2, RoundingMode.HALF_UP),
-                durationFormatted,
-                paceFormatted,
+                formatDuration(duration),
+                formatPace(pace),
                 calories,
-                record.getRunningType() != null ? record.getRunningType().name() : "UNKNOWN"
+                record.getRunningType() != null ? record.getRunningType().name() : "일반"
         );
     }
 
