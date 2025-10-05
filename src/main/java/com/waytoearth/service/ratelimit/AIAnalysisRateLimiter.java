@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 /**
@@ -123,13 +124,9 @@ public class AIAnalysisRateLimiter {
      * 자정까지 남은 시간 계산
      */
     private Duration calculateTimeUntilMidnight() {
-        LocalDate today = LocalDate.now(ZONE_ID);
-        LocalDate tomorrow = today.plusDays(1);
-        long secondsUntilMidnight = Duration.between(
-                today.atStartOfDay(ZONE_ID),
-                tomorrow.atStartOfDay(ZONE_ID)
-        ).getSeconds();
+        LocalDateTime now = LocalDateTime.now(ZONE_ID);
+        LocalDateTime midnight = now.toLocalDate().plusDays(1).atStartOfDay();
 
-        return Duration.ofSeconds(secondsUntilMidnight);
+        return Duration.between(now, midnight);
     }
 }
