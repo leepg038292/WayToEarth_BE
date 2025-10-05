@@ -11,6 +11,7 @@ import com.waytoearth.exception.UserNotFoundException;
 import com.waytoearth.repository.running.RunningFeedbackRepository;
 import com.waytoearth.repository.running.RunningRecordRepository;
 import com.waytoearth.repository.user.UserRepository;
+import com.waytoearth.service.ratelimit.AIAnalysisRateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +36,7 @@ public class RunningAnalysisService {
     private final RunningRecordRepository runningRecordRepository;
     private final RunningFeedbackRepository runningFeedbackRepository;
     private final UserRepository userRepository;
+    private final AIAnalysisRateLimiter rateLimiter;
 
     @Value("${openai.min-completed-records}")
     private int minCompletedRecords;
@@ -66,12 +68,20 @@ public class RunningAnalysisService {
             throw new InvalidParameterException("완료된 러닝 기록만 분석할 수 있습니다.");
         }
 
-        // 3. 이미 분석된 기록인지 확인 (중복 방지)
+        // 3. 일일 분석 횟수 제한 확인
+        if (!rateLimiter.canAnalyze(userId)) {
+            int used = rateLimiter.getUsedCount(userId);
+            throw new InvalidParameterException(
+                    String.format("일일 AI 분석 횟수를 초과했습니다. (사용: %d회, 내일 다시 시도해주세요)", used)
+            );
+        }
+
+        // 4. 이미 분석된 기록인지 확인 (중복 방지)
         if (runningFeedbackRepository.existsByRunningRecord(runningRecord)) {
             throw new DuplicateResourceException("이미 AI 분석이 완료된 기록입니다. GET 요청으로 조회하세요.");
         }
 
-        // 4. 최소 완료 기록 수 검증
+        // 5. 최소 완료 기록 수 검증
         long completedCount = runningRecordRepository.countByUserAndIsCompletedTrue(user);
         if (completedCount < minCompletedRecords) {
             throw new InvalidParameterException(
@@ -80,7 +90,10 @@ public class RunningAnalysisService {
             );
         }
 
-        // 5. 새로운 피드백 생성
+        // 6. 분석 횟수 증가 (실제 OpenAI API 호출 전)
+        rateLimiter.incrementCount(userId);
+
+        // 7. 새로운 피드백 생성
         return generateNewFeedback(runningRecord, userId);
     }
 
