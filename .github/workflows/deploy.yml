@@ -103,6 +103,7 @@ jobs:
               -e KAKAO_REDIRECT_URI_WEB="${{ secrets.KAKAO_REDIRECT_URI_WEB }}" \
               -e S3_BUCKET="${{ vars.S3_BUCKET }}" \
               -e OPENWEATHER_API_KEY="${{ secrets.OPENWEATHER_API_KEY }}" \
+              -e OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
               -e JWT_EXPIRATION="${{ vars.JWT_EXPIRATION }}" \
               -e REDIS_HOST="${{ secrets.REDIS_HOST }}" \
               -e REDIS_PORT="${{ vars.REDIS_PORT }}" \

@@ -126,6 +126,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    @ExceptionHandler(OpenAIServiceException.class)
+    public ResponseEntity<ErrorResponse> handleOpenAIServiceException(OpenAIServiceException e) {
+        log.error("OpenAI API 호출 예외: {}", e.getMessage());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .success(false)
+                .error(ErrorDetail.builder()
+                        .code("OPENAI_SERVICE_ERROR")
+                        .message("AI 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
+                        .details(e.getMessage())
+                        .build())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+    }
+
     @ExceptionHandler(UnauthorizedAccessException.class)
     public ResponseEntity<ErrorResponse> handleUnauthorizedAccessException(UnauthorizedAccessException e) {
         log.error("권한 없는 접근: {}", e.getMessage());
