@@ -77,6 +77,23 @@ openai:
   analysis-history-limit: ${OPENAI_HISTORY_LIMIT:10}
   daily-limit-per-user: ${OPENAI_DAILY_LIMIT:10}
 
+# Firebase Cloud Messaging (FCM) 설정
+fcm:
+  firebase:
+    config-path: ${FCM_CONFIG_PATH:src/main/resources/firebase/firebase-service-account.json}
+  notifications:
+    enabled: ${FCM_ENABLED:true}
+    scheduled:
+      morning-time: "0 30 6 * * *"   # 매일 오전 6:30 (cron)
+      evening-time: "0 0 20 * * *"   # 매일 오후 8:00 (cron)
+      timezone: "Asia/Seoul"
+      morning-message:
+        title: "좋은 아침이에요! ☀️"
+        body: "오늘도 상쾌한 러닝 어때요?"
+      evening-message:
+        title: "퇴근 후 러닝 타임! 🏃"
+        body: "가벼운 러닝으로 하루를 마무리해보세요"
+
 # 캐시 설정
 cache:
   redis:
