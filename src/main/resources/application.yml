@@ -74,6 +74,8 @@ openai:
   temperature: ${OPENAI_TEMPERATURE:0.7}
   timeout-seconds: ${OPENAI_TIMEOUT:30}
   min-completed-records: ${OPENAI_MIN_RECORDS:5}
+  analysis-history-limit: ${OPENAI_HISTORY_LIMIT:10}
+  daily-limit-per-user: ${OPENAI_DAILY_LIMIT:10}
 
 # 캐시 설정
 cache:

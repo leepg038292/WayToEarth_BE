@@ -5,10 +5,13 @@ import com.waytoearth.dto.response.running.ai.RunningAnalysisResponse;
 import com.waytoearth.entity.running.RunningFeedback;
 import com.waytoearth.entity.running.RunningRecord;
 import com.waytoearth.entity.user.User;
+import com.waytoearth.exception.DuplicateResourceException;
 import com.waytoearth.exception.InvalidParameterException;
+import com.waytoearth.exception.UserNotFoundException;
 import com.waytoearth.repository.running.RunningFeedbackRepository;
 import com.waytoearth.repository.running.RunningRecordRepository;
 import com.waytoearth.repository.user.UserRepository;
+import com.waytoearth.service.ratelimit.AIAnalysisRateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,24 +36,28 @@ public class RunningAnalysisService {
     private final RunningRecordRepository runningRecordRepository;
     private final RunningFeedbackRepository runningFeedbackRepository;
     private final UserRepository userRepository;
+    private final AIAnalysisRateLimiter rateLimiter;
 
     @Value("${openai.min-completed-records}")
     private int minCompletedRecords;
 
+    @Value("${openai.analysis-history-limit}")
+    private int analysisHistoryLimit;
+
     /**
-     * 러닝 기록 분석 및 피드백 생성
-     * - 이미 분석된 기록은 기존 결과 반환
+     * 새로운 AI 분석 생성 (POST)
+     * - 이미 분석된 기록은 409 Conflict
      * - 미완료 기록은 분석 불가
      *
      * @param runningRecordId 러닝 기록 ID
-     * @param userId            요청 사용자
+     * @param userId          요청 사용자 ID
      * @return 분석 결과
      */
     @Transactional
-    public RunningAnalysisResponse analyzeRunning(Long runningRecordId, Long userId) {
+    public RunningAnalysisResponse createNewAnalysis(Long runningRecordId, Long userId) {
         // 0. 사용자 조회
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new InvalidParameterException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다: " + userId));
 
         // 1. 러닝 기록 조회 및 권한 검증
         RunningRecord runningRecord = runningRecordRepository.findByIdAndUser(runningRecordId, user)
@@ -61,7 +68,20 @@ public class RunningAnalysisService {
             throw new InvalidParameterException("완료된 러닝 기록만 분석할 수 있습니다.");
         }
 
-        // 3. 최소 완료 기록 수 검증
+        // 3. 일일 분석 횟수 제한 확인
+        if (!rateLimiter.canAnalyze(userId)) {
+            int used = rateLimiter.getUsedCount(userId);
+            throw new InvalidParameterException(
+                    String.format("일일 AI 분석 횟수를 초과했습니다. (사용: %d회, 내일 다시 시도해주세요)", used)
+            );
+        }
+
+        // 4. 이미 분석된 기록인지 확인 (중복 방지)
+        if (runningFeedbackRepository.existsByRunningRecord(runningRecord)) {
+            throw new DuplicateResourceException("이미 AI 분석이 완료된 기록입니다. GET 요청으로 조회하세요.");
+        }
+
+        // 5. 최소 완료 기록 수 검증
         long completedCount = runningRecordRepository.countByUserAndIsCompletedTrue(user);
         if (completedCount < minCompletedRecords) {
             throw new InvalidParameterException(
@@ -70,10 +90,37 @@ public class RunningAnalysisService {
             );
         }
 
-        // 4. 이미 분석된 기록이 있는지 확인
-        return runningFeedbackRepository.findByRunningRecord(runningRecord)
-                .map(this::toResponse)
-                .orElseGet(() -> generateNewFeedback(runningRecord, userId));
+        // 6. 분석 횟수 증가 (실제 OpenAI API 호출 전)
+        rateLimiter.incrementCount(userId);
+
+        // 7. 새로운 피드백 생성
+        return generateNewFeedback(runningRecord, userId);
+    }
+
+    /**
+     * 기존 AI 분석 조회 (GET)
+     * - 캐싱된 데이터만 반환
+     * - 없으면 404 Not Found
+     *
+     * @param runningRecordId 러닝 기록 ID
+     * @param userId          요청 사용자 ID
+     * @return 분석 결과
+     */
+    @Transactional(readOnly = true)
+    public RunningAnalysisResponse getExistingAnalysis(Long runningRecordId, Long userId) {
+        // 0. 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다: " + userId));
+
+        // 1. 러닝 기록 조회 및 권한 검증
+        RunningRecord runningRecord = runningRecordRepository.findByIdAndUser(runningRecordId, user)
+                .orElseThrow(() -> new InvalidParameterException("러닝 기록을 찾을 수 없거나 접근 권한이 없습니다."));
+
+        // 2. 피드백 조회
+        RunningFeedback feedback = runningFeedbackRepository.findByRunningRecord(runningRecord)
+                .orElseThrow(() -> new InvalidParameterException("AI 분석 기록이 없습니다. POST 요청으로 새로 분석하세요."));
+
+        return toResponse(feedback);
     }
 
     /**
@@ -82,12 +129,12 @@ public class RunningAnalysisService {
     private RunningAnalysisResponse generateNewFeedback(RunningRecord currentRecord, Long userId) {
         log.info("Generating new AI feedback for running record: {}", currentRecord.getId());
 
-        // 1. 과거 러닝 기록 조회 (최근 10개, 현재 기록 제외)
+        // 1. 과거 러닝 기록 조회 (설정 가능한 개수, 현재 기록 제외)
         List<RunningRecord> recentRecords = runningRecordRepository
                 .findAllByUserIdAndIsCompletedTrueOrderByStartedAtDesc(userId)
                 .stream()
                 .filter(r -> !r.getId().equals(currentRecord.getId()))
-                .limit(10)
+                .limit(analysisHistoryLimit)
                 .toList();
 
         // 2. 프롬프트 생성
