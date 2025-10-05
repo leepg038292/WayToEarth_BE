@@ -5,7 +5,9 @@ import com.waytoearth.dto.response.running.ai.RunningAnalysisResponse;
 import com.waytoearth.entity.running.RunningFeedback;
 import com.waytoearth.entity.running.RunningRecord;
 import com.waytoearth.entity.user.User;
+import com.waytoearth.exception.DuplicateResourceException;
 import com.waytoearth.exception.InvalidParameterException;
+import com.waytoearth.exception.UserNotFoundException;
 import com.waytoearth.repository.running.RunningFeedbackRepository;
 import com.waytoearth.repository.running.RunningRecordRepository;
 import com.waytoearth.repository.user.UserRepository;
@@ -36,6 +38,9 @@ public class RunningAnalysisService {
 
     @Value("${openai.min-completed-records}")
     private int minCompletedRecords;
+
+    @Value("${openai.analysis-history-limit}")
+    private int analysisHistoryLimit;
 
     /**
      * 새로운 AI 분석 생성 (POST)
@@ -111,12 +116,12 @@ public class RunningAnalysisService {
     private RunningAnalysisResponse generateNewFeedback(RunningRecord currentRecord, Long userId) {
         log.info("Generating new AI feedback for running record: {}", currentRecord.getId());
 
-        // 1. 과거 러닝 기록 조회 (최근 10개, 현재 기록 제외)
+        // 1. 과거 러닝 기록 조회 (설정 가능한 개수, 현재 기록 제외)
         List<RunningRecord> recentRecords = runningRecordRepository
                 .findAllByUserIdAndIsCompletedTrueOrderByStartedAtDesc(userId)
                 .stream()
                 .filter(r -> !r.getId().equals(currentRecord.getId()))
-                .limit(10)
+                .limit(analysisHistoryLimit)
                 .toList();
 
         // 2. 프롬프트 생성
