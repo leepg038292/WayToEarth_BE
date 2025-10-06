@@ -32,6 +32,9 @@ public class NotificationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
+        // 알림 설정이 없으면 자동 생성
+        ensureNotificationSettingExists(user);
+
         // 기존 토큰 조회
         FcmToken existingToken = fcmTokenRepository.findByUserAndDeviceId(user, request.getDeviceId())
                 .orElse(null);
@@ -148,5 +151,15 @@ public class NotificationService {
                 .allNotificationsEnabled(true)
                 .build();
         return notificationSettingRepository.save(setting);
+    }
+
+    /**
+     * 알림 설정이 없으면 자동 생성
+     */
+    private void ensureNotificationSettingExists(User user) {
+        if (!notificationSettingRepository.findByUser(user).isPresent()) {
+            createDefaultSettings(user);
+            log.info("알림 설정 자동 생성: userId={}", user.getId());
+        }
     }
 }
