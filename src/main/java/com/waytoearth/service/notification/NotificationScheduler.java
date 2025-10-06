@@ -30,8 +30,12 @@ public class NotificationScheduler {
      */
     @Scheduled(cron = "${fcm.notifications.scheduled.morning-time}", zone = "${fcm.notifications.scheduled.timezone}")
     public void sendMorningReminder() {
-        log.info("=== 오전 러닝 알림 스케줄 실행 ===");
-        fcmService.sendScheduledRunningReminder(morningTitle, morningBody);
+        try {
+            log.info("=== 오전 러닝 알림 스케줄 실행 ===");
+            fcmService.sendScheduledRunningReminder(morningTitle, morningBody);
+        } catch (Exception e) {
+            log.error("오전 러닝 알림 전송 중 오류 발생", e);
+        }
     }
 
     /**
@@ -39,7 +43,11 @@ public class NotificationScheduler {
      */
     @Scheduled(cron = "${fcm.notifications.scheduled.evening-time}", zone = "${fcm.notifications.scheduled.timezone}")
     public void sendEveningReminder() {
-        log.info("=== 저녁 러닝 알림 스케줄 실행 ===");
-        fcmService.sendScheduledRunningReminder(eveningTitle, eveningBody);
+        try {
+            log.info("=== 저녁 러닝 알림 스케줄 실행 ===");
+            fcmService.sendScheduledRunningReminder(eveningTitle, eveningBody);
+        } catch (Exception e) {
+            log.error("저녁 러닝 알림 전송 중 오류 발생", e);
+        }
     }
 }
