@@ -60,7 +60,6 @@ public class FcmService {
     /**
      * 정기 러닝 알림 (모든 사용자)
      */
-    @Transactional(readOnly = true)
     public void sendScheduledRunningReminder(String title, String body) {
         if (!notificationsEnabled) {
             return;
@@ -198,7 +197,6 @@ public class FcmService {
     /**
      * 배치 응답 처리 (실패한 토큰 비활성화)
      */
-    @Transactional
     protected void handleBatchResponse(List<String> tokens, BatchResponse response) {
         for (int i = 0; i < response.getResponses().size(); i++) {
             SendResponse sendResponse = response.getResponses().get(i);
@@ -215,7 +213,6 @@ public class FcmService {
     /**
      * FCM 예외 처리 (무효한 토큰 비활성화)
      */
-    @Transactional
     protected void handleMessagingException(String token, FirebaseMessagingException e) {
         String errorCode = e.getMessagingErrorCode() != null ? e.getMessagingErrorCode().name() : "";
 
