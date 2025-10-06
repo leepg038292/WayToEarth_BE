@@ -6,6 +6,7 @@ import com.waytoearth.dto.response.common.ApiResponse;
 import com.waytoearth.dto.response.notification.NotificationSettingResponse;
 import com.waytoearth.security.AuthUser;
 import com.waytoearth.security.AuthenticatedUser;
+import com.waytoearth.service.notification.FcmService;
 import com.waytoearth.service.notification.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final FcmService fcmService;
 
     @Operation(
             summary = "FCM 토큰 등록",
@@ -132,7 +134,7 @@ public class NotificationController {
             @Parameter(description = "알림 내용 (선택)") @RequestParam(required = false, defaultValue = "푸시알림 테스트입니다!") String body) {
 
         log.info("테스트 알림 전송 요청 - userId: {}, title: {}, body: {}", user.getUserId(), title, body);
-        notificationService.sendNotificationToUser(user.getUserId(), title, body);
+        fcmService.sendNotificationToUser(user.getUserId(), title, body);
 
         return ResponseEntity.ok(ApiResponse.success(
                 null,
@@ -152,7 +154,7 @@ public class NotificationController {
             @Parameter(description = "알림 내용 (선택)") @RequestParam(required = false, defaultValue = "WayToEarth 테스트 알림입니다.") String body) {
 
         log.info("전체 테스트 알림 전송 요청 - requestedBy: {}, title: {}, body: {}", user.getUserId(), title, body);
-        notificationService.sendScheduledRunningReminder(title, body);
+        fcmService.sendScheduledRunningReminder(title, body);
 
         return ResponseEntity.ok(ApiResponse.success(
                 null,
