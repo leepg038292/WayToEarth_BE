@@ -88,7 +88,6 @@ fcm:
     scheduled:
       morning-time: "0 30 6 * * *"   # 매일 오전 6:30 (cron)
       evening-time: "0 0 20 * * *"   # 매일 오후 8:00 (cron)
-      midnight-time: "0 0/5 0-2 * * *"  # 매일 새벽 0시~2시 5분 간격 (cron)
       timezone: "Asia/Seoul"
       morning-message:
         title: "좋은 아침이에요! ☀️"
@@ -96,9 +95,6 @@ fcm:
       evening-message:
         title: "퇴근 후 러닝 타임! 🏃"
         body: "가벼운 러닝으로 하루를 마무리해보세요"
-      midnight-message:
-        title: "심야 러닝 타임! 🌙"
-        body: "새벽의 고요함 속에서 러닝하세요"
 
 # 캐시 설정
 cache:

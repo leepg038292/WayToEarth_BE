@@ -25,12 +25,6 @@ public class NotificationScheduler {
     @Value("${fcm.notifications.scheduled.evening-message.body}")
     private String eveningBody;
 
-    @Value("${fcm.notifications.scheduled.midnight-message.title}")
-    private String midnightTitle;
-
-    @Value("${fcm.notifications.scheduled.midnight-message.body}")
-    private String midnightBody;
-
     /**
      * 오전 6:30 정기 알림
      */
@@ -54,19 +48,6 @@ public class NotificationScheduler {
             fcmService.sendScheduledRunningReminder(eveningTitle, eveningBody);
         } catch (Exception e) {
             log.error("저녁 러닝 알림 전송 중 오류 발생", e);
-        }
-    }
-
-    /**
-     * 새벽 0:00~2:00 5분 간격 정기 알림
-     */
-    @Scheduled(cron = "${fcm.notifications.scheduled.midnight-time}", zone = "${fcm.notifications.scheduled.timezone}")
-    public void sendMidnightReminder() {
-        try {
-            log.info("=== 심야 러닝 알림 스케줄 실행 ===");
-            fcmService.sendScheduledRunningReminder(midnightTitle, midnightBody);
-        } catch (Exception e) {
-            log.error("심야 러닝 알림 전송 중 오류 발생", e);
         }
     }
 }
