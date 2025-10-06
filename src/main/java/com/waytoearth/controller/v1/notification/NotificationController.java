@@ -119,4 +119,44 @@ public class NotificationController {
                 "알림 설정이 업데이트되었습니다."
         ));
     }
+
+    @Operation(
+            summary = "[테스트] 나에게 푸시알림 전송",
+            description = "개발/테스트용: 현재 로그인한 사용자에게 테스트 푸시알림을 즉시 전송합니다.",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @PostMapping("/test/send-to-me")
+    public ResponseEntity<ApiResponse<String>> sendTestNotificationToMe(
+            @Parameter(hidden = true) @AuthUser AuthenticatedUser user,
+            @Parameter(description = "알림 제목 (선택)") @RequestParam(required = false, defaultValue = "테스트 알림") String title,
+            @Parameter(description = "알림 내용 (선택)") @RequestParam(required = false, defaultValue = "푸시알림 테스트입니다!") String body) {
+
+        log.info("테스트 알림 전송 요청 - userId: {}, title: {}, body: {}", user.getUserId(), title, body);
+        notificationService.sendNotificationToUser(user.getUserId(), title, body);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                null,
+                "테스트 알림이 전송되었습니다."
+        ));
+    }
+
+    @Operation(
+            summary = "[테스트] 모든 사용자에게 푸시알림 전송",
+            description = "개발/테스트용: 모든 활성 사용자에게 테스트 푸시알림을 즉시 전송합니다. (주의: 실제 사용자에게 전송됨)",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @PostMapping("/test/send-to-all")
+    public ResponseEntity<ApiResponse<String>> sendTestNotificationToAll(
+            @Parameter(hidden = true) @AuthUser AuthenticatedUser user,
+            @Parameter(description = "알림 제목 (선택)") @RequestParam(required = false, defaultValue = "공지사항") String title,
+            @Parameter(description = "알림 내용 (선택)") @RequestParam(required = false, defaultValue = "WayToEarth 테스트 알림입니다.") String body) {
+
+        log.info("전체 테스트 알림 전송 요청 - requestedBy: {}, title: {}, body: {}", user.getUserId(), title, body);
+        notificationService.sendScheduledRunningReminder(title, body);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                null,
+                "모든 사용자에게 테스트 알림이 전송되었습니다."
+        ));
+    }
 }
