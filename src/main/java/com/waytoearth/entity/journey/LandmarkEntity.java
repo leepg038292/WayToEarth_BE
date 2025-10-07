@@ -1,6 +1,7 @@
 package com.waytoearth.entity.journey;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.waytoearth.entity.common.BaseTimeEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -67,5 +68,6 @@ public class LandmarkEntity extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "landmark", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
+    @JsonIgnore
     private List<StoryCardEntity> storyCards = new ArrayList<>();
 }
