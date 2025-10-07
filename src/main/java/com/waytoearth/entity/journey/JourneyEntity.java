@@ -1,5 +1,6 @@
 package com.waytoearth.entity.journey;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.waytoearth.entity.common.BaseTimeEntity;
 import com.waytoearth.entity.enums.JourneyCategory;
 import com.waytoearth.entity.enums.JourneyDifficulty;
@@ -61,11 +62,13 @@ public class JourneyEntity extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "journey", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
+    @JsonIgnore
     private List<LandmarkEntity> landmarks = new ArrayList<>();
 
     @OneToMany(mappedBy = "journey", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("sequence ASC")
     @ValidRouteSequence
     @Builder.Default
+    @JsonIgnore
     private List<JourneyRouteEntity> routes = new ArrayList<>();
 }
