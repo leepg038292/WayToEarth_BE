@@ -1,5 +1,6 @@
 package com.waytoearth.entity.journey;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.waytoearth.entity.common.BaseTimeEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -26,6 +27,7 @@ public class LandmarkEntity extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "journey_id", nullable = false)
     @Schema(description = "여행 엔티티")
+    @JsonBackReference
     private JourneyEntity journey;
 
     @Schema(description = "랜드마크 이름", example = "경복궁")
