@@ -1,5 +1,6 @@
 package com.waytoearth.entity.journey;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.waytoearth.entity.common.BaseTimeEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -32,6 +33,7 @@ public class JourneyRouteEntity extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "journey_id", nullable = false)
     @Schema(description = "소속 여정")
+    @JsonBackReference
     private JourneyEntity journey;
 
     @Schema(description = "위도", example = "37.5665")
