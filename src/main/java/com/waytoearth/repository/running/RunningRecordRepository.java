@@ -80,4 +80,18 @@ public interface RunningRecordRepository extends JpaRepository<RunningRecord, Lo
     //  상세 조회 시 경로(routes) 즉시 로드
     @EntityGraph(attributePaths = "routes")
     Optional<RunningRecord> findWithRoutesById(Long id);
+
+    // ===== 커서 기반 페이징 =====
+    // 첫 페이지: 최신 데이터부터
+    @Query("SELECT r FROM RunningRecord r WHERE r.user = :user AND r.isCompleted = true " +
+           "ORDER BY r.id DESC")
+    List<RunningRecord> findTopNByUserOrderByIdDesc(@Param("user") User user, Pageable pageable);
+
+    // 다음 페이지: cursor 이후 데이터
+    @Query("SELECT r FROM RunningRecord r WHERE r.user = :user AND r.isCompleted = true " +
+           "AND r.id < :cursor ORDER BY r.id DESC")
+    List<RunningRecord> findNextPageByUserAndCursor(
+            @Param("user") User user,
+            @Param("cursor") Long cursor,
+            Pageable pageable);
 }
