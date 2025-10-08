@@ -3,12 +3,14 @@ package com.waytoearth.controller.v1.running;
 
 import com.waytoearth.dto.request.running.*;
 import com.waytoearth.dto.response.common.ApiResponse;
+import com.waytoearth.dto.response.common.CursorPageResponse;
 import com.waytoearth.dto.response.common.PagedResponse;
 import com.waytoearth.dto.response.running.*;
 import com.waytoearth.security.AuthUser;
 import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.service.running.RunningService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -92,7 +94,7 @@ public class RunningController {
         return ResponseEntity.ok(ApiResponse.success(response, "러닝 상세 정보를 성공적으로 조회했습니다."));
     }
 
-    @Operation(summary = "러닝 기록 목록 조회 (페이징)")
+    @Operation(summary = "러닝 기록 목록 조회 (Offset 페이징)")
     @GetMapping("/records")
     public ResponseEntity<ApiResponse<PagedResponse<RunningRecordSummaryResponse>>> getRecords(
             @AuthUser AuthenticatedUser user,
@@ -101,13 +103,44 @@ public class RunningController {
     ) {
         Pageable pageable = PageRequest.of(page, size);
         Page<RunningRecordSummaryResponse> pageResult = runningService.getRecords(user, pageable);
-        
+
         PagedResponse<RunningRecordSummaryResponse> pagedData = PagedResponse.of(pageResult);
         return ResponseEntity.ok(ApiResponse.success(pagedData, "러닝 기록 목록을 성공적으로 조회했습니다."));
     }
 
+    @Operation(
+        summary = "러닝 기록 목록 조회 (Cursor 페이징)",
+        description = """
+            커서 기반 무한 스크롤용 API
 
+            **첫 페이지 조회:**
+            GET /v1/running/records/cursor?size=10
 
+            **다음 페이지 조회:**
+            GET /v1/running/records/cursor?cursor=91&size=10
+
+            **응답 예시:**
+            {
+              "content": [...],
+              "nextCursor": 81,
+              "hasNext": true,
+              "size": 10
+            }
+            """
+    )
+    @GetMapping("/records/cursor")
+    public ResponseEntity<ApiResponse<CursorPageResponse<RunningRecordSummaryResponse>>> getRecordsByCursor(
+            @AuthUser AuthenticatedUser user,
+            @Parameter(description = "마지막으로 본 기록의 ID (없으면 첫 페이지)", example = "91")
+            @RequestParam(required = false) Long cursor,
+            @Parameter(description = "한 번에 가져올 데이터 개수", example = "10")
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        CursorPageResponse<RunningRecordSummaryResponse> response =
+                runningService.getRecordsByCursor(user, cursor, size);
+
+        return ResponseEntity.ok(ApiResponse.success(response, "러닝 기록 목록을 성공적으로 조회했습니다."));
+    }
 
 }
 

@@ -1,6 +1,7 @@
 package com.waytoearth.service.running;
 
 import com.waytoearth.dto.request.running.*;
+import com.waytoearth.dto.response.common.CursorPageResponse;
 import com.waytoearth.dto.response.running.RunningCompleteResponse;
 import com.waytoearth.dto.response.running.RunningRecordSummaryResponse;
 import com.waytoearth.dto.response.running.RunningStartResponse;
@@ -17,6 +18,7 @@ import com.waytoearth.service.emblem.EmblemService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -259,9 +262,56 @@ public class RunningServiceImpl implements RunningService {
                         formatPace(r.getAveragePaceSeconds()),
                         r.getCalories() != null ? r.getCalories() : 0,
                         r.getStartedAt() != null ? r.getStartedAt().toString() : null,
-                        r.getRunningType().name()      // ✅ 추가
+                        r.getRunningType().name()
                 )
         );
+    }
+
+    @Override
+    public CursorPageResponse<RunningRecordSummaryResponse> getRecordsByCursor(
+            AuthenticatedUser authUser, Long cursor, int size) {
+
+        User user = userRepository.findById(authUser.getUserId())
+                .orElseThrow(() -> new UserNotFoundException(authUser.getUserId()));
+
+        // size + 1개 조회하여 hasNext 판단
+        Pageable pageable = PageRequest.of(0, size + 1);
+        List<RunningRecord> records;
+
+        if (cursor == null) {
+            // 첫 페이지: 최신 데이터부터
+            records = runningRecordRepository.findTopNByUserOrderByIdDesc(user, pageable);
+        } else {
+            // 다음 페이지: cursor 이후 데이터
+            records = runningRecordRepository.findNextPageByUserAndCursor(user, cursor, pageable);
+        }
+
+        // hasNext 판단
+        boolean hasNext = records.size() > size;
+        if (hasNext) {
+            records = records.subList(0, size);
+        }
+
+        // nextCursor 계산
+        Long nextCursor = hasNext && !records.isEmpty()
+                ? records.get(records.size() - 1).getId()
+                : null;
+
+        // DTO 변환
+        List<RunningRecordSummaryResponse> content = records.stream()
+                .map(r -> new RunningRecordSummaryResponse(
+                        r.getId(),
+                        r.getTitle(),
+                        r.getDistance() != null ? r.getDistance().doubleValue() : 0.0,
+                        r.getDuration() != null ? r.getDuration() : 0,
+                        formatPace(r.getAveragePaceSeconds()),
+                        r.getCalories() != null ? r.getCalories() : 0,
+                        r.getStartedAt() != null ? r.getStartedAt().toString() : null,
+                        r.getRunningType().name()
+                ))
+                .collect(Collectors.toList());
+
+        return CursorPageResponse.of(content, nextCursor, hasNext);
     }
 
 }

@@ -1,6 +1,7 @@
 package com.waytoearth.service.running;
 
 import com.waytoearth.dto.request.running.*;
+import com.waytoearth.dto.response.common.CursorPageResponse;
 import com.waytoearth.dto.response.running.RunningCompleteResponse;
 import com.waytoearth.dto.response.running.RunningRecordSummaryResponse;
 import com.waytoearth.dto.response.running.RunningStartResponse;
@@ -28,4 +29,8 @@ public interface RunningService {
     RunningCompleteResponse getDetail(AuthenticatedUser user, Long recordId);
 
     Page<RunningRecordSummaryResponse> getRecords(AuthenticatedUser authUser, Pageable pageable);
+
+    // 커서 기반 페이징
+    CursorPageResponse<RunningRecordSummaryResponse> getRecordsByCursor(
+            AuthenticatedUser user, Long cursor, int size);
 }
