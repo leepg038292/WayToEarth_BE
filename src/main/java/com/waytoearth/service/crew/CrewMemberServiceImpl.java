@@ -72,6 +72,9 @@ public class CrewMemberServiceImpl implements CrewMemberService {
             throw new RuntimeException("멤버 추방에 실패했습니다.");
         }
 
+        // 크루 멤버 수 감소
+        crew.decrementMemberCount();
+
         log.info("크루 멤버가 추방되었습니다. crewId: {}, targetUserId: {}, removedBy: {}",
                 crewId, targetUserId, user.getUserId());
     }
@@ -99,6 +102,9 @@ public class CrewMemberServiceImpl implements CrewMemberService {
         if (affected == 0) {
             throw new RuntimeException("크루 탈퇴에 실패했습니다.");
         }
+
+        // 크루 멤버 수 감소
+        crew.decrementMemberCount();
 
         log.info("사용자가 크루에서 탈퇴했습니다. crewId: {}, userId: {}", crewId, user.getUserId());
     }
