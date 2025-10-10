@@ -36,9 +36,9 @@ public interface StampRepository extends JpaRepository<StampEntity, Long> {
     Long countStampsByUserId(@Param("userId") Long userId);
 
     /**
-     * 랜드마크별 스탬프 수집자 수
+     * 랜드마크별 스탬프 수집자 수 (고유 사용자 수)
      */
-    @Query("SELECT COUNT(s) FROM StampEntity s WHERE s.landmark.id = :landmarkId")
+    @Query("SELECT COUNT(DISTINCT s.userJourneyProgress.user.id) FROM StampEntity s WHERE s.landmark.id = :landmarkId")
     Long countCollectorsByLandmarkId(@Param("landmarkId") Long landmarkId);
 
     /**
