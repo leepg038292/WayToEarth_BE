@@ -34,10 +34,10 @@ public interface CrewJoinRequestRepository extends JpaRepository<CrewJoinRequest
            "ORDER BY jr.createdAt ASC")
     List<CrewJoinRequestEntity> findPendingRequestsWithUser(@Param("crew") CrewEntity crew);
 
-    //사용자의 특정 크루 신청 상태 조회
-    @Query("SELECT jr FROM CrewJoinRequestEntity jr " +
-           "WHERE jr.crew.id = :crewId AND jr.user.id = :userId " +
-           "ORDER BY jr.createdAt DESC")
+    //사용자의 특정 크루 신청 상태 조회 (가장 최근 1건만)
+    @Query(value = "SELECT * FROM crew_join_requests " +
+           "WHERE crew_id = :crewId AND user_id = :userId " +
+           "ORDER BY created_at DESC LIMIT 1", nativeQuery = true)
     Optional<CrewJoinRequestEntity> findUserRequest(@Param("userId") Long userId, @Param("crewId") Long crewId);
 
     //사용자가 대기중인 신청이 있는지 확인
