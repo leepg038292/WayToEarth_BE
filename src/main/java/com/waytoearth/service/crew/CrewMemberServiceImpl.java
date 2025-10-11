@@ -72,6 +72,9 @@ public class CrewMemberServiceImpl implements CrewMemberService {
             throw new RuntimeException("멤버 추방에 실패했습니다.");
         }
 
+        // 크루 멤버 수 감소
+        crew.decrementMemberCount();
+
         log.info("크루 멤버가 추방되었습니다. crewId: {}, targetUserId: {}, removedBy: {}",
                 crewId, targetUserId, user.getUserId());
     }
@@ -90,7 +93,7 @@ public class CrewMemberServiceImpl implements CrewMemberService {
         CrewMemberEntity membership = crewMemberRepository.findMembership(user.getUserId(), crewId)
                 .orElseThrow(() -> new RuntimeException("해당 크루의 멤버가 아닙니다."));
 
-        if (!membership.getIsActive()) {
+        if (Boolean.FALSE.equals(membership.getIsActive())) {
             throw new RuntimeException("이미 탈퇴한 크루입니다.");
         }
 
@@ -99,6 +102,9 @@ public class CrewMemberServiceImpl implements CrewMemberService {
         if (affected == 0) {
             throw new RuntimeException("크루 탈퇴에 실패했습니다.");
         }
+
+        // 크루 멤버 수 감소
+        crew.decrementMemberCount();
 
         log.info("사용자가 크루에서 탈퇴했습니다. crewId: {}, userId: {}", crewId, user.getUserId());
     }

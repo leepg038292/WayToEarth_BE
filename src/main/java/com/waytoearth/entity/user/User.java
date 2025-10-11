@@ -67,7 +67,8 @@ public class User extends BaseTimeEntity {
     private Integer totalRunningCount = 0;
 
     @Version
-    private Long version;
+    @Builder.Default
+    private Long version = 0L;
 
 
     // 온보딩 완료 메서드
