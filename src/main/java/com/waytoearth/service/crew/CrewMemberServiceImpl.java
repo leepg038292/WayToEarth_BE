@@ -93,7 +93,7 @@ public class CrewMemberServiceImpl implements CrewMemberService {
         CrewMemberEntity membership = crewMemberRepository.findMembership(user.getUserId(), crewId)
                 .orElseThrow(() -> new RuntimeException("해당 크루의 멤버가 아닙니다."));
 
-        if (!membership.getIsActive()) {
+        if (Boolean.FALSE.equals(membership.getIsActive())) {
             throw new RuntimeException("이미 탈퇴한 크루입니다.");
         }
 
