@@ -188,7 +188,7 @@ public class CrewController {
 
         log.info("크루 삭제 요청 - crewId: {}, userId: {}", crewId, user.getUserId());
 
-        crewService.deleteCrew(user, crewId);
+        crewService.deleteCrew(user.getUserId(), crewId);
 
         return ResponseEntity.noContent().build();
     }
