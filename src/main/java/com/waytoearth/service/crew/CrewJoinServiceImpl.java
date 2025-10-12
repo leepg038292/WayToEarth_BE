@@ -90,8 +90,9 @@ public class CrewJoinServiceImpl implements CrewJoinService {
             throw new RuntimeException("크루 정원이 가득 찼습니다.");
         }
 
-        // 가입 신청 승인
+        // 가입 신청 승인 (상태를 먼저 변경하여 중복 방지)
         joinRequest.approve(getUserEntity(user.getUserId()), "가입 승인");
+        joinRequestRepository.saveAndFlush(joinRequest);  // 즉시 DB 반영
 
         // 기존 멤버십 확인 (is_active=false 포함)
         Optional<CrewMemberEntity> existingMember = crewMemberRepository.findMembership(
