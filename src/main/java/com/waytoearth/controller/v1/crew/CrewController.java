@@ -22,7 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.waytoearth.security.AuthUser;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -43,7 +43,7 @@ public class CrewController {
     })
     @PostMapping
     public ResponseEntity<CrewDetailResponse> createCrew(
-            @AuthenticationPrincipal AuthenticatedUser user,
+            @AuthUser AuthenticatedUser user,
             @Valid @RequestBody CrewCreateRequest request) {
 
         log.info("크루 생성 요청 - userId: {}, name: {}", user.getUserId(), request.getName());
@@ -83,7 +83,7 @@ public class CrewController {
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "20") int size,
             @Parameter(description = "정렬 기준") @RequestParam(defaultValue = "createdAt") String sort,
             @Parameter(description = "정렬 방향") @RequestParam(defaultValue = "desc") String direction,
-            @AuthenticationPrincipal AuthenticatedUser user) {
+            @AuthUser AuthenticatedUser user) {
 
         Sort.Direction sortDirection = direction.equalsIgnoreCase("desc")
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
@@ -111,7 +111,7 @@ public class CrewController {
             @Parameter(description = "검색 키워드") @RequestParam String keyword,
             @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal AuthenticatedUser user) {
+            @AuthUser AuthenticatedUser user) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<CrewEntity> crews = crewService.searchCrewsByName(keyword, pageable);
@@ -134,7 +134,7 @@ public class CrewController {
     })
     @GetMapping("/my")
     public ResponseEntity<Page<CrewListResponse>> getMyCrews(
-            @AuthenticationPrincipal AuthenticatedUser user,
+            @AuthUser AuthenticatedUser user,
             @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "20") int size) {
 
@@ -157,7 +157,7 @@ public class CrewController {
     @PutMapping("/{crewId}")
     public ResponseEntity<CrewDetailResponse> updateCrew(
             @Parameter(description = "크루 ID") @PathVariable Long crewId,
-            @AuthenticationPrincipal AuthenticatedUser user,
+            @AuthUser AuthenticatedUser user,
             @Valid @RequestBody CrewUpdateRequest request) {
 
         log.info("크루 정보 수정 요청 - crewId: {}, userId: {}", crewId, user.getUserId());
@@ -184,7 +184,7 @@ public class CrewController {
     @DeleteMapping("/{crewId}")
     public ResponseEntity<Void> deleteCrew(
             @Parameter(description = "크루 ID") @PathVariable Long crewId,
-            @AuthenticationPrincipal AuthenticatedUser user) {
+            @AuthUser AuthenticatedUser user) {
 
         log.info("크루 삭제 요청 - crewId: {}, userId: {}", crewId, user.getUserId());
 
@@ -203,7 +203,7 @@ public class CrewController {
     @PatchMapping("/{crewId}/toggle-status")
     public ResponseEntity<CrewDetailResponse> toggleCrewStatus(
             @Parameter(description = "크루 ID") @PathVariable Long crewId,
-            @AuthenticationPrincipal AuthenticatedUser user) {
+            @AuthUser AuthenticatedUser user) {
 
         log.info("크루 상태 변경 요청 - crewId: {}, userId: {}", crewId, user.getUserId());
 
