@@ -68,7 +68,7 @@ public class CrewServiceImpl implements CrewService {
 
     @Override
     public CrewEntity getCrewById(Long crewId) {
-        return crewRepository.findById(crewId)
+        return crewRepository.findByIdWithOwner(crewId)
                 .orElseThrow(() -> new CrewNotFoundException("크루를 찾을 수 없습니다. crewId: " + crewId));
     }
 
