@@ -19,7 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.waytoearth.security.AuthUser;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -84,7 +84,7 @@ public class CrewMemberController {
     public ResponseEntity<Void> removeMember(
             @Parameter(description = "크루 ID") @PathVariable Long crewId,
             @Parameter(description = "추방할 사용자 ID") @PathVariable Long userId,
-            @AuthenticationPrincipal AuthenticatedUser user) {
+            @AuthUser AuthenticatedUser user) {
 
         log.info("크루 멤버 추방 - crewId: {}, targetUserId: {}, requestedBy: {}",
                 crewId, userId, user.getUserId());
@@ -104,7 +104,7 @@ public class CrewMemberController {
     @DeleteMapping("/{crewId}/members/leave")
     public ResponseEntity<Void> leaveCrew(
             @Parameter(description = "크루 ID") @PathVariable Long crewId,
-            @AuthenticationPrincipal AuthenticatedUser user) {
+            @AuthUser AuthenticatedUser user) {
 
         log.info("크루 탈퇴 - crewId: {}, userId: {}", crewId, user.getUserId());
 
@@ -125,7 +125,7 @@ public class CrewMemberController {
     public ResponseEntity<CrewMemberResponse> changeMemberRole(
             @Parameter(description = "크루 ID") @PathVariable Long crewId,
             @Parameter(description = "대상 사용자 ID") @PathVariable Long userId,
-            @AuthenticationPrincipal AuthenticatedUser user,
+            @AuthUser AuthenticatedUser user,
             @Valid @RequestBody MemberRoleChangeRequest request) {
 
         log.info("크루 멤버 역할 변경 - crewId: {}, targetUserId: {}, newRole: {}, requestedBy: {}",
@@ -144,7 +144,7 @@ public class CrewMemberController {
     })
     @GetMapping("/memberships/my")
     public ResponseEntity<List<CrewMemberResponse>> getMyCrewMemberships(
-            @AuthenticationPrincipal AuthenticatedUser user) {
+            @AuthUser AuthenticatedUser user) {
 
         List<CrewMemberEntity> memberships = crewMemberService.getUserCrewMemberships(user);
 
@@ -195,7 +195,7 @@ public class CrewMemberController {
     @PostMapping("/{crewId}/transfer-ownership")
     public ResponseEntity<Void> transferOwnership(
             @Parameter(description = "크루 ID") @PathVariable Long crewId,
-            @AuthenticationPrincipal AuthenticatedUser user,
+            @AuthUser AuthenticatedUser user,
             @Valid @RequestBody OwnershipTransferRequest request) {
 
         log.info("크루장 권한 이양 - crewId: {}, fromUserId: {}, toUserId: {}",
