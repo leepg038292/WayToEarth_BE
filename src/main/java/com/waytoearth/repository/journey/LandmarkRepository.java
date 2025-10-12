@@ -24,9 +24,9 @@ public interface LandmarkRepository extends JpaRepository<LandmarkEntity, Long> 
     Optional<LandmarkEntity> findLandmarkWithStoryCards(@Param("landmarkId") Long landmarkId);
 
     /**
-     * 거리 기준으로 다음 랜드마크 찾기
+     * 거리 기준으로 다음 랜드마크 찾기 (가장 가까운 1개만)
      */
-    @Query("SELECT l FROM LandmarkEntity l WHERE l.journey.id = :journeyId AND l.distanceFromStart > :currentDistance ORDER BY l.distanceFromStart ASC")
+    @Query(value = "SELECT * FROM landmarks WHERE journey_id = :journeyId AND distance_from_start > :currentDistance ORDER BY distance_from_start ASC LIMIT 1", nativeQuery = true)
     Optional<LandmarkEntity> findNextLandmarkByDistance(@Param("journeyId") Long journeyId, @Param("currentDistance") Double currentDistance);
 
     /**
