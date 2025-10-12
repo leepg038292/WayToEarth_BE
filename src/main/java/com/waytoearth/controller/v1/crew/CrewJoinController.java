@@ -20,7 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.waytoearth.security.AuthUser;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,7 +45,7 @@ public class CrewJoinController {
     @PostMapping("/{crewId}/join-requests")
     public ResponseEntity<JoinRequestResponse> requestToJoin(
             @Parameter(description = "크루 ID") @PathVariable Long crewId,
-            @AuthenticationPrincipal AuthenticatedUser user,
+            @AuthUser AuthenticatedUser user,
             @Valid @RequestBody CrewJoinRequest request) {
 
         log.info("크루 가입 신청 - crewId: {}, userId: {}", crewId, user.getUserId());
@@ -68,7 +68,7 @@ public class CrewJoinController {
     @PostMapping("/join-requests/{requestId}/approve")
     public ResponseEntity<Void> approveJoinRequest(
             @Parameter(description = "가입 신청 ID") @PathVariable Long requestId,
-            @AuthenticationPrincipal AuthenticatedUser user,
+            @AuthUser AuthenticatedUser user,
             @Valid @RequestBody JoinRequestProcessRequest request) {
 
         log.info("가입 신청 승인 - requestId: {}, userId: {}", requestId, user.getUserId());
@@ -89,7 +89,7 @@ public class CrewJoinController {
     @PostMapping("/join-requests/{requestId}/reject")
     public ResponseEntity<Void> rejectJoinRequest(
             @Parameter(description = "가입 신청 ID") @PathVariable Long requestId,
-            @AuthenticationPrincipal AuthenticatedUser user,
+            @AuthUser AuthenticatedUser user,
             @Valid @RequestBody JoinRequestProcessRequest request) {
 
         log.info("가입 신청 거부 - requestId: {}, userId: {}", requestId, user.getUserId());
@@ -110,7 +110,7 @@ public class CrewJoinController {
     @DeleteMapping("/join-requests/{requestId}")
     public ResponseEntity<Void> cancelJoinRequest(
             @Parameter(description = "가입 신청 ID") @PathVariable Long requestId,
-            @AuthenticationPrincipal AuthenticatedUser user) {
+            @AuthUser AuthenticatedUser user) {
 
         log.info("가입 신청 취소 - requestId: {}, userId: {}", requestId, user.getUserId());
 
@@ -132,7 +132,7 @@ public class CrewJoinController {
             @Parameter(description = "신청 상태 필터") @RequestParam(required = false) CrewJoinRequestEntity.JoinRequestStatus status,
             @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal AuthenticatedUser user) {
+            @AuthUser AuthenticatedUser user) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "createdAt"));
 
@@ -151,7 +151,7 @@ public class CrewJoinController {
     })
     @GetMapping("/join-requests/my")
     public ResponseEntity<List<JoinRequestResponse>> getMyJoinRequests(
-            @AuthenticationPrincipal AuthenticatedUser user) {
+            @AuthUser AuthenticatedUser user) {
 
         List<CrewJoinRequestEntity> requests = crewJoinService.getUserJoinRequests(user);
 
@@ -185,7 +185,7 @@ public class CrewJoinController {
     @GetMapping("/{crewId}/join-requests/my")
     public ResponseEntity<JoinRequestResponse> getMyJoinRequestForCrew(
             @Parameter(description = "크루 ID") @PathVariable Long crewId,
-            @AuthenticationPrincipal AuthenticatedUser user) {
+            @AuthUser AuthenticatedUser user) {
 
         CrewJoinRequestEntity request = crewJoinService.getUserJoinRequestForCrew(user, crewId);
 
@@ -203,7 +203,7 @@ public class CrewJoinController {
     })
     @GetMapping("/joinable")
     public ResponseEntity<List<Long>> getJoinableCrewIds(
-            @AuthenticationPrincipal AuthenticatedUser user) {
+            @AuthUser AuthenticatedUser user) {
 
         List<Long> joinableCrewIds = crewJoinService.getJoinableCrewIds(user);
 
@@ -217,7 +217,7 @@ public class CrewJoinController {
     @GetMapping("/{crewId}/can-join")
     public ResponseEntity<Boolean> canJoinCrew(
             @Parameter(description = "크루 ID") @PathVariable Long crewId,
-            @AuthenticationPrincipal AuthenticatedUser user) {
+            @AuthUser AuthenticatedUser user) {
 
         boolean canJoin = crewJoinService.canJoinCrew(user, crewId);
 
