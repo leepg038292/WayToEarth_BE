@@ -76,7 +76,7 @@ public class CrewEntity extends BaseTimeEntity {
 
     // 비즈니스 메서드
     public boolean isFull() {
-        return members.size() >= maxMembers;
+        return currentMembers >= maxMembers;
     }
 
     public boolean isOwner(User user) {
@@ -84,9 +84,7 @@ public class CrewEntity extends BaseTimeEntity {
     }
 
     public int getCurrentMemberCount() {
-        return (int) members.stream()
-                .filter(member -> member.getIsActive())
-                .count();
+        return currentMembers;
     }
 
     public void incrementMemberCount() {
