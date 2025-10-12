@@ -92,10 +92,27 @@ public class CrewJoinServiceImpl implements CrewJoinService {
         // 가입 신청 승인
         joinRequest.approve(getUserEntity(user.getUserId()), "가입 승인");
 
-        // 크루 멤버로 추가
-        CrewMemberEntity newMember = CrewMemberEntity.createMember(
-                joinRequest.getCrew(), joinRequest.getUser());
-        crewMemberRepository.save(newMember);
+        // 기존 멤버십 확인 (is_active=false 포함)
+        Optional<CrewMemberEntity> existingMember = crewMemberRepository.findMembership(
+                joinRequest.getUser().getId(), joinRequest.getCrew().getId());
+
+        if (existingMember.isPresent()) {
+            // 기존 멤버십 재활성화
+            CrewMemberEntity member = existingMember.get();
+            member.setIsActive(true);
+            member.setJoinedAt(java.time.LocalDateTime.now());
+            crewMemberRepository.save(member);
+            log.info("기존 멤버십 재활성화 - requestId: {}, userId: {}", requestId, member.getUser().getId());
+        } else {
+            // 새로운 멤버 추가
+            CrewMemberEntity newMember = CrewMemberEntity.createMember(
+                    joinRequest.getCrew(), joinRequest.getUser());
+            crewMemberRepository.save(newMember);
+            log.info("새 멤버 추가 - requestId: {}, userId: {}", requestId, newMember.getUser().getId());
+        }
+
+        // 크루 멤버 수 증가
+        joinRequest.getCrew().incrementMemberCount();
 
         log.info("크루 가입 신청이 승인되었습니다. requestId: {}, approvedBy: {}, newMemberId: {}",
                 requestId, user.getUserId(), joinRequest.getUser().getId());
