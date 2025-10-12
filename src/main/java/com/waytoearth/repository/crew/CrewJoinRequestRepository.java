@@ -60,6 +60,8 @@ public interface CrewJoinRequestRepository extends JpaRepository<CrewJoinRequest
     //DB 페이징을 사용한 크루별 가입 신청 조회 (성능 최적화)
     @Query("SELECT jr FROM CrewJoinRequestEntity jr " +
            "JOIN FETCH jr.user " +
+           "JOIN FETCH jr.crew " +
+           "LEFT JOIN FETCH jr.processedBy " +
            "WHERE jr.crew.id = :crewId " +
            "AND (:status IS NULL OR jr.status = :status)")
     Page<CrewJoinRequestEntity> findCrewJoinRequestsWithPaging(
