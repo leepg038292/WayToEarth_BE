@@ -47,6 +47,9 @@ public class FileService {
     @Value("${cloud.aws.region}")
     private String region;
 
+    @Value("${cloud.aws.cloudfront.domain:}")
+    private String cloudFrontDomain;
+
 
 
 
