@@ -14,6 +14,12 @@ import java.util.Optional;
 public interface UserJourneyProgressRepository extends JpaRepository<UserJourneyProgressEntity, Long> {
 
     /**
+     * 진행 ID로 조회 (Journey 정보 포함)
+     */
+    @Query("SELECT ujp FROM UserJourneyProgressEntity ujp JOIN FETCH ujp.journey WHERE ujp.id = :progressId")
+    Optional<UserJourneyProgressEntity> findByIdWithJourney(@Param("progressId") Long progressId);
+
+    /**
      * 사용자별 여행 진행 목록 조회
      */
     @Query("SELECT ujp FROM UserJourneyProgressEntity ujp JOIN FETCH ujp.journey WHERE ujp.user.id = :userId ORDER BY ujp.createdAt DESC")

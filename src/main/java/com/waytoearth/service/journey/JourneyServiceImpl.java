@@ -181,7 +181,7 @@ public class JourneyServiceImpl implements JourneyService {
 
     @Override
     public JourneyProgressResponse getProgress(Long progressId) {
-        UserJourneyProgressEntity progress = progressRepository.findById(progressId)
+        UserJourneyProgressEntity progress = progressRepository.findByIdWithJourney(progressId)
                 .orElseThrow(() -> new IllegalArgumentException("여행 진행을 찾을 수 없습니다: " + progressId));
 
         return buildProgressResponse(progress);
