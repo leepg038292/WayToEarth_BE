@@ -145,6 +145,12 @@ public class FileService {
 
     // 공통 Presign GET
     public String createPresignedGetUrl(String key) {
+        // CloudFront 도메인이 설정되어 있으면 CloudFront URL 반환 (prod 환경, 만료 없음)
+        if (cloudFrontDomain != null && !cloudFrontDomain.isEmpty()) {
+            return cloudFrontDomain + "/" + key;
+        }
+
+        // CloudFront 미설정 시 S3 presigned URL 반환 (dev 환경, 5분 만료)
         GetObjectRequest get = GetObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
