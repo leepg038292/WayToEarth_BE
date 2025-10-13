@@ -108,6 +108,7 @@ jobs:
               -e KAKAO_REDIRECT_URI_MOBILE="${{ secrets.KAKAO_REDIRECT_URI_MOBILE }}" \
               -e KAKAO_REDIRECT_URI_WEB="${{ secrets.KAKAO_REDIRECT_URI_WEB }}" \
               -e S3_BUCKET="${{ vars.S3_BUCKET }}" \
+              -e CLOUDFRONT_DOMAIN="${{ vars.CLOUDFRONT_DOMAIN }}" \
               -e OPENWEATHER_API_KEY="${{ secrets.OPENWEATHER_API_KEY }}" \
               -e OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
               -e JWT_EXPIRATION="${{ vars.JWT_EXPIRATION }}" \
