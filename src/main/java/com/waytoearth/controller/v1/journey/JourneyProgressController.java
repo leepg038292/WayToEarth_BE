@@ -86,6 +86,7 @@ public class JourneyProgressController {
             - 완료된 여행 목록
             - 일시정지된 여행 목록
             - 각 여행의 진행률 및 상태
+            - 각 여행의 ID, 제목, 총 거리
             """,
         tags = {"Journey Progress API"}
     )
@@ -95,5 +96,35 @@ public class JourneyProgressController {
 
         List<JourneyProgressResponse> journeys = journeyService.getUserJourneys(userId);
         return ResponseEntity.ok(journeys);
+    }
+
+    @GetMapping("/user/{userId}/journey/{journeyId}")
+    @Operation(
+        summary = "사용자의 특정 여정 진행률 조회",
+        description = """
+            사용자의 특정 여정 진행 상황을 조회합니다.
+
+            **조회 정보:**
+            - 여정 ID 및 제목
+            - 현재 누적 거리
+            - 진행률 퍼센티지
+            - 다음 랜드마크 정보
+            - 수집한 스탬프 수
+            - 총 랜드마크 수
+
+            **사용 예시:**
+            - 여정 리스트에서 특정 여정 선택 시
+            - 해당 여정의 정확한 진행률 조회
+            """,
+        tags = {"Journey Progress API"}
+    )
+    public ResponseEntity<JourneyProgressResponse> getUserJourneyProgress(
+            @Parameter(description = "사용자 ID")
+            @PathVariable Long userId,
+            @Parameter(description = "여정 ID")
+            @PathVariable Long journeyId) {
+
+        JourneyProgressResponse progress = journeyService.getUserJourneyProgress(userId, journeyId);
+        return ResponseEntity.ok(progress);
     }
 }
