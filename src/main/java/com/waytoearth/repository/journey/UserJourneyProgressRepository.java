@@ -25,6 +25,12 @@ public interface UserJourneyProgressRepository extends JpaRepository<UserJourney
     Optional<UserJourneyProgressEntity> findByUserIdAndJourneyId(Long userId, Long journeyId);
 
     /**
+     * 사용자의 특정 여행 진행 상태 조회 (Journey 정보 포함)
+     */
+    @Query("SELECT ujp FROM UserJourneyProgressEntity ujp JOIN FETCH ujp.journey WHERE ujp.user.id = :userId AND ujp.journey.id = :journeyId")
+    Optional<UserJourneyProgressEntity> findByUserIdAndJourneyIdWithJourney(@Param("userId") Long userId, @Param("journeyId") Long journeyId);
+
+    /**
      * 활성 상태인 사용자 여행 진행 목록
      */
     List<UserJourneyProgressEntity> findByUserIdAndStatus(Long userId, JourneyProgressStatus status);
