@@ -25,7 +25,7 @@ public class JourneyProgressController {
 
     @PutMapping("/{progressId}")
     @Operation(
-        summary = "진행률 업데이트",
+        summary = "진행률 업데이트 (progressId 사용)",
         description = """
             여행 진행률을 업데이트합니다.
 
@@ -40,6 +40,8 @@ public class JourneyProgressController {
             - 진행률 퍼센티지 계산
             - 다음 랜드마크 정보 업데이트
             - 100% 달성 시 자동 완료 처리
+
+            **참고:** progressId를 알고 있는 경우 사용하세요.
             """,
         tags = {"Journey Progress API"}
     )
@@ -49,6 +51,47 @@ public class JourneyProgressController {
             @Valid @RequestBody JourneyProgressUpdateRequest request) {
 
         JourneyProgressResponse response = journeyService.updateProgress(progressId, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/session/{sessionId}")
+    @Operation(
+        summary = "진행률 업데이트 (sessionId 사용, 권장)",
+        description = """
+            러닝 세션 ID로 여행 진행률을 업데이트합니다.
+
+            **사용 시나리오:**
+            1. 여정 시작 시 sessionId 받음 (예: "journey-23-1733234567890")
+            2. 러닝 완료 후 같은 sessionId로 진행률 업데이트
+            3. 어떤 여정인지 자동으로 매칭
+
+            **업데이트 정보:**
+            - 이번 세션에서 뛴 거리
+            - 현재 위치 정보
+            - 운동 시간 및 칼로리
+            - 평균 페이스
+
+            **자동 처리:**
+            - sessionId로 여정 자동 식별
+            - 총 누적 거리 계산
+            - 진행률 퍼센티지 계산
+            - 다음 랜드마크 정보 업데이트
+            - 러닝 레코드 완료 처리
+            - 100% 달성 시 자동 완료 처리
+
+            **장점:**
+            - progressId를 몰라도 됨
+            - 가장 최근 러닝한 여정 자동 식별
+            - 더 간편한 API 사용
+            """,
+        tags = {"Journey Progress API"}
+    )
+    public ResponseEntity<JourneyProgressResponse> updateProgressBySessionId(
+            @Parameter(description = "러닝 세션 ID", example = "journey-23-1733234567890")
+            @PathVariable String sessionId,
+            @Valid @RequestBody JourneyProgressUpdateRequest request) {
+
+        JourneyProgressResponse response = journeyService.updateProgressBySessionId(sessionId, request);
         return ResponseEntity.ok(response);
     }
 

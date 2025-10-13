@@ -141,6 +141,19 @@ public class JourneyServiceImpl implements JourneyService {
         UserJourneyProgressEntity progress = progressRepository.findById(progressId)
                 .orElseThrow(() -> new IllegalArgumentException("여행 진행을 찾을 수 없습니다: " + progressId));
 
+        return updateProgressInternal(progress, request);
+    }
+
+    @Override
+    @Transactional
+    public JourneyProgressResponse updateProgressBySessionId(String sessionId, JourneyProgressUpdateRequest request) {
+        UserJourneyProgressEntity progress = progressRepository.findBySessionIdWithJourney(sessionId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 세션의 여행 진행을 찾을 수 없습니다: " + sessionId));
+
+        return updateProgressInternal(progress, request);
+    }
+
+    private JourneyProgressResponse updateProgressInternal(UserJourneyProgressEntity progress, JourneyProgressUpdateRequest request) {
         if (progress.getStatus() == JourneyProgressStatus.COMPLETED) {
             throw new IllegalArgumentException("이미 완료된 여행입니다.");
         }
@@ -172,9 +185,9 @@ public class JourneyServiceImpl implements JourneyService {
 
         UserJourneyProgressEntity updatedProgress = progressRepository.save(progress);
 
-        log.info("여행 진행률 업데이트: progressId={}, 추가거리={}km, 총거리={}km, 진행률={}%",
-                progressId, request.distanceKm(), updatedProgress.getCurrentDistanceKm(),
-                updatedProgress.getProgressPercent());
+        log.info("여행 진행률 업데이트: progressId={}, journeyId={}, 추가거리={}km, 총거리={}km, 진행률={}%",
+                updatedProgress.getId(), updatedProgress.getJourney().getId(), request.distanceKm(),
+                updatedProgress.getCurrentDistanceKm(), updatedProgress.getProgressPercent());
 
         return buildProgressResponse(updatedProgress);
     }

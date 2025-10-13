@@ -59,6 +59,12 @@ public interface UserJourneyProgressRepository extends JpaRepository<UserJourney
     Optional<UserJourneyProgressEntity> findBySessionId(String sessionId);
 
     /**
+     * 세션 ID로 진행 조회 (Journey 정보 포함)
+     */
+    @Query("SELECT ujp FROM UserJourneyProgressEntity ujp JOIN FETCH ujp.journey WHERE ujp.sessionId = :sessionId")
+    Optional<UserJourneyProgressEntity> findBySessionIdWithJourney(@Param("sessionId") String sessionId);
+
+    /**
      * 사용자의 총 완주한 여행 수
      */
     @Query("SELECT COUNT(ujp) FROM UserJourneyProgressEntity ujp WHERE ujp.user.id = :userId AND ujp.status = 'COMPLETED'")

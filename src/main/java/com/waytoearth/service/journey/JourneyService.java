@@ -41,6 +41,11 @@ public interface JourneyService {
     JourneyProgressResponse updateProgress(Long progressId, JourneyProgressUpdateRequest request);
 
     /**
+     * sessionId로 여행 진행률 업데이트
+     */
+    JourneyProgressResponse updateProgressBySessionId(String sessionId, JourneyProgressUpdateRequest request);
+
+    /**
      * 현재 진행률 조회
      */
     JourneyProgressResponse getProgress(Long progressId);
