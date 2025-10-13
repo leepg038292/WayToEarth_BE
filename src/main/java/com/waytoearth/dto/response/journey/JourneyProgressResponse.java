@@ -8,6 +8,15 @@ public record JourneyProgressResponse(
     @Schema(description = "진행 ID", example = "1")
     Long progressId,
 
+    @Schema(description = "여정 ID", example = "1")
+    Long journeyId,
+
+    @Schema(description = "여정 제목", example = "한국의 고궁탐방")
+    String journeyTitle,
+
+    @Schema(description = "여정 총 거리 (km)", example = "12.5")
+    Double totalDistanceKm,
+
     @Schema(description = "현재 누적 거리 (km)", example = "123.4")
     Double currentDistanceKm,
 
@@ -34,6 +43,9 @@ public record JourneyProgressResponse(
     ) {
         return new JourneyProgressResponse(
             progress.getId(),
+            progress.getJourney().getId(),
+            progress.getJourney().getTitle(),
+            progress.getJourney().getTotalDistanceKm(),
             progress.getCurrentDistanceKm(),
             progress.getProgressPercent(),
             progress.getStatus().name(),

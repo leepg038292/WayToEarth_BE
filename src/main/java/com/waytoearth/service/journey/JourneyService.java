@@ -51,6 +51,11 @@ public interface JourneyService {
     List<JourneyProgressResponse> getUserJourneys(Long userId);
 
     /**
+     * 사용자의 특정 여정 진행률 조회
+     */
+    JourneyProgressResponse getUserJourneyProgress(Long userId, Long journeyId);
+
+    /**
      * 제목으로 여행 검색
      */
     List<JourneySummaryResponse> searchJourneysByTitle(String keyword);
