@@ -197,6 +197,15 @@ public class JourneyServiceImpl implements JourneyService {
     }
 
     @Override
+    public JourneyProgressResponse getUserJourneyProgress(Long userId, Long journeyId) {
+        UserJourneyProgressEntity progress = progressRepository.findByUserIdAndJourneyIdWithJourney(userId, journeyId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "해당 사용자의 여정 진행 정보를 찾을 수 없습니다. userId: " + userId + ", journeyId: " + journeyId));
+
+        return buildProgressResponse(progress);
+    }
+
+    @Override
     public List<JourneySummaryResponse> searchJourneysByTitle(String keyword) {
         List<JourneyEntity> journeys = journeyRepository.searchByTitle(keyword);
 
