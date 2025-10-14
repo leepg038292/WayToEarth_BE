@@ -200,14 +200,8 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
     @Override
     @Transactional
     public void cleanupStatisticsForCrew(Long crewId) {
-        CrewEntity crew = getCrewEntity(crewId);
-        List<CrewStatisticsEntity> allStats = statisticsRepository.findByCrewOrderByMonthDesc(crew);
-
-        if (!allStats.isEmpty()) {
-            statisticsRepository.deleteAll(allStats);
-            log.info("크루 삭제에 따른 통계 데이터가 정리되었습니다. crewId: {}, deletedCount: {}",
-                    crewId, allStats.size());
-        }
+        statisticsRepository.deleteAllByCrewId(crewId);
+        log.info("크루 삭제에 따른 통계 데이터가 물리 삭제되었습니다. crewId: {}", crewId);
     }
 
     /**
