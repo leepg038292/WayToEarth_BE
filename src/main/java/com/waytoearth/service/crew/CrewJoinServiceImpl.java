@@ -90,28 +90,15 @@ public class CrewJoinServiceImpl implements CrewJoinService {
             throw new RuntimeException("크루 정원이 가득 찼습니다.");
         }
 
-        // 가입 신청 승인 (상태를 먼저 변경하여 중복 방지)
+        // 가입 신청 승인
         joinRequest.approve(getUserEntity(user.getUserId()), "가입 승인");
         joinRequestRepository.saveAndFlush(joinRequest);  // 즉시 DB 반영
 
-        // 기존 멤버십 확인 (is_active=false 포함)
-        Optional<CrewMemberEntity> existingMember = crewMemberRepository.findMembership(
-                joinRequest.getUser().getId(), joinRequest.getCrew().getId());
-
-        if (existingMember.isPresent()) {
-            // 기존 멤버십 재활성화
-            CrewMemberEntity member = existingMember.get();
-            member.setIsActive(true);
-            member.setJoinedAt(java.time.LocalDateTime.now());
-            crewMemberRepository.save(member);
-            log.info("기존 멤버십 재활성화 - requestId: {}, userId: {}", requestId, member.getUser().getId());
-        } else {
-            // 새로운 멤버 추가
-            CrewMemberEntity newMember = CrewMemberEntity.createMember(
-                    joinRequest.getCrew(), joinRequest.getUser());
-            crewMemberRepository.save(newMember);
-            log.info("새 멤버 추가 - requestId: {}, userId: {}", requestId, newMember.getUser().getId());
-        }
+        // 새로운 멤버 추가 (물리 삭제로 인해 탈퇴한 멤버는 DB에 없음)
+        CrewMemberEntity newMember = CrewMemberEntity.createMember(
+                joinRequest.getCrew(), joinRequest.getUser());
+        crewMemberRepository.save(newMember);
+        log.info("새 멤버 추가 - requestId: {}, userId: {}", requestId, newMember.getUser().getId());
 
         // 크루 멤버 수 증가
         joinRequest.getCrew().incrementMemberCount();
