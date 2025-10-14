@@ -58,16 +58,12 @@ public class CrewMemberServiceImpl implements CrewMemberService {
             throw new RuntimeException("크루장은 자신을 추방할 수 없습니다. 크루장 권한을 이양하세요.");
         }
 
-        // 대상 멤버 조회
-        CrewMemberEntity targetMember = crewMemberRepository.findMembership(targetUserId, crewId)
+        // 대상 멤버 조회 및 존재 확인
+        crewMemberRepository.findMembership(targetUserId, crewId)
                 .orElseThrow(() -> new RuntimeException("해당 사용자는 크루 멤버가 아닙니다."));
 
-        if (!targetMember.getIsActive()) {
-            throw new RuntimeException("이미 추방되었거나 탈퇴한 멤버입니다.");
-        }
-
-        // 소프트 삭제
-        int affected = crewMemberRepository.removeUserFromCrew(targetUserId, crewId);
+        // 물리 삭제
+        int affected = crewMemberRepository.deleteByCrewIdAndUserId(crewId, targetUserId);
         if (affected == 0) {
             throw new RuntimeException("멤버 추방에 실패했습니다.");
         }
@@ -90,15 +86,11 @@ public class CrewMemberServiceImpl implements CrewMemberService {
         }
 
         // 멤버십 확인
-        CrewMemberEntity membership = crewMemberRepository.findMembership(user.getUserId(), crewId)
+        crewMemberRepository.findMembership(user.getUserId(), crewId)
                 .orElseThrow(() -> new RuntimeException("해당 크루의 멤버가 아닙니다."));
 
-        if (Boolean.FALSE.equals(membership.getIsActive())) {
-            throw new RuntimeException("이미 탈퇴한 크루입니다.");
-        }
-
-        // 소프트 삭제
-        int affected = crewMemberRepository.removeUserFromCrew(user.getUserId(), crewId);
+        // 물리 삭제
+        int affected = crewMemberRepository.deleteByCrewIdAndUserId(crewId, user.getUserId());
         if (affected == 0) {
             throw new RuntimeException("크루 탈퇴에 실패했습니다.");
         }
@@ -132,10 +124,6 @@ public class CrewMemberServiceImpl implements CrewMemberService {
         // 대상 멤버 조회
         CrewMemberEntity targetMember = crewMemberRepository.findMembership(targetUserId, crewId)
                 .orElseThrow(() -> new RuntimeException("해당 사용자는 크루 멤버가 아닙니다."));
-
-        if (!targetMember.getIsActive()) {
-            throw new RuntimeException("비활성화된 멤버의 역할은 변경할 수 없습니다.");
-        }
 
         targetMember.setRole(newRole);
 
@@ -186,10 +174,6 @@ public class CrewMemberServiceImpl implements CrewMemberService {
         // 새 크루장이 멤버인지 확인
         CrewMemberEntity newOwnerMember = crewMemberRepository.findMembership(newOwnerId, crewId)
                 .orElseThrow(() -> new RuntimeException("새 크루장은 해당 크루의 멤버여야 합니다."));
-
-        if (!newOwnerMember.getIsActive()) {
-            throw new RuntimeException("비활성화된 멤버에게는 권한을 이양할 수 없습니다.");
-        }
 
         // 현재 크루장을 일반 멤버로 변경
         CrewMemberEntity currentOwnerMember = crewMemberRepository.findMembership(user.getUserId(), crewId)
