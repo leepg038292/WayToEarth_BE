@@ -66,11 +66,11 @@ public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Lo
            "AND cm.role = 'OWNER' AND cm.isActive = true")
     boolean isUserOwnerOfCrew(@Param("userId") Long userId, @Param("crewId") Long crewId);
 
-    //멤버 제거 (소프트 삭제)
+    //멤버 제거 (물리 삭제)
     @Modifying
-    @Query("UPDATE CrewMemberEntity cm SET cm.isActive = false " +
+    @Query("DELETE FROM CrewMemberEntity cm " +
            "WHERE cm.crew.id = :crewId AND cm.user.id = :userId")
-    int removeUserFromCrew(@Param("userId") Long userId, @Param("crewId") Long crewId);
+    int deleteByCrewIdAndUserId(@Param("crewId") Long crewId, @Param("userId") Long userId);
 
     //일반 멤버만 조회
     @Query("SELECT cm FROM CrewMemberEntity cm " +
@@ -91,11 +91,6 @@ public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Lo
            "WHERE cm.user.id = :userId AND cm.crew.id = :crewId")
     Optional<CrewMemberEntity> findMembership(@Param("userId") Long userId, @Param("crewId") Long crewId);
 
-    //크루의 모든 멤버 비활성화 (크루 삭제 시 사용)
-    @Modifying
-    @Query("UPDATE CrewMemberEntity cm SET cm.isActive = false " +
-           "WHERE cm.crew.id = :crewId")
-    int deactivateAllMembersInCrew(@Param("crewId") Long crewId);
 
     //DB 페이징을 사용한 크루 멤버 조회 (성능 최적화)
     @Query("SELECT cm FROM CrewMemberEntity cm " +
