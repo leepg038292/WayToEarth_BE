@@ -31,8 +31,8 @@ public class CrewChatEntity extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "crew_id", nullable = false)
-    @Schema(description = "크루")
+    @JoinColumn(name = "crew_id", nullable = true)
+    @Schema(description = "크루 (삭제된 크루는 null)")
     private CrewEntity crew;
 
     @ManyToOne(fetch = FetchType.LAZY)

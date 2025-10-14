@@ -35,6 +35,7 @@ public class CrewServiceImpl implements CrewService {
     private final CrewStatisticsService crewStatisticsService;
     private final FileService fileService;
     private final com.waytoearth.repository.crew.CrewChatNotificationSettingRepository crewChatNotificationSettingRepository;
+    private final com.waytoearth.repository.crew.CrewChatRepository crewChatRepository;
 
     @Override
     @Transactional
@@ -244,9 +245,10 @@ public class CrewServiceImpl implements CrewService {
         crewChatNotificationSettingRepository.deleteAllByCrew_Id(crewId);
 
         // 3. 크루 물리 삭제 (CASCADE로 멤버, 가입신청 자동 삭제)
+        // 채팅 메시지는 ON DELETE SET NULL로 자동으로 crew_id가 NULL이 됨 (메시지 보존)
         crewRepository.deleteById(crewId);
 
-        log.info("크루와 연관 데이터가 물리 삭제되었습니다. crewId: {}, userId: {}", crewId, userId);
+        log.info("크루와 연관 데이터가 물리 삭제되었습니다 (채팅 메시지는 보존됨). crewId: {}, userId: {}", crewId, userId);
     }
 
     @Override
