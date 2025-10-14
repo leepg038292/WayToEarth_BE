@@ -64,4 +64,9 @@ public interface CrewStatisticsRepository extends JpaRepository<CrewStatisticsEn
     @Query("UPDATE CrewEntity c SET c.currentMembers = c.currentMembers + :delta " +
            "WHERE c.id = :crewId AND c.currentMembers + :delta >= 0 AND c.currentMembers + :delta <= c.maxMembers")
     int updateCurrentMembersAtomically(@Param("crewId") Long crewId, @Param("delta") int delta);
+
+    //크루 삭제 시 모든 통계 삭제
+    @Modifying
+    @Query("DELETE FROM CrewStatisticsEntity cs WHERE cs.crew.id = :crewId")
+    void deleteAllByCrewId(@Param("crewId") Long crewId);
 }
