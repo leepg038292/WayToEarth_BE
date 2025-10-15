@@ -3,6 +3,7 @@ package com.waytoearth.entity.user;
 import com.waytoearth.entity.common.BaseTimeEntity;
 import com.waytoearth.entity.enums.AgeGroup;
 import com.waytoearth.entity.enums.Gender;
+import com.waytoearth.entity.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -56,6 +57,11 @@ public class User extends BaseTimeEntity {
     @Column(name = "is_onboarding_completed", nullable = false)
     @Builder.Default
     private Boolean isOnboardingCompleted = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 20)
+    @Builder.Default
+    private UserRole role = UserRole.USER;
 
     // 자동 계산 통계 필드들
     @Column(name = "total_distance", precision = 8, scale = 2)
