@@ -147,7 +147,9 @@ public class FileService {
     public String createPresignedGetUrl(String key) {
         // CloudFront 도메인이 설정되어 있으면 CloudFront URL 반환 (prod 환경, 만료 없음)
         if (cloudFrontDomain != null && !cloudFrontDomain.isEmpty()) {
-            return cloudFrontDomain + "/" + key;
+            // 캐시 버스팅: 타임스탬프를 쿼리 파라미터로 추가
+            long timestamp = System.currentTimeMillis();
+            return cloudFrontDomain + "/" + key + "?v=" + timestamp;
         }
 
         // CloudFront 미설정 시 S3 presigned URL 반환 (dev 환경, 5분 만료)
