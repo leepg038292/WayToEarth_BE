@@ -1,5 +1,6 @@
 package com.waytoearth.service.auth;
 
+import com.waytoearth.entity.enums.UserRole;
 import com.waytoearth.exception.UnauthorizedException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -38,15 +39,23 @@ public class JwtTokenProvider {
     /**
      * JWT 토큰 생성
      */
-    public String generateToken(Long userId) {
+    public String generateToken(Long userId, UserRole role) {
         Date expiryDate = new Date(System.currentTimeMillis() + jwtExpirationMs);
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))
+                .claim("role", role.name())
                 .issuedAt(new Date())
                 .expiration(expiryDate)
                 .signWith(secretKey)
                 .compact();
+    }
+
+    /**
+     * JWT 토큰 생성 (기본 역할: USER) - 하위 호환성 유지
+     */
+    public String generateToken(Long userId) {
+        return generateToken(userId, UserRole.USER);
     }
 
     /**
@@ -64,6 +73,25 @@ public class JwtTokenProvider {
         } catch (JwtException | IllegalArgumentException e) {
             log.error("[JwtTokenProvider] JWT 토큰 파싱 에러: {}", e.getMessage());
             throw new UnauthorizedException("유효하지 않은 JWT 토큰입니다.");
+        }
+    }
+
+    /**
+     * JWT 토큰에서 역할(Role) 추출
+     */
+    public UserRole getRoleFromToken(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            String roleStr = claims.get("role", String.class);
+            return roleStr != null ? UserRole.valueOf(roleStr) : UserRole.USER;
+        } catch (JwtException | IllegalArgumentException e) {
+            log.error("[JwtTokenProvider] JWT 토큰에서 role 추출 실패: {}", e.getMessage());
+            return UserRole.USER; // 기본값 반환
         }
     }
 

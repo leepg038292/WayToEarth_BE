@@ -1,5 +1,6 @@
 package com.waytoearth.config.jwt;
 
+import com.waytoearth.entity.enums.UserRole;
 import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.service.auth.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
@@ -10,11 +11,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -34,18 +37,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
             Long userId = jwtTokenProvider.getUserIdFromToken(token);
+            UserRole role = jwtTokenProvider.getRoleFromToken(token);
 
             if (userId != null) {
-                // AuthenticatedUser 객체 생성 (kakaoId는 필요시 토큰에서 추출)
-                AuthenticatedUser authenticatedUser = new AuthenticatedUser(userId);
+                // AuthenticatedUser 객체 생성
+                AuthenticatedUser authenticatedUser = new AuthenticatedUser(userId, role);
+
+                // GrantedAuthority 생성 (Spring Security 권한)
+                List<SimpleGrantedAuthority> authorities = List.of(
+                    new SimpleGrantedAuthority(role.getKey())
+                );
 
                 UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(authenticatedUser, null, null);
+                        new UsernamePasswordAuthenticationToken(authenticatedUser, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(authToken);
 
-                log.debug(" 인증 성공: userId = {}", userId);
+                log.debug("인증 성공: userId = {}, role = {}", userId, role);
             } else {
-                log.warn(" JWT 토큰에서 사용자 ID를 추출할 수 없습니다");
+                log.warn("JWT 토큰에서 사용자 ID를 추출할 수 없습니다");
             }
         }
 
