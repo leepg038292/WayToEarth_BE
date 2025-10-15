@@ -115,6 +115,8 @@ public class UserService {
             profileImageUrl = fileService.createPresignedGetUrl(u.getProfileImageKey());
         }
 
+        String role = (u.getRole() == null) ? null : u.getRole().name();
+
         return new UserInfoResponse(
                 u.getId(),
                 u.getNickname(),
@@ -126,7 +128,8 @@ public class UserService {
                 u.getTotalDistance(),
                 u.getTotalRunningCount(),
                 created,
-                u.getProfileImageKey()
+                u.getProfileImageKey(),
+                role
         );
     }
 
