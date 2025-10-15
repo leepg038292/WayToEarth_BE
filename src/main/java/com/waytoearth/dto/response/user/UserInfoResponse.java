@@ -2,6 +2,7 @@ package com.waytoearth.dto.response.user;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.waytoearth.entity.enums.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
@@ -48,11 +49,15 @@ public class UserInfoResponse {
     @Schema(description = "프로필 이미지 Key (S3 오브젝트 키)", example = "profiles/1/profile.png")
     private String profileImageKey;
 
+    @Schema(description = "사용자 역할", example = "USER", allowableValues = {"USER", "ADMIN"})
+    private String role;
+
     public UserInfoResponse() { }
 
     public UserInfoResponse(Long id, String nickname, String profileImageUrl, String residence,
                             String ageGroup, String gender, BigDecimal weeklyGoalDistance,
-                            BigDecimal totalDistance, Integer totalRunningCount, Instant createdAt, String profileImageKey) {
+                            BigDecimal totalDistance, Integer totalRunningCount, Instant createdAt,
+                            String profileImageKey, String role) {
         this.id = id;
         this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;
@@ -63,7 +68,8 @@ public class UserInfoResponse {
         this.totalDistance = totalDistance;
         this.totalRunningCount = totalRunningCount;
         this.createdAt = createdAt;
-        this.profileImageKey = profileImageKey; //추가
+        this.profileImageKey = profileImageKey;
+        this.role = role;
     }
 
 }
