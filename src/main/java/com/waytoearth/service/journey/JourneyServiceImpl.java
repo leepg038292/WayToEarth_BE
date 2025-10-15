@@ -23,6 +23,7 @@ import com.waytoearth.dto.response.running.RunningStartResponse;
 import com.waytoearth.entity.enums.RunningType;
 import com.waytoearth.entity.enums.JourneyCategory;
 import com.waytoearth.entity.enums.JourneyProgressStatus;
+import com.waytoearth.entity.enums.UserRole;
 import com.waytoearth.security.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -122,7 +123,7 @@ public class JourneyServiceImpl implements JourneyService {
                 .runningType(RunningType.JOURNEY)
                 .build();
 
-        AuthenticatedUser authUser = new AuthenticatedUser(user.getId());
+        AuthenticatedUser authUser = new AuthenticatedUser(user.getId(), user.getRole());
         RunningStartResponse runningResponse = runningService.startRunning(authUser, runningRequest);
 
         // sessionId 저장
@@ -173,7 +174,7 @@ public class JourneyServiceImpl implements JourneyService {
                         .calories(request.calories())
                         .build();
 
-                AuthenticatedUser authUser = new AuthenticatedUser(progress.getUser().getId());
+                AuthenticatedUser authUser = new AuthenticatedUser(progress.getUser().getId(), progress.getUser().getRole());
                 runningService.completeRunning(authUser, runningCompleteRequest);
 
                 log.info("러닝 레코드 완료: sessionId={}, 거리={}km, 시간={}초",

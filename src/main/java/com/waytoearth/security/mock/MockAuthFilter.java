@@ -1,5 +1,6 @@
 package com.waytoearth.security.mock;
 
+import com.waytoearth.entity.enums.UserRole;
 import com.waytoearth.security.AuthenticatedUser; // ✅ 진짜 principal import
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -45,14 +46,19 @@ public class MockAuthFilter extends OncePerRequestFilter {
                     .map(Long::valueOf)
                     .orElse(1L);
 
-            //  AuthenticatedUser는 userId 하나만 받음
-            AuthenticatedUser principal = new AuthenticatedUser(userId);
+            // Mock role (헤더로 ADMIN 설정 가능)
+            UserRole role = Optional.ofNullable(request.getHeader("X-Mock-Role"))
+                    .filter(s -> !s.isBlank())
+                    .map(UserRole::valueOf)
+                    .orElse(UserRole.USER);
+
+            AuthenticatedUser principal = new AuthenticatedUser(userId, role);
 
             UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(
                             principal,
                             null,
-                            List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                            List.of(new SimpleGrantedAuthority(role.getKey()))
                     );
             auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(auth);
