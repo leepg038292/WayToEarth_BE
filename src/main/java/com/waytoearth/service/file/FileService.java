@@ -136,6 +136,7 @@ public class FileService {
                 .bucket(bucket)
                 .key(key)
                 .contentType(contentType)
+                .cacheControl("no-cache, no-store, must-revalidate") // CloudFront 캐시 방지
                 .build();
 
         PutObjectPresignRequest presignReq = PutObjectPresignRequest.builder()
