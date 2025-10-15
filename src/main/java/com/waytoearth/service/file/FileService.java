@@ -97,31 +97,35 @@ public class FileService {
 
 
     // 스토리 이미지 Presign 발급
-    public PresignResponse presignStory(Long userId, PresignRequest req) {
-        validateJourneyImage(userId, req);
+    public PresignResponse presignStory(Long journeyId, Long landmarkId, Long storyId, PresignRequest req) {
+        validateJourneyImage(req);
 
-        String key = String.format("journeys/stories/%s/%s/%s", LocalDate.now(), userId, UUID.randomUUID());
+        String ext = getFileExtension(req.getContentType());
+        String key = String.format("journeys/%d/landmarks/%d/stories/%d/%s.%s",
+            journeyId, landmarkId, storyId, UUID.randomUUID(), ext);
 
         String uploadUrl = createPresignedPutUrl(key, req.getContentType());
         String downloadUrl = createPresignedGetUrl(key);
 
-        log.info("[S3 Presign Story] userId={}, key={}, uploadUrl={}, downloadUrl={}",
-                userId, key, uploadUrl, downloadUrl);
+        log.info("[S3 Presign Story] journeyId={}, landmarkId={}, storyId={}, key={}, uploadUrl={}, downloadUrl={}",
+                journeyId, landmarkId, storyId, key, uploadUrl, downloadUrl);
 
         return new PresignResponse(uploadUrl, downloadUrl, key, (int) EXPIRES_IN.getSeconds());
     }
 
     // 랜드마크 이미지 Presign 발급
-    public PresignResponse presignLandmark(Long userId, PresignRequest req) {
-        validateJourneyImage(userId, req);
+    public PresignResponse presignLandmark(Long journeyId, Long landmarkId, PresignRequest req) {
+        validateJourneyImage(req);
 
-        String key = String.format("journeys/landmarks/%s/%s/%s", LocalDate.now(), userId, UUID.randomUUID());
+        String ext = getFileExtension(req.getContentType());
+        String key = String.format("journeys/%d/landmarks/%d/%s.%s",
+            journeyId, landmarkId, UUID.randomUUID(), ext);
 
         String uploadUrl = createPresignedPutUrl(key, req.getContentType());
         String downloadUrl = createPresignedGetUrl(key);
 
-        log.info("[S3 Presign Landmark] userId={}, key={}, uploadUrl={}, downloadUrl={}",
-                userId, key, uploadUrl, downloadUrl);
+        log.info("[S3 Presign Landmark] journeyId={}, landmarkId={}, key={}, uploadUrl={}, downloadUrl={}",
+                journeyId, landmarkId, key, uploadUrl, downloadUrl);
 
         return new PresignResponse(uploadUrl, downloadUrl, key, (int) EXPIRES_IN.getSeconds());
     }
@@ -192,10 +196,7 @@ public class FileService {
         }
     }
 
-    private void validateJourneyImage(Long userId, PresignRequest req) {
-        if (userId == null || userId <= 0) {
-            throw new IllegalArgumentException("유효하지 않은 사용자 ID");
-        }
+    private void validateJourneyImage(PresignRequest req) {
         if (req == null) {
             throw new IllegalArgumentException("요청이 비어 있습니다.");
         }
@@ -205,6 +206,15 @@ public class FileService {
         if (req.getSize() <= 0 || req.getSize() > MAX_JOURNEY_SIZE) {
             throw new IllegalArgumentException("파일 크기 초과(최대 10MB)");
         }
+    }
+
+    private String getFileExtension(String contentType) {
+        return switch (contentType.toLowerCase(Locale.ROOT)) {
+            case "image/jpeg" -> "jpg";
+            case "image/png"  -> "png";
+            case "image/webp" -> "webp";
+            default -> "bin";
+        };
     }
 
     // 크루 프로필 Presign 발급
