@@ -64,7 +64,9 @@ public class FileService {
             default -> "bin";
         };
 
-        String key = String.format("profiles/%d/profile.%s", userId, ext);
+        // 타임스탬프를 파일명에 포함하여 CloudFront 캐시 문제 해결
+        long timestamp = System.currentTimeMillis();
+        String key = String.format("profiles/%d/profile_%d.%s", userId, timestamp, ext);
 
         String uploadUrl = createPresignedPutUrl(key, req.getContentType());
         String downloadUrl = createPresignedGetUrl(key);
@@ -231,7 +233,9 @@ public class FileService {
             default -> "bin";
         };
 
-        String key = String.format("crews/%d/profile.%s", crewId, ext);
+        // 타임스탬프를 파일명에 포함하여 CloudFront 캐시 문제 해결
+        long timestamp = System.currentTimeMillis();
+        String key = String.format("crews/%d/profile_%d.%s", crewId, timestamp, ext);
 
         String uploadUrl = createPresignedPutUrl(key, req.getContentType());
         String downloadUrl = createPresignedGetUrl(key);
