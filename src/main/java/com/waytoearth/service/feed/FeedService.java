@@ -52,7 +52,7 @@ public class FeedService {
 
         feedRepository.save(feed);
 
-        return FeedResponse.from(feed, false); // 작성 직후 liked=false
+        return FeedResponse.from(feed, false, fileService); // 작성 직후 liked=false
     }
 
     /**
@@ -81,7 +81,7 @@ public class FeedService {
 
         // 단일 쿼리로 좋아요 여부 확인
         boolean liked = feedLikeRepository.existsByFeedAndUser(feed, user);
-        return FeedResponse.from(feed, liked);
+        return FeedResponse.from(feed, liked, fileService);
     }
 
     /**
