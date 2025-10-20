@@ -53,11 +53,11 @@ public class AuthService {
                 userService.createUser(kakaoUserInfo.getId()) :
                 existingUser;
 
-        // 4. JWT 토큰 생성
-        String jwtToken = jwtTokenProvider.generateToken(user.getId());
+        // 4. JWT 토큰 생성 (사용자의 실제 role 포함)
+        String jwtToken = jwtTokenProvider.generateToken(user.getId(), user.getRole());
 
-        log.info("[AuthService] 로그인 완료 - userId: {}, isNewUser: {}, isOnboardingCompleted: {}",
-                user.getId(), isNewUser, user.getIsOnboardingCompleted());
+        log.info("[AuthService] 로그인 완료 - userId: {}, role: {}, isNewUser: {}, isOnboardingCompleted: {}",
+                user.getId(), user.getRole(), isNewUser, user.getIsOnboardingCompleted());
 
         return LoginResponse.builder()
                 .userId(user.getId())
