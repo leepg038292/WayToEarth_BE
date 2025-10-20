@@ -1,11 +1,13 @@
 package com.waytoearth.controller.v1.admin;
 
 import com.waytoearth.dto.request.file.PresignRequest;
+import com.waytoearth.dto.request.journey.LandmarkImageUpdateRequest;
 import com.waytoearth.dto.response.common.ApiResponse;
 import com.waytoearth.dto.response.file.PresignResponse;
 import com.waytoearth.security.AuthUser;
 import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.service.file.FileService;
+import com.waytoearth.service.journey.LandmarkService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminLandmarkController {
 
     private final FileService fileService;
+    private final LandmarkService landmarkService;
 
     @Operation(
         summary = "랜드마크 이미지 업로드 Presigned URL 발급 (관리자 전용)",
@@ -121,5 +124,43 @@ public class AdminLandmarkController {
         PresignResponse response = fileService.presignLandmark(journeyId, landmarkId, req);
 
         return ResponseEntity.ok(ApiResponse.success(response, "랜드마크 이미지 업로드 URL이 성공적으로 발급되었습니다."));
+    }
+
+    @Operation(
+        summary = "랜드마크 이미지 URL 업데이트 (관리자 전용)",
+        description = """
+            관리자가 랜드마크의 이미지 URL을 업데이트합니다.
+
+            **권한:**
+            - 관리자만 접근 가능
+
+            **사용 플로우:**
+            1. Presigned URL 발급 받기
+            2. S3에 이미지 업로드
+            3. 이 API로 downloadUrl 저장
+            """
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "이미지 URL 업데이트 성공"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "랜드마크를 찾을 수 없음"
+        )
+    })
+    @PutMapping("/{landmarkId}")
+    public ResponseEntity<ApiResponse<Void>> updateLandmarkImage(
+            @AuthUser AuthenticatedUser user,
+            @io.swagger.v3.oas.annotations.Parameter(description = "랜드마크 ID") @PathVariable Long landmarkId,
+            @Valid @org.springframework.web.bind.annotation.RequestBody LandmarkImageUpdateRequest request
+    ) {
+        log.info("관리자 랜드마크 이미지 업데이트: userId={}, landmarkId={}, imageUrl={}",
+                user.getUserId(), landmarkId, request.imageUrl());
+
+        landmarkService.updateLandmarkImage(landmarkId, request.imageUrl());
+
+        return ResponseEntity.ok(ApiResponse.success(null, "랜드마크 이미지가 성공적으로 업데이트되었습니다."));
     }
 }
