@@ -3,6 +3,7 @@ package com.waytoearth.repository.feed;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.waytoearth.dto.response.feed.FeedResponse;
 import com.waytoearth.entity.user.User;
+import com.waytoearth.service.file.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -19,6 +20,7 @@ import static com.waytoearth.entity.feed.QFeedLike.feedLike;
 public class FeedRepositoryImpl implements FeedRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
+    private final FileService fileService;
 
     @Override
     public List<FeedResponse> findFeedsWithUserAndLikeStatus(User currentUser, Pageable pageable) {
@@ -33,7 +35,7 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
                         feed.createdAt,
                         user.id,
                         user.nickname,
-                        user.profileImageUrl,
+                        user.profileImageKey,
                         runningRecord.distance,
                         runningRecord.duration,
                         runningRecord.averagePaceSeconds,
@@ -50,22 +52,29 @@ public class FeedRepositoryImpl implements FeedRepositoryCustom {
 
         // 수동으로 FeedResponse 객체 생성
         return results.stream()
-                .map(tuple -> FeedResponse.builder()
-                        .id(tuple.get(feed.id))
-                        .content(tuple.get(feed.content))
-                        .imageUrl(tuple.get(feed.imageUrl))
-                        .likeCount(tuple.get(feed.likeCount))
-                        .liked(Boolean.TRUE.equals(tuple.get(feedLike.isNotNull())))
-                        .createdAt(tuple.get(feed.createdAt).atZone(java.time.ZoneId.systemDefault()).toInstant())
-                        .userId(tuple.get(user.id))
-                        .nickname(tuple.get(user.nickname))
-                        .profileImageUrl(tuple.get(user.profileImageUrl))
-                        .distance(tuple.get(runningRecord.distance) != null ? 
-                                tuple.get(runningRecord.distance).doubleValue() : null)
-                        .duration(tuple.get(runningRecord.duration))
-                        .averagePace(formatPace(tuple.get(runningRecord.averagePaceSeconds)))
-                        .calories(tuple.get(runningRecord.calories))
-                        .build())
+                .map(tuple -> {
+                    String profileImageKey = tuple.get(user.profileImageKey);
+                    String profileImageUrl = (profileImageKey != null && !profileImageKey.isEmpty())
+                            ? fileService.createPresignedGetUrl(profileImageKey)
+                            : null;
+
+                    return FeedResponse.builder()
+                            .id(tuple.get(feed.id))
+                            .content(tuple.get(feed.content))
+                            .imageUrl(tuple.get(feed.imageUrl))
+                            .likeCount(tuple.get(feed.likeCount))
+                            .liked(Boolean.TRUE.equals(tuple.get(feedLike.isNotNull())))
+                            .createdAt(tuple.get(feed.createdAt).atZone(java.time.ZoneId.systemDefault()).toInstant())
+                            .userId(tuple.get(user.id))
+                            .nickname(tuple.get(user.nickname))
+                            .profileImageUrl(profileImageUrl)
+                            .distance(tuple.get(runningRecord.distance) != null ?
+                                    tuple.get(runningRecord.distance).doubleValue() : null)
+                            .duration(tuple.get(runningRecord.duration))
+                            .averagePace(formatPace(tuple.get(runningRecord.averagePaceSeconds)))
+                            .calories(tuple.get(runningRecord.calories))
+                            .build();
+                })
                 .collect(java.util.stream.Collectors.toList());
     }
 
