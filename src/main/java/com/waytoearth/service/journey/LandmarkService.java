@@ -38,4 +38,9 @@ public interface LandmarkService {
      * 다음 랜드마크 조회
      */
     LandmarkSummaryResponse getNextLandmark(Long journeyId, Double currentDistance);
+
+    /**
+     * 랜드마크 이미지 URL 업데이트 (관리자 전용)
+     */
+    void updateLandmarkImage(Long landmarkId, String imageUrl);
 }
