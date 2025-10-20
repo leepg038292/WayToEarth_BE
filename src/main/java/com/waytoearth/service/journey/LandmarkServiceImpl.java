@@ -91,4 +91,18 @@ public class LandmarkServiceImpl implements LandmarkService {
                 .map(LandmarkSummaryResponse::from)
                 .orElse(null);
     }
+
+    @Override
+    @Transactional
+    public void updateLandmarkImage(Long landmarkId, String imageUrl) {
+        log.info("랜드마크 이미지 업데이트: landmarkId={}, imageUrl={}", landmarkId, imageUrl);
+
+        LandmarkEntity landmark = landmarkRepository.findById(landmarkId)
+                .orElseThrow(() -> new IllegalArgumentException("랜드마크를 찾을 수 없습니다: " + landmarkId));
+
+        landmark.setImageUrl(imageUrl);
+        landmarkRepository.save(landmark);
+
+        log.info("랜드마크 이미지 업데이트 완료: landmarkId={}", landmarkId);
+    }
 }
