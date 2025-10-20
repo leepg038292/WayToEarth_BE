@@ -97,6 +97,39 @@ public class AdminStoryController {
             description = "권한 없음 (관리자 권한 필요)"
         )
     })
+    @PostMapping("/{journeyId}/{landmarkId}/{storyId}/image/presign")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<PresignResponse>> presignImageUpload(
+            @AuthUser AuthenticatedUser user,
+            @io.swagger.v3.oas.annotations.Parameter(description = "여정 ID") @PathVariable Long journeyId,
+            @io.swagger.v3.oas.annotations.Parameter(description = "랜드마크 ID") @PathVariable Long landmarkId,
+            @io.swagger.v3.oas.annotations.Parameter(description = "스토리 ID") @PathVariable Long storyId,
+            @RequestBody(
+                description = "업로드할 파일 정보",
+                required = true,
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = PresignRequest.class),
+                    examples = @ExampleObject(
+                        value = """
+                        {
+                          "contentType": "image/jpeg",
+                          "size": 6291456
+                        }
+                        """
+                    )
+                )
+            )
+            @Valid @org.springframework.web.bind.annotation.RequestBody PresignRequest req
+    ) {
+        log.info("관리자 스토리 이미지 업로드 URL 발급 요청: userId={}, journeyId={}, landmarkId={}, storyId={}, contentType={}, size={}",
+                user.getUserId(), journeyId, landmarkId, storyId, req.getContentType(), req.getSize());
+
+        PresignResponse response = fileService.presignStory(journeyId, landmarkId, storyId, req);
+
+        return ResponseEntity.ok(ApiResponse.success(response, "스토리 이미지 업로드 URL이 성공적으로 발급되었습니다."));
+    }
+
     @Operation(
         summary = "스토리 카드 생성 (관리자 전용)",
         description = """
@@ -211,38 +244,5 @@ public class AdminStoryController {
         storyCardService.deleteStoryCard(storyId);
 
         return ResponseEntity.ok(ApiResponse.success(null, "스토리 카드가 성공적으로 삭제되었습니다."));
-    }
-
-    @PostMapping("/{journeyId}/{landmarkId}/{storyId}/image/presign")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<PresignResponse>> presignImageUpload(
-            @AuthUser AuthenticatedUser user,
-            @io.swagger.v3.oas.annotations.Parameter(description = "여정 ID") @PathVariable Long journeyId,
-            @io.swagger.v3.oas.annotations.Parameter(description = "랜드마크 ID") @PathVariable Long landmarkId,
-            @io.swagger.v3.oas.annotations.Parameter(description = "스토리 ID") @PathVariable Long storyId,
-            @RequestBody(
-                description = "업로드할 파일 정보",
-                required = true,
-                content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = PresignRequest.class),
-                    examples = @ExampleObject(
-                        value = """
-                        {
-                          "contentType": "image/jpeg",
-                          "size": 6291456
-                        }
-                        """
-                    )
-                )
-            )
-            @Valid @org.springframework.web.bind.annotation.RequestBody PresignRequest req
-    ) {
-        log.info("관리자 스토리 이미지 업로드 URL 발급 요청: userId={}, journeyId={}, landmarkId={}, storyId={}, contentType={}, size={}",
-                user.getUserId(), journeyId, landmarkId, storyId, req.getContentType(), req.getSize());
-
-        PresignResponse response = fileService.presignStory(journeyId, landmarkId, storyId, req);
-
-        return ResponseEntity.ok(ApiResponse.success(response, "스토리 이미지 업로드 URL이 성공적으로 발급되었습니다."));
     }
 }
