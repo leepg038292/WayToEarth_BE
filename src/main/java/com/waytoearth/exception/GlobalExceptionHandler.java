@@ -159,6 +159,38 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
+    @ExceptionHandler(StoryCardNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleStoryCardNotFoundException(StoryCardNotFoundException e) {
+        log.error("스토리 카드 없음 예외: {}", e.getMessage());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .success(false)
+                .error(ErrorDetail.builder()
+                        .code("STORY_CARD_NOT_FOUND")
+                        .message(e.getMessage())
+                        .build())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(LandmarkNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleLandmarkNotFoundException(LandmarkNotFoundException e) {
+        log.error("랜드마크 없음 예외: {}", e.getMessage());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .success(false)
+                .error(ErrorDetail.builder()
+                        .code("LANDMARK_NOT_FOUND")
+                        .message(e.getMessage())
+                        .build())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception e) {
         log.error("예상치 못한 서버 오류", e);
