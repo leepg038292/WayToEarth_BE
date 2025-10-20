@@ -9,6 +9,7 @@ import com.waytoearth.repository.journey.GuestbookRepository;
 import com.waytoearth.repository.journey.LandmarkRepository;
 import com.waytoearth.repository.journey.StampRepository;
 import com.waytoearth.repository.user.UserRepository;
+import com.waytoearth.service.file.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ public class GuestbookServiceImpl implements GuestbookService {
     private final UserRepository userRepository;
     private final LandmarkRepository landmarkRepository;
     private final StampRepository stampRepository;
+    private final FileService fileService;
 
     @Override
     @Transactional
@@ -51,14 +53,14 @@ public class GuestbookServiceImpl implements GuestbookService {
         log.info("방명록 작성 완료: userId={}, landmarkId={}, isPublic={}",
                 userId, request.landmarkId(), savedGuestbook.getIsPublic());
 
-        return GuestbookResponse.from(savedGuestbook);
+        return GuestbookResponse.from(savedGuestbook, fileService);
     }
 
     @Override
     public Page<GuestbookResponse> getGuestbookByLandmark(Long landmarkId, Pageable pageable) {
         Page<GuestbookEntity> guestbooks = guestbookRepository.findPublicGuestbookByLandmarkId(landmarkId, pageable);
 
-        return guestbooks.map(GuestbookResponse::from);
+        return guestbooks.map(guestbook -> GuestbookResponse.from(guestbook, fileService));
     }
 
 
@@ -68,7 +70,7 @@ public class GuestbookServiceImpl implements GuestbookService {
         List<GuestbookEntity> guestbooks = guestbookRepository.findByUserIdWithLandmark(userId);
 
         return guestbooks.stream()
-                .map(GuestbookResponse::from)
+                .map(guestbook -> GuestbookResponse.from(guestbook, fileService))
                 .toList();
     }
 
@@ -76,7 +78,7 @@ public class GuestbookServiceImpl implements GuestbookService {
     public Page<GuestbookResponse> getRecentGuestbook(Pageable pageable) {
         Page<GuestbookEntity> guestbooks = guestbookRepository.findRecentPublicGuestbook(pageable);
 
-        return guestbooks.map(GuestbookResponse::from);
+        return guestbooks.map(guestbook -> GuestbookResponse.from(guestbook, fileService));
     }
 
     @Override
