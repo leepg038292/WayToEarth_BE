@@ -23,6 +23,9 @@ public class WeatherCurrentResponse {
     @Schema(description = "날씨 이모지", example = "☁️")
     private String emoji;
 
+    @Schema(description = "현재 온도(°C)", example = "23.5")
+    private Double temperature;
+
     @Schema(description = "조회 시각")
     private LocalDateTime fetchedAt;
 
@@ -34,6 +37,7 @@ public class WeatherCurrentResponse {
                 .condition(c)
                 .emoji(c.getEmoji())
                 .iconCode(null)
+                .temperature(null)
                 .fetchedAt(LocalDateTime.now())
                 .recommendation(c.getRecommendation())
                 .build();

@@ -43,12 +43,19 @@ public class WeatherServiceImpl implements WeatherService {
             String main = root.path("weather").get(0).path("main").asText("");
             String icon = root.path("weather").get(0).path("icon").asText(""); // e.g. "10d"
 
+            // 온도 정보 파싱 (units=metric이므로 섭씨 온도)
+            Double temperature = null;
+            if (root.has("main") && root.path("main").has("temp")) {
+                temperature = root.path("main").path("temp").asDouble();
+            }
+
             WeatherCondition condition = WeatherCondition.fromOpenWeatherMain(main);
 
             return WeatherCurrentResponse.builder()
                     .condition(condition)
                     .emoji(condition.getEmoji())
                     .iconCode(icon) // 프론트가 자체 아이콘 쓰면 무시해도 OK
+                    .temperature(temperature)
                     .fetchedAt(LocalDateTime.now())
                     .recommendation(condition.getRecommendation()) // 아래 DTO 참고
                     .build();
