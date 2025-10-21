@@ -56,4 +56,9 @@ public interface CrewRankingService {
      * DB 데이터로 Redis 랭킹 재구축
      */
     void rebuildRankingFromDB(String month);
+
+    /**
+     * 크루 삭제 시 모든 월의 Redis 랭킹 데이터 삭제
+     */
+    void removeCrewFromAllRankings(Long crewId);
 }

@@ -36,6 +36,7 @@ public class CrewServiceImpl implements CrewService {
     private final FileService fileService;
     private final com.waytoearth.repository.crew.CrewChatNotificationSettingRepository crewChatNotificationSettingRepository;
     private final com.waytoearth.repository.crew.CrewChatRepository crewChatRepository;
+    private final com.waytoearth.service.ranking.CrewRankingService crewRankingService;
 
     @Override
     @Transactional
@@ -245,7 +246,10 @@ public class CrewServiceImpl implements CrewService {
         crewStatisticsService.cleanupStatisticsForCrew(crewId);
         crewChatNotificationSettingRepository.deleteAllByCrew_Id(crewId);
 
-        // 3. 크루 물리 삭제 (CASCADE로 멤버, 가입신청 자동 삭제)
+        // 3. Redis 랭킹 데이터 삭제
+        crewRankingService.removeCrewFromAllRankings(crewId);
+
+        // 4. 크루 물리 삭제 (CASCADE로 멤버, 가입신청 자동 삭제)
         // 채팅 메시지는 ON DELETE SET NULL로 자동으로 crew_id가 NULL이 됨 (메시지 보존)
         crewRepository.deleteById(crewId);
 

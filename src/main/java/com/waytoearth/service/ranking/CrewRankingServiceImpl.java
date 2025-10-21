@@ -269,8 +269,42 @@ public class CrewRankingServiceImpl implements CrewRankingService {
                 crew.getTotalDistance().doubleValue());
         }
 
+        // 프로필 이미지 URL 추가 (DB 조회 시에는 없으므로 추가)
+        List<Long> crewIds = ranking.stream()
+            .map(CrewRankingDto::getCrewId)
+            .toList();
+
+        List<CrewEntity> crews = crewRepository.findAllById(crewIds);
+        Map<Long, CrewEntity> crewMap = crews.stream()
+            .collect(java.util.stream.Collectors.toMap(CrewEntity::getId, crew -> crew));
+
+        // 프로필 이미지를 포함한 새로운 DTO 리스트 생성
+        List<CrewRankingDto> enrichedRanking = new ArrayList<>();
+        for (CrewRankingDto crewDto : ranking) {
+            CrewEntity crew = crewMap.get(crewDto.getCrewId());
+            String profileImageUrl = null;
+
+            if (crew != null) {
+                if (crew.getProfileImageKey() != null && !crew.getProfileImageKey().isEmpty()) {
+                    profileImageUrl = fileService.createPresignedGetUrl(crew.getProfileImageKey());
+                } else if (crew.getProfileImageUrl() != null) {
+                    profileImageUrl = crew.getProfileImageUrl();
+                }
+            }
+
+            enrichedRanking.add(new CrewRankingDto(
+                crewDto.getMonth(),
+                crewDto.getCrewId(),
+                crewDto.getCrewName(),
+                profileImageUrl,
+                crewDto.getTotalDistance(),
+                crewDto.getRunCount(),
+                crewDto.getRank()
+            ));
+        }
+
         log.info("DB에서 조회한 크루 랭킹을 Redis에 캐싱했습니다. month: {}", month);
-        return ranking;
+        return enrichedRanking;
     }
 
     private List<CrewMemberRankingDto> convertToMemberRankingDto(Long crewId, Set<ZSetOperations.TypedTuple<Object>> rankingSet, String month) {
@@ -379,5 +413,27 @@ public class CrewRankingServiceImpl implements CrewRankingService {
         }
 
         return ranking;
+    }
+
+    @Override
+    public void removeCrewFromAllRankings(Long crewId) {
+        // 현재 달부터 과거 12개월 치 랭킹에서 크루 제거
+        java.time.YearMonth currentMonth = java.time.YearMonth.now();
+
+        for (int i = 0; i < 12; i++) {
+            java.time.YearMonth targetMonth = currentMonth.minusMonths(i);
+            String month = targetMonth.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
+
+            String rankingKey = RankingKeyUtil.crewRankingKey(month);
+            String runCountKey = RankingKeyUtil.crewRunCountKey(month);
+
+            // Redis ZSet에서 제거
+            redisTemplate.opsForZSet().remove(rankingKey, crewId.toString());
+
+            // Redis Hash에서 러닝 횟수 제거
+            redisTemplate.opsForHash().delete(runCountKey, crewId.toString());
+        }
+
+        log.info("크루 랭킹 데이터가 Redis에서 삭제되었습니다. crewId: {}", crewId);
     }
 }
