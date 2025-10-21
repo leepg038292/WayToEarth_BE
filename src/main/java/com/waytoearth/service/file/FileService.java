@@ -138,7 +138,7 @@ public class FileService {
                 .bucket(bucket)
                 .key(key)
                 .contentType(contentType)
-                .cacheControl("no-cache, no-store, must-revalidate") // CloudFront 캐시 방지
+                // cache-control은 GET 요청에만 필요, PUT(업로드)에는 불필요하며 서명 불일치 원인이 됨
                 .build();
 
         PutObjectPresignRequest presignReq = PutObjectPresignRequest.builder()
