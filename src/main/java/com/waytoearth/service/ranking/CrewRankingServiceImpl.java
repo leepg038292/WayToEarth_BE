@@ -30,6 +30,7 @@ public class CrewRankingServiceImpl implements CrewRankingService {
     private final CrewStatisticsRepository statisticsRepository;
     private final UserRepository userRepository;
     private final CrewRepository crewRepository;
+    private final com.waytoearth.service.file.FileService fileService;
 
     @Override
     public List<CrewMemberRankingDto> getMemberRankingInCrew(Long crewId, String month, int limit) {
@@ -219,8 +220,42 @@ public class CrewRankingServiceImpl implements CrewRankingService {
                 member.getTotalDistance().doubleValue());
         }
 
+        // 프로필 이미지 URL 추가 (DB 조회 시에는 없으므로 추가)
+        List<Long> userIds = ranking.stream()
+            .map(CrewMemberRankingDto::getUserId)
+            .toList();
+
+        List<User> users = userRepository.findAllById(userIds);
+        Map<Long, User> userMap = users.stream()
+            .collect(java.util.stream.Collectors.toMap(User::getId, user -> user));
+
+        // 프로필 이미지를 포함한 새로운 DTO 리스트 생성
+        List<CrewMemberRankingDto> enrichedRanking = new ArrayList<>();
+        for (CrewMemberRankingDto member : ranking) {
+            User user = userMap.get(member.getUserId());
+            String profileImageUrl = null;
+
+            if (user != null) {
+                if (user.getProfileImageKey() != null && !user.getProfileImageKey().isEmpty()) {
+                    profileImageUrl = fileService.createPresignedGetUrl(user.getProfileImageKey());
+                } else if (user.getProfileImageUrl() != null) {
+                    profileImageUrl = user.getProfileImageUrl();
+                }
+            }
+
+            enrichedRanking.add(new CrewMemberRankingDto(
+                member.getMonth(),
+                member.getUserId(),
+                member.getUserName(),
+                profileImageUrl,
+                member.getTotalDistance(),
+                member.getRunCount(),
+                member.getRank()
+            ));
+        }
+
         log.info("DB에서 조회한 멤버 랭킹을 Redis에 캐싱했습니다. crewId: {}, month: {}", crewId, month);
-        return ranking;
+        return enrichedRanking;
     }
 
     private List<CrewRankingDto> getCrewRankingFromDB(String month, int limit) {
@@ -251,8 +286,8 @@ public class CrewRankingServiceImpl implements CrewRankingService {
             .toList();
 
         List<User> users = userRepository.findAllById(userIds);
-        Map<Long, String> userNicknameMap = users.stream()
-            .collect(java.util.stream.Collectors.toMap(User::getId, User::getNickname));
+        Map<Long, User> userMap = users.stream()
+            .collect(java.util.stream.Collectors.toMap(User::getId, user -> user));
 
         // Redis에서 러닝 횟수 조회
         Map<Long, Integer> runCountMap = new HashMap<>();
@@ -265,12 +300,21 @@ public class CrewRankingServiceImpl implements CrewRankingService {
             Long userId = Long.valueOf(tuple.getValue().toString());
             Double totalDistance = tuple.getScore();
 
-            String nickname = userNicknameMap.get(userId);
-            if (nickname != null) {
+            User user = userMap.get(userId);
+            if (user != null) {
+                // profileImageKey가 있으면 CloudFront URL 생성, 없으면 기존 URL 사용
+                String profileImageUrl = null;
+                if (user.getProfileImageKey() != null && !user.getProfileImageKey().isEmpty()) {
+                    profileImageUrl = fileService.createPresignedGetUrl(user.getProfileImageKey());
+                } else if (user.getProfileImageUrl() != null) {
+                    profileImageUrl = user.getProfileImageUrl();
+                }
+
                 ranking.add(new CrewMemberRankingDto(
                     month,
                     userId,
-                    nickname,
+                    user.getNickname(),
+                    profileImageUrl,
                     BigDecimal.valueOf(totalDistance),
                     runCountMap.getOrDefault(userId, 0),
                     rank++
@@ -294,8 +338,8 @@ public class CrewRankingServiceImpl implements CrewRankingService {
             .toList();
 
         List<CrewEntity> crews = crewRepository.findAllById(crewIds);
-        Map<Long, String> crewNameMap = crews.stream()
-            .collect(java.util.stream.Collectors.toMap(CrewEntity::getId, CrewEntity::getName));
+        Map<Long, CrewEntity> crewMap = crews.stream()
+            .collect(java.util.stream.Collectors.toMap(CrewEntity::getId, crew -> crew));
 
         // Redis에서 러닝 횟수 조회
         Map<Long, Integer> runCountMap = new HashMap<>();
@@ -308,15 +352,30 @@ public class CrewRankingServiceImpl implements CrewRankingService {
             Long crewId = Long.valueOf(tuple.getValue().toString());
             Double totalDistance = tuple.getScore();
 
-            String crewName = crewNameMap.getOrDefault(crewId, "알 수 없는 크루");
-            ranking.add(new CrewRankingDto(
-                month,
-                crewId,
-                crewName,
-                BigDecimal.valueOf(totalDistance),
-                runCountMap.getOrDefault(crewId, 0),
-                rank++
-            ));
+            CrewEntity crew = crewMap.get(crewId);
+            if (crew != null) {
+                // profileImageKey가 있으면 CloudFront URL 생성, 없으면 기존 URL 사용
+                String profileImageUrl = null;
+                if (crew.getProfileImageKey() != null && !crew.getProfileImageKey().isEmpty()) {
+                    profileImageUrl = fileService.createPresignedGetUrl(crew.getProfileImageKey());
+                } else if (crew.getProfileImageUrl() != null) {
+                    profileImageUrl = crew.getProfileImageUrl();
+                }
+
+                ranking.add(new CrewRankingDto(
+                    month,
+                    crewId,
+                    crew.getName(),
+                    profileImageUrl,
+                    BigDecimal.valueOf(totalDistance),
+                    runCountMap.getOrDefault(crewId, 0),
+                    rank++
+                ));
+            } else {
+                // 크루가 삭제된 경우 (Redis에는 남아있지만 DB에는 없음)
+                log.warn("크루 랭킹에 삭제된 크루가 포함되어 있습니다. crewId: {}, month: {}", crewId, month);
+                // 삭제된 크루는 랭킹에서 제외
+            }
         }
 
         return ranking;
