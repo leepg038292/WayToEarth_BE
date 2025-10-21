@@ -41,8 +41,12 @@ public class CrewEntity extends BaseTimeEntity {
     @Builder.Default
     private Integer maxMembers = 50;
 
-    @Schema(description = "프로필 이미지 URL", example = "https://example.com/crew-profile.jpg")
+    @Schema(description = "프로필 이미지 URL (deprecated, CloudFront URL 사용 권장)", example = "https://example.com/crew-profile.jpg")
     private String profileImageUrl;
+
+    @Schema(description = "프로필 이미지 S3 Key", example = "crews/123/profile_1234567890.jpg")
+    @Column(name = "profile_image_key", length = 512)
+    private String profileImageKey;
 
     @Schema(description = "활성화 상태", example = "true")
     @Column(nullable = false)

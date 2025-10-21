@@ -1,6 +1,7 @@
 package com.waytoearth.dto.response.crew;
 
 import com.waytoearth.entity.crew.CrewEntity;
+import com.waytoearth.service.file.FileService;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -47,6 +48,33 @@ public class CrewDetailResponse {
     @Schema(description = "수정일", example = "2024-01-15T10:30:00")
     private LocalDateTime updatedAt;
 
+    public static CrewDetailResponse from(CrewEntity crew, FileService fileService) {
+        // profileImageKey가 있으면 CloudFront URL 생성, 없으면 기존 profileImageUrl 사용
+        String profileImageUrl = null;
+        if (crew.getProfileImageKey() != null && !crew.getProfileImageKey().isEmpty()) {
+            profileImageUrl = fileService.createPresignedGetUrl(crew.getProfileImageKey());
+        } else if (crew.getProfileImageUrl() != null) {
+            // 기존 데이터 호환성 (key가 없는 경우)
+            profileImageUrl = crew.getProfileImageUrl();
+        }
+
+        return new CrewDetailResponse(
+                crew.getId(),
+                crew.getName(),
+                crew.getDescription(),
+                crew.getMaxMembers(),
+                crew.getCurrentMembers(),
+                profileImageUrl,
+                crew.getIsActive(),
+                crew.getOwner().getId(),
+                crew.getOwner().getNickname(),
+                crew.getCreatedAt(),
+                crew.getUpdatedAt()
+        );
+    }
+
+    // 기존 메서드 유지 (하위 호환성)
+    @Deprecated
     public static CrewDetailResponse from(CrewEntity crew) {
         return new CrewDetailResponse(
                 crew.getId(),

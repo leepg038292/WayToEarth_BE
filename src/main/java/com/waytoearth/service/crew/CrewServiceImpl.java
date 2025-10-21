@@ -90,7 +90,7 @@ public class CrewServiceImpl implements CrewService {
     @Override
     @Transactional
     public CrewEntity updateCrew(AuthenticatedUser user, Long crewId, String name,
-                                String description, Integer maxMembers, String profileImageUrl) {
+                                String description, Integer maxMembers, String profileImageUrl, String profileImageKey) {
         CrewEntity crew = getCrewById(crewId);
 
         // 크루장인지 확인
@@ -109,6 +109,7 @@ public class CrewServiceImpl implements CrewService {
         if (description != null) crew.setDescription(description);
         if (maxMembers != null) crew.setMaxMembers(maxMembers);
         if (profileImageUrl != null) crew.setProfileImageUrl(profileImageUrl);
+        if (profileImageKey != null) crew.setProfileImageKey(profileImageKey);
 
         log.info("크루 정보가 수정되었습니다. crewId: {}, userId: {}", crewId, user.getUserId());
         return crew;
@@ -274,19 +275,25 @@ public class CrewServiceImpl implements CrewService {
         }
 
         // 기존 이미지가 있다면 S3에서 삭제
-        if (crew.getProfileImageUrl() != null && !crew.getProfileImageUrl().isEmpty()) {
-            // URL에서 S3 키 추출 (예: crews/123/profile.jpg)
-            String imageKey = extractS3KeyFromUrl(crew.getProfileImageUrl());
-            if (imageKey != null) {
-                fileService.deleteObject(imageKey);
+        // profileImageKey 우선 사용, 없으면 URL에서 추출
+        String imageKey = crew.getProfileImageKey();
+        if (imageKey == null || imageKey.isEmpty()) {
+            if (crew.getProfileImageUrl() != null && !crew.getProfileImageUrl().isEmpty()) {
+                // 기존 데이터 호환성: URL에서 S3 키 추출 (예: crews/123/profile.jpg)
+                imageKey = extractS3KeyFromUrl(crew.getProfileImageUrl());
             }
         }
 
-        // 데이터베이스에서 프로필 이미지 URL 제거
+        if (imageKey != null && !imageKey.isEmpty()) {
+            fileService.deleteObject(imageKey);
+        }
+
+        // 데이터베이스에서 프로필 이미지 URL 및 Key 제거
         crew.setProfileImageUrl(null);
+        crew.setProfileImageKey(null);
         crewRepository.save(crew);
 
-        log.info("[Crew Profile Image Delete] crewId={}, userId={}", crewId, user.getUserId());
+        log.info("[Crew Profile Image Delete] crewId={}, userId={}, key={}", crewId, user.getUserId(), imageKey);
     }
 
     /**

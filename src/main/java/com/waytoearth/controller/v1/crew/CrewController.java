@@ -34,6 +34,7 @@ public class CrewController {
 
     private final CrewService crewService;
     private final CrewJoinService crewJoinService;
+    private final com.waytoearth.service.file.FileService fileService;
 
     @Operation(summary = "크루 생성", description = "새로운 크루를 생성합니다. 생성자가 자동으로 크루장이 됩니다.")
     @ApiResponses({
@@ -57,7 +58,7 @@ public class CrewController {
         );
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(CrewDetailResponse.from(crew));
+                .body(CrewDetailResponse.from(crew, fileService));
     }
 
     @Operation(summary = "크루 상세 조회", description = "특정 크루의 상세 정보를 조회합니다.")
@@ -70,7 +71,7 @@ public class CrewController {
             @Parameter(description = "크루 ID") @PathVariable Long crewId) {
 
         CrewEntity crew = crewService.getCrewById(crewId);
-        return ResponseEntity.ok(CrewDetailResponse.from(crew));
+        return ResponseEntity.ok(CrewDetailResponse.from(crew, fileService));
     }
 
     @Operation(summary = "크루 목록 조회", description = "활성화된 모든 크루 목록을 페이징하여 조회합니다.")
@@ -96,7 +97,7 @@ public class CrewController {
             if (user != null) {
                 canJoin = crewJoinService.canJoinCrew(user, crew.getId());
             }
-            return CrewListResponse.from(crew, canJoin);
+            return CrewListResponse.from(crew, canJoin, fileService);
         });
 
         return ResponseEntity.ok(response);
@@ -121,7 +122,7 @@ public class CrewController {
             if (user != null) {
                 canJoin = crewJoinService.canJoinCrew(user, crew.getId());
             }
-            return CrewListResponse.from(crew, canJoin);
+            return CrewListResponse.from(crew, canJoin, fileService);
         });
 
         return ResponseEntity.ok(response);
@@ -141,7 +142,7 @@ public class CrewController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<CrewEntity> crews = crewService.getUserCrews(user, pageable);
 
-        Page<CrewListResponse> response = crews.map(crew -> CrewListResponse.from(crew, false));
+        Page<CrewListResponse> response = crews.map(crew -> CrewListResponse.from(crew, false, fileService));
 
         return ResponseEntity.ok(response);
     }
@@ -168,10 +169,11 @@ public class CrewController {
                 request.getName(),
                 request.getDescription(),
                 request.getMaxMembers(),
-                request.getProfileImageUrl()
+                request.getProfileImageUrl(),
+                request.getProfileImageKey()
         );
 
-        return ResponseEntity.ok(CrewDetailResponse.from(crew));
+        return ResponseEntity.ok(CrewDetailResponse.from(crew, fileService));
     }
 
     @Operation(summary = "크루 삭제", description = "크루를 삭제합니다. 크루장만 가능합니다.")
@@ -209,6 +211,6 @@ public class CrewController {
 
         CrewEntity crew = crewService.toggleCrewStatus(user, crewId);
 
-        return ResponseEntity.ok(CrewDetailResponse.from(crew));
+        return ResponseEntity.ok(CrewDetailResponse.from(crew, fileService));
     }
 }
