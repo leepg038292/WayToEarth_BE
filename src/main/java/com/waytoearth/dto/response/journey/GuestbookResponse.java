@@ -1,6 +1,7 @@
 package com.waytoearth.dto.response.journey;
 
 import com.waytoearth.entity.journey.GuestbookEntity;
+import com.waytoearth.service.file.FileService;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
@@ -22,10 +23,10 @@ public record GuestbookResponse(
     @Schema(description = "작성 시간", example = "2024-01-15T14:30:00")
     LocalDateTime createdAt
 ) {
-    public static GuestbookResponse from(GuestbookEntity guestbook) {
+    public static GuestbookResponse from(GuestbookEntity guestbook, FileService fileService) {
         return new GuestbookResponse(
             guestbook.getId(),
-            UserSummaryResponse.from(guestbook.getUser()),
+            UserSummaryResponse.from(guestbook.getUser(), fileService),
             LandmarkSummaryResponse.from(guestbook.getLandmark()),
             guestbook.getMessage(),
             guestbook.getCreatedAt()

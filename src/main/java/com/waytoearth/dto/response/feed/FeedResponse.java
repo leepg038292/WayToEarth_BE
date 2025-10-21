@@ -1,6 +1,7 @@
 package com.waytoearth.dto.response.feed;
 
 import com.waytoearth.entity.feed.Feed;
+import com.waytoearth.service.file.FileService;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -48,7 +49,12 @@ public record FeedResponse(
         @Schema(description = "소모 칼로리", example = "320")
         Integer calories
 ) {
-    public static FeedResponse from(Feed feed, boolean liked) {
+    public static FeedResponse from(Feed feed, boolean liked, FileService fileService) {
+        String profileImageKey = feed.getUser() != null ? feed.getUser().getProfileImageKey() : null;
+        String profileImageUrl = (profileImageKey != null && !profileImageKey.isEmpty())
+                ? fileService.createPresignedGetUrl(profileImageKey)
+                : null;
+
         return FeedResponse.builder()
                 .id(feed.getId())
                 .content(feed.getContent())
@@ -56,9 +62,9 @@ public record FeedResponse(
                 .likeCount(feed.getLikeCount())
                 .liked(liked)   //  좋아요 여부 반영
                 .createdAt(feed.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant())
-                .userId(feed.getUser().getId())
-                .nickname(feed.getUser().getNickname())
-                .profileImageUrl(feed.getUser().getProfileImageUrl())
+                .userId(feed.getUser() != null ? feed.getUser().getId() : null)
+                .nickname(feed.getUser() != null ? feed.getUser().getNickname() : null)
+                .profileImageUrl(profileImageUrl)
                 .distance(feed.getRunningRecord() != null ?
                         (feed.getRunningRecord().getDistance() != null ?
                                 feed.getRunningRecord().getDistance().doubleValue() : null) : null)
