@@ -32,7 +32,7 @@ public interface CrewService {
      * 크루 정보 수정 (크루장만 가능)
      */
     CrewEntity updateCrew(AuthenticatedUser user, Long crewId, String name,
-                         String description, Integer maxMembers, String profileImageUrl);
+                         String description, Integer maxMembers, String profileImageUrl, String profileImageKey);
 
     /**
      * 크루 삭제 (크루장만 가능)

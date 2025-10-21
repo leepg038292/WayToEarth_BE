@@ -42,6 +42,31 @@ public class CrewListResponse {
     @Schema(description = "가입 가능 여부", example = "true")
     private Boolean canJoin;
 
+    public static CrewListResponse from(CrewEntity crew, Boolean canJoin, FileService fileService) {
+        // profileImageKey가 있으면 CloudFront URL 생성, 없으면 기존 profileImageUrl 사용
+        String profileImageUrl = null;
+        if (crew.getProfileImageKey() != null && !crew.getProfileImageKey().isEmpty()) {
+            profileImageUrl = fileService.createPresignedGetUrl(crew.getProfileImageKey());
+        } else if (crew.getProfileImageUrl() != null) {
+            // 기존 데이터 호환성 (key가 없는 경우)
+            profileImageUrl = crew.getProfileImageUrl();
+        }
+
+        return new CrewListResponse(
+                crew.getId(),
+                crew.getName(),
+                crew.getDescription(),
+                crew.getMaxMembers(),
+                crew.getCurrentMembers(),
+                profileImageUrl,
+                crew.getOwner().getNickname(),
+                crew.getCreatedAt(),
+                canJoin
+        );
+    }
+
+    // 기존 메서드 유지 (하위 호환성)
+    @Deprecated
     public static CrewListResponse from(CrewEntity crew, Boolean canJoin) {
         return new CrewListResponse(
                 crew.getId(),
@@ -56,6 +81,7 @@ public class CrewListResponse {
         );
     }
 
+    @Deprecated
     public static CrewListResponse from(CrewEntity crew) {
         return from(crew, null);
     }

@@ -29,6 +29,9 @@ public class CrewUpdateRequest {
     @Schema(description = "최대 인원", example = "20")
     private Integer maxMembers;
 
-    @Schema(description = "프로필 이미지 URL", example = "https://example.com/crew-profile.jpg")
+    @Schema(description = "프로필 이미지 URL (deprecated, profileImageKey 사용 권장)", example = "https://example.com/crew-profile.jpg")
     private String profileImageUrl;
+
+    @Schema(description = "프로필 이미지 S3 Key", example = "crews/123/profile_1234567890.jpg")
+    private String profileImageKey;
 }
