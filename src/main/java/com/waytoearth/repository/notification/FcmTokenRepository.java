@@ -48,4 +48,9 @@ public interface FcmTokenRepository extends JpaRepository<FcmToken, Long> {
     @Modifying
     @Query("UPDATE FcmToken f SET f.isActive = false WHERE f.user.id = :userId AND f.deviceId = :deviceId")
     int deactivateUserDeviceToken(@Param("userId") Long userId, @Param("deviceId") String deviceId);
+
+    /**
+     * 사용자 ID로 FCM 토큰 일괄 삭제 (회원 탈퇴용)
+     */
+    void deleteByUserId(Long userId);
 }

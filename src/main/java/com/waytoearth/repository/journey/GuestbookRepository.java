@@ -42,4 +42,9 @@ public interface GuestbookRepository extends JpaRepository<GuestbookEntity, Long
      */
     @Query("SELECT g FROM GuestbookEntity g JOIN FETCH g.user JOIN FETCH g.landmark WHERE g.isPublic = true ORDER BY g.createdAt DESC")
     Page<GuestbookEntity> findRecentPublicGuestbook(Pageable pageable);
+
+    /**
+     * 사용자 ID로 방명록 일괄 삭제 (회원 탈퇴용)
+     */
+    void deleteByUserId(Long userId);
 }

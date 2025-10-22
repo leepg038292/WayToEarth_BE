@@ -21,4 +21,9 @@ public interface NotificationSettingRepository extends JpaRepository<Notificatio
 
     /** 사용자에게 알림 설정이 있는지 확인 */
     boolean existsByUser(User user);
+
+    /**
+     * 사용자 ID로 알림 설정 삭제 (회원 탈퇴용)
+     */
+    void deleteByUserId(Long userId);
 }

@@ -94,4 +94,7 @@ public interface RunningRecordRepository extends JpaRepository<RunningRecord, Lo
             @Param("user") User user,
             @Param("cursor") Long cursor,
             Pageable pageable);
+
+    // 사용자 ID로 러닝 기록 일괄 삭제 (회원 탈퇴용)
+    void deleteByUserId(Long userId);
 }

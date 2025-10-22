@@ -14,4 +14,6 @@ public interface FeedLikeRepository extends JpaRepository<FeedLike, Long> {
     void deleteByFeedAndUser(Feed feed, User user);
     void deleteByFeed(Feed feed);
 
+    // 사용자 ID로 피드 좋아요 일괄 삭제 (회원 탈퇴용)
+    void deleteByUserId(Long userId);
 }

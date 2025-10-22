@@ -46,4 +46,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, FeedRepositor
            "LEFT JOIN FETCH f.runningRecord " +
            "ORDER BY f.createdAt DESC")
     List<Feed> findAllWithUserAndRecordOrderByCreatedAtDesc(Pageable pageable);
+
+    // 사용자 ID로 피드 일괄 삭제 (회원 탈퇴용)
+    void deleteByUserId(Long userId);
 }

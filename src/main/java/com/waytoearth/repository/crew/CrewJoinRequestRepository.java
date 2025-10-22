@@ -83,4 +83,9 @@ public interface CrewJoinRequestRepository extends JpaRepository<CrewJoinRequest
            "ORDER BY jr.processedAt DESC")
     List<CrewJoinRequestEntity> findByCrewAndStatusWithProcessor(@Param("crew") CrewEntity crew,
                                                                   @Param("status") JoinRequestStatus status);
+
+    /**
+     * 사용자 ID로 크루 가입 신청 일괄 삭제 (회원 탈퇴용)
+     */
+    void deleteByUserId(Long userId);
 }
