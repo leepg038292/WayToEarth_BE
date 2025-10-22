@@ -11,6 +11,7 @@ import com.waytoearth.entity.emblem.UserEmblem;
 import com.waytoearth.repository.emblem.EmblemRepository;
 import com.waytoearth.repository.emblem.UserEmblemRepository;
 import com.waytoearth.repository.user.UserRepository;
+import com.waytoearth.service.file.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,7 @@ public class EmblemService {
     private final EmblemRepository emblemRepository;
     private final UserRepository userRepository;
     private final UserEmblemRepository userEmblemRepository;
+    private final FileService fileService;
 
     /* =========================
        조회 (요약/카탈로그/상세)
@@ -74,7 +76,7 @@ public class EmblemService {
                     .emblemId(e.getId())
                     .name(e.getName())
                     .description(e.getDescription())
-                    .imageUrl(e.getImageUrl())
+                    .imageUrl(toCloudFrontUrl(e.getImageUrl()))  // CloudFront URL 적용
                     .rarity(e.getRarity())
                     .owned(owned)
                     .earnedAt(null)
@@ -96,7 +98,7 @@ public class EmblemService {
                 .emblemId(e.getId())
                 .name(e.getName())
                 .description(e.getDescription())
-                .imageUrl(e.getImageUrl())
+                .imageUrl(toCloudFrontUrl(e.getImageUrl()))  // CloudFront URL 적용
                 .rarity(e.getRarity())
                 .conditionType(e.getConditionType())
                 .conditionValue(e.getConditionValue())
@@ -185,5 +187,23 @@ public class EmblemService {
 
     private String nullToEmpty(String s) {
         return s == null ? "" : s;
+    }
+
+    /**
+     * 엠블럼 이미지 URL을 CloudFront URL로 변환
+     * DB에 저장된 값이 이미 CloudFront URL이면 그대로, S3 키면 변환
+     */
+    private String toCloudFrontUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            return null;
+        }
+
+        // 이미 http:// 또는 https://로 시작하면 그대로 반환
+        if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+            return imageUrl;
+        }
+
+        // S3 키인 경우 CloudFront URL로 변환
+        return fileService.createPresignedGetUrl(imageUrl);
     }
 }
