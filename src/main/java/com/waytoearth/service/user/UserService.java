@@ -20,6 +20,7 @@ import com.waytoearth.repository.journey.GuestbookRepository;
 import com.waytoearth.repository.crew.CrewJoinRequestRepository;
 import com.waytoearth.repository.notification.FcmTokenRepository;
 import com.waytoearth.repository.notification.NotificationSettingRepository;
+import com.waytoearth.service.auth.KakaoApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,9 @@ public class UserService {
     private final CrewJoinRequestRepository crewJoinRequestRepository;
     private final FcmTokenRepository fcmTokenRepository;
     private final NotificationSettingRepository notificationSettingRepository;
+
+    // 카카오 연동 해제를 위한 서비스
+    private final KakaoApiService kakaoApiService;
 
     /**
      * 카카오 ID로 사용자 조회
@@ -227,6 +231,7 @@ public class UserService {
 
     /**
      * 회원 탈퇴 (사용자 및 연관 데이터 완전 삭제)
+     * - 카카오 연동을 해제합니다 (카카오 계정은 유지됨)
      * - 연관된 모든 데이터를 안전하게 삭제합니다
      * - 프로필 이미지가 있다면 S3에서도 삭제합니다
      */
@@ -237,7 +242,16 @@ public class UserService {
         // 1. 사용자 존재 확인
         User user = findById(userId);
 
-        // 2. 프로필 이미지가 있다면 S3에서 삭제
+        // 2. 카카오 연동 해제
+        try {
+            kakaoApiService.unlinkKakaoAccount(user.getKakaoId());
+            log.info("[UserService] 카카오 연동 해제 완료 - kakaoId: {}", user.getKakaoId());
+        } catch (Exception e) {
+            log.warn("[UserService] 카카오 연동 해제 실패 (계속 진행) - kakaoId: {}, error: {}",
+                     user.getKakaoId(), e.getMessage());
+        }
+
+        // 3. 프로필 이미지가 있다면 S3에서 삭제
         if (user.getProfileImageKey() != null && !user.getProfileImageKey().isEmpty()) {
             try {
                 fileService.deleteObject(user.getProfileImageKey());
@@ -248,50 +262,50 @@ public class UserService {
             }
         }
 
-        // 3. 연관 데이터 삭제 (외래키 제약 순서 고려)
+        // 4. 연관 데이터 삭제 (외래키 제약 순서 고려)
         log.info("[UserService] 연관 데이터 삭제 시작 - userId: {}", userId);
 
-        // 3-1. 피드 좋아요 삭제 (FeedLike -> Feed 참조)
+        // 4-1. 피드 좋아요 삭제 (FeedLike -> Feed 참조)
         feedLikeRepository.deleteByUserId(userId);
         log.debug("[UserService] 피드 좋아요 삭제 완료");
 
-        // 3-2. 피드 삭제 (Feed -> RunningRecord 참조)
+        // 4-2. 피드 삭제 (Feed -> RunningRecord 참조)
         feedRepository.deleteByUserId(userId);
         log.debug("[UserService] 피드 삭제 완료");
 
-        // 3-3. 방명록 삭제
+        // 4-3. 방명록 삭제
         guestbookRepository.deleteByUserId(userId);
         log.debug("[UserService] 방명록 삭제 완료");
 
-        // 3-4. 크루 가입 신청 삭제
+        // 4-4. 크루 가입 신청 삭제
         crewJoinRequestRepository.deleteByUserId(userId);
         log.debug("[UserService] 크루 가입 신청 삭제 완료");
 
-        // 3-5. 크루 멤버십 삭제
+        // 4-5. 크루 멤버십 삭제
         crewMemberRepository.deleteByUserId(userId);
         log.debug("[UserService] 크루 멤버십 삭제 완료");
 
-        // 3-6. 러닝 기록 삭제 (RunningRoute는 cascade로 자동 삭제됨)
+        // 4-6. 러닝 기록 삭제 (RunningRoute는 cascade로 자동 삭제됨)
         runningRecordRepository.deleteByUserId(userId);
         log.debug("[UserService] 러닝 기록 삭제 완료");
 
-        // 3-7. 여행 진행 내역 삭제 (StampEntity는 cascade로 자동 삭제됨)
+        // 4-7. 여행 진행 내역 삭제 (StampEntity는 cascade로 자동 삭제됨)
         userJourneyProgressRepository.deleteByUserId(userId);
         log.debug("[UserService] 여행 진행 내역 삭제 완료");
 
-        // 3-8. 사용자 엠블럼 삭제
+        // 4-8. 사용자 엠블럼 삭제
         userEmblemRepository.deleteByUserId(userId);
         log.debug("[UserService] 사용자 엠블럼 삭제 완료");
 
-        // 3-9. FCM 토큰 삭제
+        // 4-9. FCM 토큰 삭제
         fcmTokenRepository.deleteByUserId(userId);
         log.debug("[UserService] FCM 토큰 삭제 완료");
 
-        // 3-10. 알림 설정 삭제
+        // 4-10. 알림 설정 삭제
         notificationSettingRepository.deleteByUserId(userId);
         log.debug("[UserService] 알림 설정 삭제 완료");
 
-        // 4. 최종적으로 사용자 삭제
+        // 5. 최종적으로 사용자 삭제
         userRepository.delete(user);
         log.info("[UserService] 회원 탈퇴 완료 - userId: {}, kakaoId: {}", userId, user.getKakaoId());
     }
