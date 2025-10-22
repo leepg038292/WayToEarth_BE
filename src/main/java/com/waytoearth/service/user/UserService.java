@@ -11,6 +11,15 @@ import com.waytoearth.repository.emblem.EmblemRepository;
 import com.waytoearth.repository.emblem.UserEmblemRepository;
 import com.waytoearth.repository.user.UserRepository;
 import com.waytoearth.service.file.FileService;
+import com.waytoearth.repository.journey.UserJourneyProgressRepository;
+import com.waytoearth.repository.running.RunningRecordRepository;
+import com.waytoearth.repository.crew.CrewMemberRepository;
+import com.waytoearth.repository.feed.FeedRepository;
+import com.waytoearth.repository.feed.FeedLikeRepository;
+import com.waytoearth.repository.journey.GuestbookRepository;
+import com.waytoearth.repository.crew.CrewJoinRequestRepository;
+import com.waytoearth.repository.notification.FcmTokenRepository;
+import com.waytoearth.repository.notification.NotificationSettingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,7 +40,18 @@ public class UserService {
     private final UserEmblemRepository userEmblemRepository;
     private final EmblemRepository emblemRepository;
 
-    private final FileService fileService; // ✅ 주입 추가
+    private final FileService fileService; //  주입 추가
+
+    // 회원 탈퇴를 위한 리포지토리들
+    private final UserJourneyProgressRepository userJourneyProgressRepository;
+    private final RunningRecordRepository runningRecordRepository;
+    private final CrewMemberRepository crewMemberRepository;
+    private final FeedRepository feedRepository;
+    private final FeedLikeRepository feedLikeRepository;
+    private final GuestbookRepository guestbookRepository;
+    private final CrewJoinRequestRepository crewJoinRequestRepository;
+    private final FcmTokenRepository fcmTokenRepository;
+    private final NotificationSettingRepository notificationSettingRepository;
 
     /**
      * 카카오 ID로 사용자 조회
@@ -109,7 +129,7 @@ public class UserService {
         Instant created = (u.getCreatedAt() == null) ? null : u.getCreatedAt()
                 .atOffset(ZoneOffset.UTC).toInstant();
 
-        // ✅ profileImageKey로 presigned GET URL 발급
+        //  profileImageKey로 presigned GET URL 발급
         String profileImageUrl = null;
         if (u.getProfileImageKey() != null && !u.getProfileImageKey().isEmpty()) {
             profileImageUrl = fileService.createPresignedGetUrl(u.getProfileImageKey());
@@ -203,6 +223,77 @@ public class UserService {
             u.setProfileImageUrl(null); // 기본이미지 처리 가능
         }
         userRepository.save(u);
+    }
+
+    /**
+     * 회원 탈퇴 (사용자 및 연관 데이터 완전 삭제)
+     * - 연관된 모든 데이터를 안전하게 삭제합니다
+     * - 프로필 이미지가 있다면 S3에서도 삭제합니다
+     */
+    @Transactional
+    public void deleteUser(Long userId) {
+        log.info("[UserService] 회원 탈퇴 시작 - userId: {}", userId);
+
+        // 1. 사용자 존재 확인
+        User user = findById(userId);
+
+        // 2. 프로필 이미지가 있다면 S3에서 삭제
+        if (user.getProfileImageKey() != null && !user.getProfileImageKey().isEmpty()) {
+            try {
+                fileService.deleteObject(user.getProfileImageKey());
+                log.info("[UserService] 프로필 이미지 삭제 완료 - key: {}", user.getProfileImageKey());
+            } catch (Exception e) {
+                log.warn("[UserService] 프로필 이미지 삭제 실패 (계속 진행) - key: {}, error: {}",
+                         user.getProfileImageKey(), e.getMessage());
+            }
+        }
+
+        // 3. 연관 데이터 삭제 (외래키 제약 순서 고려)
+        log.info("[UserService] 연관 데이터 삭제 시작 - userId: {}", userId);
+
+        // 3-1. 피드 좋아요 삭제 (FeedLike -> Feed 참조)
+        feedLikeRepository.deleteByUserId(userId);
+        log.debug("[UserService] 피드 좋아요 삭제 완료");
+
+        // 3-2. 피드 삭제 (Feed -> RunningRecord 참조)
+        feedRepository.deleteByUserId(userId);
+        log.debug("[UserService] 피드 삭제 완료");
+
+        // 3-3. 방명록 삭제
+        guestbookRepository.deleteByUserId(userId);
+        log.debug("[UserService] 방명록 삭제 완료");
+
+        // 3-4. 크루 가입 신청 삭제
+        crewJoinRequestRepository.deleteByUserId(userId);
+        log.debug("[UserService] 크루 가입 신청 삭제 완료");
+
+        // 3-5. 크루 멤버십 삭제
+        crewMemberRepository.deleteByUserId(userId);
+        log.debug("[UserService] 크루 멤버십 삭제 완료");
+
+        // 3-6. 러닝 기록 삭제 (RunningRoute는 cascade로 자동 삭제됨)
+        runningRecordRepository.deleteByUserId(userId);
+        log.debug("[UserService] 러닝 기록 삭제 완료");
+
+        // 3-7. 여행 진행 내역 삭제 (StampEntity는 cascade로 자동 삭제됨)
+        userJourneyProgressRepository.deleteByUserId(userId);
+        log.debug("[UserService] 여행 진행 내역 삭제 완료");
+
+        // 3-8. 사용자 엠블럼 삭제
+        userEmblemRepository.deleteByUserId(userId);
+        log.debug("[UserService] 사용자 엠블럼 삭제 완료");
+
+        // 3-9. FCM 토큰 삭제
+        fcmTokenRepository.deleteByUserId(userId);
+        log.debug("[UserService] FCM 토큰 삭제 완료");
+
+        // 3-10. 알림 설정 삭제
+        notificationSettingRepository.deleteByUserId(userId);
+        log.debug("[UserService] 알림 설정 삭제 완료");
+
+        // 4. 최종적으로 사용자 삭제
+        userRepository.delete(user);
+        log.info("[UserService] 회원 탈퇴 완료 - userId: {}, kakaoId: {}", userId, user.getKakaoId());
     }
 
 }
