@@ -88,6 +88,7 @@ public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Lo
 
     //멤버십 조회 (활성/비활성 무관)
     @Query("SELECT cm FROM CrewMemberEntity cm " +
+           "JOIN FETCH cm.user " +
            "WHERE cm.user.id = :userId AND cm.crew.id = :crewId")
     Optional<CrewMemberEntity> findMembership(@Param("userId") Long userId, @Param("crewId") Long crewId);
 

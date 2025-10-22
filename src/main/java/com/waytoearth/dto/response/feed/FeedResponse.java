@@ -50,15 +50,17 @@ public record FeedResponse(
         Integer calories
 ) {
     public static FeedResponse from(Feed feed, boolean liked, FileService fileService) {
+        // 프로필 이미지 CloudFront URL 생성
         String profileImageKey = feed.getUser() != null ? feed.getUser().getProfileImageKey() : null;
         String profileImageUrl = (profileImageKey != null && !profileImageKey.isEmpty())
                 ? fileService.createPresignedGetUrl(profileImageKey)
                 : null;
 
+        // 피드 본문 이미지는 이미 CloudFront URL로 저장되어 있음
         return FeedResponse.builder()
                 .id(feed.getId())
                 .content(feed.getContent())
-                .imageUrl(feed.getImageUrl())
+                .imageUrl(feed.getImageUrl())  // 이미 CloudFront URL
                 .likeCount(feed.getLikeCount())
                 .liked(liked)   //  좋아요 여부 반영
                 .createdAt(feed.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant())
