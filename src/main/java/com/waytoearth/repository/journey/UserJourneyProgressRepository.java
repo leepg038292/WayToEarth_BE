@@ -81,4 +81,9 @@ public interface UserJourneyProgressRepository extends JpaRepository<UserJourney
      */
     @Query("SELECT COUNT(ujp) FROM UserJourneyProgressEntity ujp WHERE ujp.journey.id = :journeyId AND ujp.status = 'COMPLETED'")
     Long countCompletedRunnersByJourneyId(@Param("journeyId") Long journeyId);
+
+    /**
+     * 사용자 ID로 여행 진행 내역 일괄 삭제 (회원 탈퇴용)
+     */
+    void deleteByUserId(Long userId);
 }

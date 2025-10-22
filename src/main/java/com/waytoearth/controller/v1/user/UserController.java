@@ -82,4 +82,17 @@ public class UserController {
 
         return ResponseEntity.ok(ApiResponse.success("프로필이 성공적으로 수정되었습니다."));
     }
+
+    @Operation(
+            summary = "회원 탈퇴",
+            description = "현재 로그인한 사용자의 계정 및 모든 연관 데이터를 삭제합니다. 이 작업은 되돌릴 수 없습니다.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @DeleteMapping("/me")
+    public ResponseEntity<ApiResponse<Void>> deleteAccount(@AuthUser AuthenticatedUser me) {
+        log.info("[Users:Delete] 회원 탈퇴 요청 - userId: {}", me.getUserId());
+        userService.deleteUser(me.getUserId());
+
+        return ResponseEntity.ok(ApiResponse.success("회원 탈퇴가 완료되었습니다."));
+    }
 }

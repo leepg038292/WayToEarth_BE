@@ -103,4 +103,7 @@ public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Lo
            "JOIN FETCH cm.user " +
            "WHERE cm.crew.id = :crewId AND cm.isActive = true AND cm.role = 'MEMBER'")
     Page<CrewMemberEntity> findRegularMembersWithPaging(@Param("crewId") Long crewId, Pageable pageable);
+
+    // 사용자 ID로 크루 멤버십 일괄 삭제 (회원 탈퇴용)
+    void deleteByUserId(Long userId);
 }

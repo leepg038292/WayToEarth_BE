@@ -129,6 +129,42 @@ public class KakaoApiService {
         }
     }
 
+    /**
+     * 카카오 연동 해제 (회원 탈퇴 시)
+     * - WayToEarth와 카카오 계정의 연결을 끊습니다
+     * - 카카오 계정 자체는 삭제되지 않습니다
+     * - 재가입 시 다시 동의 절차가 필요합니다
+     */
+    public void unlinkKakaoAccount(Long kakaoId) {
+        log.info("[KakaoApiService] 카카오 연동 해제 시작 - kakaoId: {}", kakaoId);
+
+        try {
+            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+            formData.add("target_id_type", "user_id");
+            formData.add("target_id", String.valueOf(kakaoId));
+
+            // Admin Key를 사용한 연동 해제
+            kakaoApiWebClient.post()
+                    .uri("/v1/user/unlink")
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .header("Authorization", "KakaoAK " + clientId) // Admin Key 사용
+                    .body(BodyInserters.fromFormData(formData))
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
+
+            log.info("[KakaoApiService] 카카오 연동 해제 성공 - kakaoId: {}", kakaoId);
+
+        } catch (WebClientResponseException e) {
+            log.error("[KakaoApiService] 카카오 연동 해제 실패 - kakaoId: {}, Status: {}, Body: {}",
+                    kakaoId, e.getStatusCode(), e.getResponseBodyAsString());
+            // 실패해도 예외를 던지지 않고 경고만 로깅 (회원 탈퇴는 계속 진행)
+        } catch (Exception e) {
+            log.error("[KakaoApiService] 카카오 연동 해제 중 예상치 못한 에러 - kakaoId: {}", kakaoId, e);
+            // 실패해도 예외를 던지지 않고 경고만 로깅
+        }
+    }
+
     // 카카오 API 응답용 내부 DTO
     @Getter
     @NoArgsConstructor

@@ -39,4 +39,7 @@ public interface UserEmblemRepository extends JpaRepository<UserEmblem, Long> {
             "where ue.user.id = :userId and ue.emblem.id in :emblemIds")
     List<UserEmblem> findByUserIdAndEmblemIdIn(@Param("userId") Long userId,
                                                @Param("emblemIds") List<Long> emblemIds);
+
+    /** 사용자 ID로 엠블럼 일괄 삭제 (회원 탈퇴용) */
+    void deleteByUserId(Long userId);
 }
