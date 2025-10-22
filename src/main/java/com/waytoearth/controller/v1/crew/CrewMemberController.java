@@ -6,6 +6,7 @@ import com.waytoearth.dto.response.crew.CrewMemberResponse;
 import com.waytoearth.entity.crew.CrewMemberEntity;
 import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.service.crew.CrewMemberService;
+import com.waytoearth.service.file.FileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 public class CrewMemberController {
 
     private final CrewMemberService crewMemberService;
+    private final FileService fileService;
 
     @Operation(summary = "크루 멤버 목록 조회", description = "특정 크루의 멤버 목록을 페이징하여 조회합니다.")
     @ApiResponses({
@@ -49,7 +51,7 @@ public class CrewMemberController {
 
         Page<CrewMemberEntity> members = crewMemberService.getCrewMembers(crewId, pageable);
 
-        Page<CrewMemberResponse> response = members.map(CrewMemberResponse::from);
+        Page<CrewMemberResponse> response = members.map(member -> CrewMemberResponse.from(member, fileService));
 
         return ResponseEntity.ok(response);
     }
@@ -66,7 +68,7 @@ public class CrewMemberController {
         List<CrewMemberEntity> members = crewMemberService.getCrewMembersWithUser(crewId);
 
         List<CrewMemberResponse> response = members.stream()
-                .map(CrewMemberResponse::from)
+                .map(member -> CrewMemberResponse.from(member, fileService))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
@@ -134,7 +136,7 @@ public class CrewMemberController {
         CrewMemberEntity member = crewMemberService.changeMemberRole(
                 user, crewId, userId, request.getNewRole());
 
-        return ResponseEntity.ok(CrewMemberResponse.from(member));
+        return ResponseEntity.ok(CrewMemberResponse.from(member, fileService));
     }
 
     @Operation(summary = "내가 속한 크루 목록", description = "현재 사용자가 속한 모든 크루의 멤버십 정보를 조회합니다.")
@@ -149,7 +151,7 @@ public class CrewMemberController {
         List<CrewMemberEntity> memberships = crewMemberService.getUserCrewMemberships(user);
 
         List<CrewMemberResponse> response = memberships.stream()
-                .map(CrewMemberResponse::from)
+                .map(member -> CrewMemberResponse.from(member, fileService))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
@@ -167,7 +169,7 @@ public class CrewMemberController {
 
         CrewMemberEntity membership = crewMemberService.getCrewMembership(crewId, userId);
 
-        return ResponseEntity.ok(CrewMemberResponse.from(membership));
+        return ResponseEntity.ok(CrewMemberResponse.from(membership, fileService));
     }
 
     @Operation(summary = "크루 멤버 수 조회", description = "특정 크루의 활성 멤버 수를 조회합니다.")
@@ -218,7 +220,7 @@ public class CrewMemberController {
         List<CrewMemberEntity> members = crewMemberService.getRegularMembers(crewId);
 
         List<CrewMemberResponse> response = members.stream()
-                .map(CrewMemberResponse::from)
+                .map(member -> CrewMemberResponse.from(member, fileService))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
