@@ -24,6 +24,7 @@ import com.waytoearth.repository.crew.CrewChatReadStatusRepository;
 import com.waytoearth.repository.crew.CrewChatNotificationSettingRepository;
 import com.waytoearth.repository.crew.CrewChatRepository;
 import com.waytoearth.service.auth.KakaoApiService;
+import com.waytoearth.repository.crew.CrewStatisticsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -59,6 +60,7 @@ public class UserService {
     private final CrewChatReadStatusRepository crewChatReadStatusRepository;
     private final CrewChatNotificationSettingRepository crewChatNotificationSettingRepository;
     private final CrewChatRepository crewChatRepository;
+    private final CrewStatisticsRepository crewStatisticsRepository;
 
     // 카카오 연동 해제를 위한 서비스
     private final KakaoApiService kakaoApiService;
@@ -288,7 +290,12 @@ public class UserService {
         log.debug("[UserService] 크루 가입 신청 삭제 완료");
 
         // 4-5. 크루 멤버십 삭제
+        var memberships = crewMemberRepository.findByUserIdWithCrew(userId);
+        var affectedCrewIds = memberships.stream().map(m -> m.getCrew().getId()).distinct().toList();
         crewMemberRepository.deleteByUserId(userId);
+        for (Long crewId : affectedCrewIds) {
+            crewStatisticsRepository.updateCurrentMembersAtomically(crewId, -1);
+        }
         log.debug("[UserService] 크루 멤버십 삭제 완료");
 
         // 4-6. 러닝 기록 삭제 (RunningRoute는 cascade로 자동 삭제됨)
