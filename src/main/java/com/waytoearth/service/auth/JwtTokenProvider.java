@@ -41,25 +41,22 @@ public class JwtTokenProvider {
     }
 
     /**
-     * JWT 토큰 생성
+     * JWT 토큰 생성 (Deprecated - generateAccessToken 사용 권장)
+     * @deprecated use {@link #generateAccessToken(Long, UserRole)} instead
      */
+    @Deprecated
     public String generateToken(Long userId, UserRole role) {
-        Date expiryDate = new Date(System.currentTimeMillis() + jwtExpirationMs);
-
-        return Jwts.builder()
-                .subject(String.valueOf(userId))
-                .claim("role", role.name())
-                .issuedAt(new Date())
-                .expiration(expiryDate)
-                .signWith(secretKey)
-                .compact();
+        // 기존 코드 호환성을 위해 accessToken으로 리다이렉트
+        return generateAccessToken(userId, role);
     }
 
     /**
      * JWT 토큰 생성 (기본 역할: USER) - 하위 호환성 유지
+     * @deprecated use {@link #generateAccessToken(Long, UserRole)} instead
      */
+    @Deprecated
     public String generateToken(Long userId) {
-        return generateToken(userId, UserRole.USER);
+        return generateAccessToken(userId, UserRole.USER);
     }
 
     /**
