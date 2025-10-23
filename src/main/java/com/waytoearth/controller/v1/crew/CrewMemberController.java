@@ -157,17 +157,18 @@ public class CrewMemberController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "특정 크루 멤버십 조회", description = "특정 크루에서의 사용자 멤버십 정보를 조회합니다.")
+    @Operation(summary = "내 크루 멤버십 조회", description = "현재 사용자의 크루 멤버십 정보를 조회합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패"),
             @ApiResponse(responseCode = "404", description = "멤버십을 찾을 수 없음")
     })
-    @GetMapping("/{crewId}/members/{userId}")
-    public ResponseEntity<CrewMemberResponse> getCrewMembership(
+    @GetMapping("/{crewId}/members/me")
+    public ResponseEntity<CrewMemberResponse> getMyCrewMembership(
             @Parameter(description = "크루 ID") @PathVariable Long crewId,
-            @Parameter(description = "사용자 ID") @PathVariable Long userId) {
+            @AuthUser AuthenticatedUser user) {
 
-        CrewMemberEntity membership = crewMemberService.getCrewMembership(crewId, userId);
+        CrewMemberEntity membership = crewMemberService.getCrewMembership(crewId, user.getUserId());
 
         return ResponseEntity.ok(CrewMemberResponse.from(membership, fileService));
     }
