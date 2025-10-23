@@ -125,13 +125,13 @@ jobs:
             echo "⏳ Waiting for app to start (max 60s)..."
             for i in {1..12}; do
               if curl -fsS http://127.0.0.1:8080/actuator/health | grep -q '"status":"UP"'; then
-                echo "✅ App is healthy!"
+                echo " App is healthy!"
                 exit 0
               fi
               echo "⏳ Still starting... ($i/12)"
               sleep 5
             done
 
-            echo "❌ App failed to start within 60s"
+            echo " App failed to start within 60s"
             docker logs --tail 200 waytoearth || true
             exit 1

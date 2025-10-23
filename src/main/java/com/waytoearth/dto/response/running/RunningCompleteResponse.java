@@ -42,7 +42,7 @@ public class RunningCompleteResponse {
     @Schema(description = "엠블럼 지급 결과")
     private EmblemAwardResult emblemAwardResult;
 
-    // ✅ 추가
+    //  추가
     @Schema(description = "러닝 타입 (SINGLE / JOURNEY)")
     private String runningType;
 

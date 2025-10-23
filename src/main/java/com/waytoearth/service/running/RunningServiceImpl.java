@@ -233,7 +233,7 @@ public class RunningServiceImpl implements RunningService {
                                 .collect(Collectors.toList())
                 )
                 .emblemAwardResult(null)
-                .runningType(r.getRunningType().name())   // ✅ 추가
+                .runningType(r.getRunningType().name())   //  추가
                 .build();
     }
 
