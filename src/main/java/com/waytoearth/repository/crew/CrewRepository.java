@@ -5,9 +5,11 @@ import com.waytoearth.entity.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import jakarta.persistence.LockModeType;
 
 import java.util.List;
 import java.util.Optional;
@@ -97,4 +99,9 @@ public interface CrewRepository extends JpaRepository<CrewEntity, Long> {
            "JOIN c.members m " +
            "WHERE m.user = :user AND m.isActive = true AND c.isActive = true")
     Page<CrewEntity> findCrewsByUserWithOwnerPaged(@Param("user") User user, Pageable pageable);
+
+    // Concurrency control: lock crew row for updates within a transaction
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT c FROM CrewEntity c WHERE c.id = :crewId")
+    Optional<CrewEntity> findByIdForUpdate(@Param("crewId") Long crewId);
 }

@@ -46,6 +46,9 @@ public class CrewServiceImpl implements CrewService {
         User owner = userRepository.findById(user.getUserId())
                 .orElseThrow(() -> new UserNotFoundException(user.getUserId()));
 
+        // 이름 유효성 추가 검증 (서버 측 보강)
+        validateCrewName(name);
+
         // 크루 생성
         CrewEntity crew = CrewEntity.builder()
                 .name(name)
@@ -106,7 +109,10 @@ public class CrewServiceImpl implements CrewService {
         }
 
         // 정보 업데이트
-        if (name != null) crew.setName(name);
+        if (name != null) {
+            validateCrewName(name);
+            crew.setName(name);
+        }
         if (description != null) crew.setDescription(description);
         if (maxMembers != null) crew.setMaxMembers(maxMembers);
         if (profileImageUrl != null) crew.setProfileImageUrl(profileImageUrl);
@@ -138,6 +144,14 @@ public class CrewServiceImpl implements CrewService {
                 .orElseThrow(() -> new UserNotFoundException(user.getUserId()));
         // N+1 방지 및 DB 네이티브 페이징 사용
         return crewRepository.findCrewsByUserWithOwnerPaged(userEntity, pageable);
+    }
+
+    private void validateCrewName(String name) {
+        if (name == null) return;
+        String pattern = "^[가-힣a-zA-Z0-9 _-]+$";
+        if (!name.matches(pattern)) {
+            throw new InvalidParameterException("크루 이름은 한글, 영문, 숫자, 공백, '-', '_'만 가능합니다.");
+        }
     }
 
     @Override

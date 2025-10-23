@@ -73,8 +73,10 @@ public class CrewJoinServiceImpl implements CrewJoinService {
     @Override
     @Transactional
     public void approveJoinRequest(AuthenticatedUser user, Long requestId) {
-        CrewJoinRequestEntity joinRequest = getJoinRequest(requestId);
-        CrewEntity crew = joinRequest.getCrew();
+        CrewJoinRequestEntity joinRequest = joinRequestRepository.findByIdForUpdate(requestId)
+                .orElseThrow(() -> new RuntimeException("가입 요청을 찾을 수 없습니다. requestId: " + requestId));
+        CrewEntity crew = crewRepository.findByIdForUpdate(joinRequest.getCrew().getId())
+                .orElseThrow(() -> new RuntimeException("크루를 찾을 수 없습니다. crewId: " + joinRequest.getCrew().getId()));
 
         // 크루장인지 확인
         if (!isCrewOwner(crew, user.getUserId())) {

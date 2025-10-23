@@ -7,9 +7,11 @@ import com.waytoearth.entity.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import jakarta.persistence.LockModeType;
 
 import java.util.List;
 import java.util.Optional;
@@ -88,4 +90,9 @@ public interface CrewJoinRequestRepository extends JpaRepository<CrewJoinRequest
      * 사용자 ID로 크루 가입 신청 일괄 삭제 (회원 탈퇴용)
      */
     void deleteByUserId(Long userId);
+
+    // Concurrency control: lock join request row to prevent double-processing
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT jr FROM CrewJoinRequestEntity jr WHERE jr.id = :id")
+    Optional<CrewJoinRequestEntity> findByIdForUpdate(@Param("id") Long id);
 }
