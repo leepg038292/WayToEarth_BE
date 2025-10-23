@@ -79,13 +79,13 @@ public class User extends BaseTimeEntity {
 
     // 온보딩 완료 메서드
     public void completeOnboarding(String nickname, String residence, AgeGroup ageGroup,
-                                   Gender gender, BigDecimal weeklyGoalDistance, String profileImageUrl) {
+                                   Gender gender, BigDecimal weeklyGoalDistance, String profileImageKey) {
         this.nickname = nickname;
         this.residence = residence;
         this.ageGroup = ageGroup;
         this.gender = gender;
         this.weeklyGoalDistance = weeklyGoalDistance;
-        this.profileImageUrl = profileImageUrl;
+        this.profileImageKey = profileImageKey;
         this.isOnboardingCompleted = true;
     }
 

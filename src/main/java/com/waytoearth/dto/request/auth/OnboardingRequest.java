@@ -40,7 +40,7 @@ public class OnboardingRequest {
     @DecimalMax(value = "999.99", message = "주간 목표 거리는 999.99km 이하여야 합니다")
     private BigDecimal weekly_goal_distance;
 
-    @Schema(description = "프로필 이미지 URL", example = "https://example.com/profile.jpg")
-    @Size(max = 500, message = "프로필 이미지 URL은 500자 이하여야 합니다")
-    private String profileImageUrl;
+    @Schema(description = "프로필 이미지 S3 Key (Presigned URL 응답의 key 사용)", example = "profiles/123/profile_1234567890.jpg")
+    @Size(max = 1024, message = "프로필 이미지 Key는 1024자 이하여야 합니다")
+    private String profileImageKey;
 }

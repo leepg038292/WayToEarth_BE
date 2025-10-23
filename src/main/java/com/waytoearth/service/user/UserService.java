@@ -103,7 +103,7 @@ public class UserService {
                 request.getAge_group(),
                 request.getGender(),
                 request.getWeekly_goal_distance(),
-                request.getProfileImageUrl()
+                request.getProfileImageKey()
         );
 
         userRepository.save(user);
