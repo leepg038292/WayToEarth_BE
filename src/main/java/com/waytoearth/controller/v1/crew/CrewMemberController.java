@@ -67,11 +67,19 @@ public class CrewMemberController {
     @Operation(summary = "크루 멤버 목록 조회 (전체)", description = "특정 크루의 모든 멤버를 조회합니다. 사용자 정보 포함.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패"),
+            @ApiResponse(responseCode = "403", description = "권한 없음 (크루 멤버가 아님)"),
             @ApiResponse(responseCode = "404", description = "크루를 찾을 수 없음")
     })
     @GetMapping("/{crewId}/members/all")
     public ResponseEntity<List<CrewMemberResponse>> getAllCrewMembers(
+            @AuthUser AuthenticatedUser user,
             @Parameter(description = "크루 ID") @PathVariable Long crewId) {
+
+        // 크루 멤버만 조회 가능
+        if (!crewMemberService.isCrewMember(crewId, user.getUserId())) {
+            throw new com.waytoearth.exception.UnauthorizedAccessException("크루 멤버만 조회할 수 있습니다.");
+        }
 
         List<CrewMemberEntity> members = crewMemberService.getCrewMembersWithUser(crewId);
 
@@ -220,11 +228,19 @@ public class CrewMemberController {
     @Operation(summary = "크루 일반 멤버 목록", description = "크루의 일반 멤버들만 조회합니다 (크루장 제외).")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패"),
+            @ApiResponse(responseCode = "403", description = "권한 없음 (크루 멤버가 아님)"),
             @ApiResponse(responseCode = "404", description = "크루를 찾을 수 없음")
     })
     @GetMapping("/{crewId}/members/regular")
     public ResponseEntity<List<CrewMemberResponse>> getRegularMembers(
+            @AuthUser AuthenticatedUser user,
             @Parameter(description = "크루 ID") @PathVariable Long crewId) {
+
+        // 크루 멤버만 조회 가능
+        if (!crewMemberService.isCrewMember(crewId, user.getUserId())) {
+            throw new com.waytoearth.exception.UnauthorizedAccessException("크루 멤버만 조회할 수 있습니다.");
+        }
 
         List<CrewMemberEntity> members = crewMemberService.getRegularMembers(crewId);
 

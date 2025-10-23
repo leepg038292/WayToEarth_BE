@@ -211,4 +211,9 @@ public class CrewMemberServiceImpl implements CrewMemberService {
     private boolean isCrewOwner(CrewEntity crew, Long userId) {
         return crew.getOwner().getId().equals(userId);
     }
+
+    @Override
+    public boolean isCrewMember(Long crewId, Long userId) {
+        return crewMemberRepository.isUserMemberOfCrew(userId, crewId);
+    }
 }
