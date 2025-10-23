@@ -111,7 +111,8 @@ jobs:
               -e CLOUDFRONT_DOMAIN="${{ vars.CLOUDFRONT_DOMAIN }}" \
               -e OPENWEATHER_API_KEY="${{ secrets.OPENWEATHER_API_KEY }}" \
               -e OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
-              -e JWT_EXPIRATION="${{ vars.JWT_EXPIRATION }}" \
+              -e JWT_ACCESS_EXPIRATION="${{ vars.JWT_ACCESS_EXPIRATION }}" \
+              -e JWT_REFRESH_EXPIRATION="${{ vars.JWT_REFRESH_EXPIRATION }}" \
               -e REDIS_HOST="${{ secrets.REDIS_HOST }}" \
               -e REDIS_PORT="${{ vars.REDIS_PORT }}" \
               -e FCM_CONFIG_JSON_BASE64="${{ secrets.FCM_CONFIG_JSON }}" \

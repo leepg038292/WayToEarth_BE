@@ -19,13 +19,11 @@ public class JwtTokenProvider {
 
 
     private final SecretKey secretKey;
-    private final long jwtExpirationMs; // 기존 설정 (하위 호환성)
     private final long accessTokenExpirationMs;
     private final long refreshTokenExpirationMs;
 
     public JwtTokenProvider(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.expiration:86400000}") long expiration,
             @Value("${jwt.access-token-expiration:900000}") long accessTokenExpiration,
             @Value("${jwt.refresh-token-expiration:2592000000}") long refreshTokenExpiration) {
         log.info("JWT configuration initialized - access: {}ms, refresh: {}ms",
@@ -38,7 +36,6 @@ public class JwtTokenProvider {
         }
 
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
-        this.jwtExpirationMs = expiration; // 하위 호환성
         this.accessTokenExpirationMs = accessTokenExpiration;
         this.refreshTokenExpirationMs = refreshTokenExpiration;
     }
