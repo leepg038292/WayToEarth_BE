@@ -20,6 +20,9 @@ import com.waytoearth.repository.journey.GuestbookRepository;
 import com.waytoearth.repository.crew.CrewJoinRequestRepository;
 import com.waytoearth.repository.notification.FcmTokenRepository;
 import com.waytoearth.repository.notification.NotificationSettingRepository;
+import com.waytoearth.repository.crew.CrewChatReadStatusRepository;
+import com.waytoearth.repository.crew.CrewChatNotificationSettingRepository;
+import com.waytoearth.repository.crew.CrewChatRepository;
 import com.waytoearth.service.auth.KakaoApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +56,9 @@ public class UserService {
     private final CrewJoinRequestRepository crewJoinRequestRepository;
     private final FcmTokenRepository fcmTokenRepository;
     private final NotificationSettingRepository notificationSettingRepository;
+    private final CrewChatReadStatusRepository crewChatReadStatusRepository;
+    private final CrewChatNotificationSettingRepository crewChatNotificationSettingRepository;
+    private final CrewChatRepository crewChatRepository;
 
     // 카카오 연동 해제를 위한 서비스
     private final KakaoApiService kakaoApiService;
@@ -301,13 +307,39 @@ public class UserService {
         fcmTokenRepository.deleteByUserId(userId);
         log.debug("[UserService] FCM 토큰 삭제 완료");
 
-        // 4-10. 알림 설정 삭제
+        // 4-10. 알림 설정 삭제 (글로벌)
         notificationSettingRepository.deleteByUserId(userId);
         log.debug("[UserService] 알림 설정 삭제 완료");
+
+        // 4-11. 크루 채팅 읽음 상태 삭제
+        crewChatReadStatusRepository.deleteByReaderId(userId);
+        log.debug("[UserService] 크루 채팅 읽음 상태 삭제 완료");
+
+        // 4-12. 크루 채팅 알림 설정 삭제
+        crewChatNotificationSettingRepository.deleteByUserId(userId);
+        log.debug("[UserService] 크루 채팅 알림 설정 삭제 완료");
+
+        // 4-13. 사용자가 보낸 채팅은 보존: 발신자를 '탈퇴한 사용자'로 치환
+        User deletedSentinel = getOrCreateDeletedUserSentinel();
+        int reassigned = crewChatRepository.reassignSenderToDeleted(userId, deletedSentinel);
+        log.debug("[UserService] 보낸 채팅 발신자 치환 완료 - reassigned: {}", reassigned);
 
         // 5. 최종적으로 사용자 삭제
         userRepository.delete(user);
         log.info("[UserService] 회원 탈퇴 완료 - userId: {}, kakaoId: {}", userId, user.getKakaoId());
+    }
+
+    private User getOrCreateDeletedUserSentinel() {
+        // kakaoId -1을 가진 예약 사용자 사용
+        Long sentinelKakaoId = -1L;
+        return userRepository.findByKakaoId(sentinelKakaoId).orElseGet(() -> {
+            User sentinel = User.builder()
+                    .kakaoId(sentinelKakaoId)
+                    .nickname("탈퇴한 사용자")
+                    .isOnboardingCompleted(true)
+                    .build();
+            return userRepository.save(sentinel);
+        });
     }
 
 }

@@ -5,11 +5,13 @@ import com.waytoearth.entity.crew.CrewChatEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import com.waytoearth.entity.user.User;
 
 @Repository
 public interface CrewChatRepository extends JpaRepository<CrewChatEntity, Long> {
@@ -68,4 +70,8 @@ public interface CrewChatRepository extends JpaRepository<CrewChatEntity, Long> 
     List<CrewChatEntity> findByCrewIdOrderBySentAtDesc(@Param("crewId") Long crewId);
 
     void deleteAllByCrew_Id(Long crewId);
+
+    @Modifying
+    @Query("UPDATE CrewChatEntity c SET c.sender = :sentinel WHERE c.sender.id = :userId")
+    int reassignSenderToDeleted(@Param("userId") Long userId, @Param("sentinel") User sentinel);
 }
