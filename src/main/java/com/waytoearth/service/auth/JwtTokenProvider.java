@@ -159,6 +159,29 @@ public class JwtTokenProvider {
     }
 
     /**
+     * 토큰 만료까지 남은 일수
+     * - 조건부 리프레시 토큰 재발급 판단용
+     */
+    public Long getRemainingDays(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            Date expiration = claims.getExpiration();
+            long remainingMs = expiration.getTime() - System.currentTimeMillis();
+
+            // 밀리초 → 일수 변환
+            return Math.max(remainingMs / (1000 * 60 * 60 * 24), 0L);
+        } catch (JwtException | IllegalArgumentException e) {
+            log.error("[JwtTokenProvider] 토큰 남은 일수 계산 실패: {}", e.getMessage());
+            return 0L;
+        }
+    }
+
+    /**
      * 토큰 생성 공통 로직
      */
     private String buildToken(Long userId, UserRole role, Date expiryDate) {

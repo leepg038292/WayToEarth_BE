@@ -15,4 +15,7 @@ public class TokenRefreshResponse {
 
     @Schema(description = "새로 발급된 액세스 토큰 (15분)", example = "eyJhbGciOiJIUzI1NiJ9...")
     private String accessToken;
+
+    @Schema(description = "새로 발급된 리프레시 토큰 (30일)", example = "eyJhbGciOiJIUzI1NiJ9...")
+    private String refreshToken;
 }
