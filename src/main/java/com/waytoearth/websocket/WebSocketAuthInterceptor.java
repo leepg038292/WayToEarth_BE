@@ -1,5 +1,6 @@
 package com.waytoearth.websocket;
 
+import com.waytoearth.repository.crew.CrewMemberRepository;
 import com.waytoearth.service.auth.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import java.util.Map;
 public class WebSocketAuthInterceptor implements HandshakeInterceptor {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final CrewMemberRepository crewMemberRepository;
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
@@ -32,10 +34,26 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
             }
 
             Long userId = jwtTokenProvider.getUserIdFromToken(token);
+
+            // URL에서 crewId 추출
+            Long crewId = extractCrewIdFromPath(request.getURI().getPath());
+
+            if (crewId == null) {
+                log.warn("WebSocket 연결 거부 - crewId를 찾을 수 없음: {}", request.getURI());
+                return false;
+            }
+
+            // 크루 멤버인지 확인
+            if (!crewMemberRepository.isUserMemberOfCrew(userId, crewId)) {
+                log.warn("WebSocket 연결 거부 - 크루 멤버 아님: userId={}, crewId={}", userId, crewId);
+                return false;
+            }
+
             attributes.put("userId", userId);
+            attributes.put("crewId", crewId);
             attributes.put("token", token);
 
-            log.info("WebSocket 인증 성공 - userId: {}", userId);
+            log.info("WebSocket 인증 성공 - userId: {}, crewId: {}", userId, crewId);
             return true;
 
         } catch (Exception e) {
@@ -67,6 +85,24 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
 
         log.warn("WebSocket 연결에서 Authorization 헤더를 찾을 수 없음: {}",
                 request.getURI().getPath());
+        return null;
+    }
+
+    /**
+     * WebSocket URL에서 crewId 추출
+     * 예: /ws/crew/123/chat → 123
+     */
+    private Long extractCrewIdFromPath(String path) {
+        try {
+            String[] parts = path.split("/");
+            for (int i = 0; i < parts.length - 1; i++) {
+                if ("crew".equals(parts[i]) && i + 1 < parts.length) {
+                    return Long.parseLong(parts[i + 1]);
+                }
+            }
+        } catch (NumberFormatException e) {
+            log.error("crewId 파싱 실패: {}", path, e);
+        }
         return null;
     }
 }

@@ -96,6 +96,18 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
 
             ChatMessage chatMessage = objectMapper.readValue(message.getPayload(), ChatMessage.class);
 
+            // Authorization re-check at send time
+            if (!crewMemberRepository.isUserMemberOfCrew(userId, crewId)) {
+                sendErrorMessage(session, "권한이 없습니다. 크루 멤버가 아닙니다.");
+                session.close(CloseStatus.POLICY_VIOLATION);
+                return;
+            }
+
+            if (chatMessage.getCrewId() != null && !crewId.equals(chatMessage.getCrewId())) {
+                sendErrorMessage(session, "잘못된 대상 크루입니다.");
+                return;
+            }
+
             // Rate Limiting 검증 (이제 검증과 기록이 원자적으로 처리됨)
             if (!chatRateLimiter.canSendMessage(userId)) {
                 sendErrorMessage(session, "메시지 전송 속도가 너무 빠릅니다. 잠시 후 다시 시도해주세요.");
@@ -220,6 +232,12 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
             }
 
             try {
+                // 권한 재확인: 수신 대상의 멤버십 상태 확인
+                if (!crewMemberRepository.isUserMemberOfCrew(userId, crewId)) {
+                    sessionManager.removeSession(session);
+                    return true;
+                }
+
                 if (session.isOpen() && !sessionManager.isSessionExpired(session)) {
                     session.sendMessage(new TextMessage(messageJson));
                     return false;

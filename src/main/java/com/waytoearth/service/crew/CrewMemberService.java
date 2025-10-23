@@ -64,4 +64,9 @@ public interface CrewMemberService {
      * 크루의 일반 멤버들만 조회
      */
     List<CrewMemberEntity> getRegularMembers(Long crewId);
+
+    /**
+     * 크루 멤버 여부 확인
+     */
+    boolean isCrewMember(Long crewId, Long userId);
 }

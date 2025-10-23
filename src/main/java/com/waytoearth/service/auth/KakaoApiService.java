@@ -37,7 +37,7 @@ public class KakaoApiService {
      */
     public String getKakaoAccessToken(String authorizationCode) {
         log.info("[KakaoApiService] 카카오 토큰 요청 시작 - code: {}", authorizationCode);
-        log.info("[DEBUG] redirect_uri used for Kakao token request = {}", redirectUri);  // ✅ 추가!
+        log.info("[DEBUG] redirect_uri used for Kakao token request = {}", redirectUri);  //  추가!
 
 
         try {

@@ -107,4 +107,9 @@ public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Lo
 
     // 사용자 ID로 크루 멤버십 일괄 삭제 (회원 탈퇴용)
     void deleteByUserId(Long userId);
+
+    // 크루 ID로 실시간 멤버 수 카운트 (Race Condition 방지)
+    @Query("SELECT COUNT(cm) FROM CrewMemberEntity cm " +
+           "WHERE cm.crew.id = :crewId AND cm.isActive = true")
+    long countByCrewIdAndIsActiveTrue(@Param("crewId") Long crewId);
 }

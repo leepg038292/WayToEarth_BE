@@ -133,7 +133,7 @@ public class EmblemService {
                     UserEmblem.builder()
                             .user(user)
                             .emblem(emblem)
-                            .acquiredAt(Instant.now()) // ✅ null 방지
+                            .acquiredAt(Instant.now()) //  null 방지
                             .build()
             );
             return true;

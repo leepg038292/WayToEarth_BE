@@ -64,10 +64,10 @@ public class FcmConfig {
 
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
-                log.info("✅ Firebase Admin SDK 초기화 성공");
+                log.info(" Firebase Admin SDK 초기화 성공");
             }
         } catch (IOException e) {
-            log.error("❌ Firebase Admin SDK 초기화 실패: {}", e.getMessage());
+            log.error(" Firebase Admin SDK 초기화 실패: {}", e.getMessage());
             throw new RuntimeException("Firebase 초기화 실패", e);
         }
     }

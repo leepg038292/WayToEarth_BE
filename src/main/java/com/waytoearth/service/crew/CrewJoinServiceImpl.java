@@ -73,10 +73,13 @@ public class CrewJoinServiceImpl implements CrewJoinService {
     @Override
     @Transactional
     public void approveJoinRequest(AuthenticatedUser user, Long requestId) {
-        CrewJoinRequestEntity joinRequest = getJoinRequest(requestId);
+        CrewJoinRequestEntity joinRequest = joinRequestRepository.findByIdForUpdate(requestId)
+                .orElseThrow(() -> new RuntimeException("가입 요청을 찾을 수 없습니다. requestId: " + requestId));
+        CrewEntity crew = crewRepository.findByIdForUpdate(joinRequest.getCrew().getId())
+                .orElseThrow(() -> new RuntimeException("크루를 찾을 수 없습니다. crewId: " + joinRequest.getCrew().getId()));
 
         // 크루장인지 확인
-        if (!isCrewOwner(joinRequest.getCrew(), user.getUserId())) {
+        if (!isCrewOwner(crew, user.getUserId())) {
             throw new RuntimeException("가입 신청 승인은 크루장만 가능합니다.");
         }
 
@@ -85,9 +88,10 @@ public class CrewJoinServiceImpl implements CrewJoinService {
             throw new RuntimeException("이미 처리된 가입 신청입니다.");
         }
 
-        // 크루 정원 재확인
-        if (joinRequest.getCrew().isFull()) {
-            throw new RuntimeException("크루 정원이 가득 찼습니다.");
+        // 실시간 멤버 수 확인 (Race Condition 방지)
+        long actualMemberCount = crewMemberRepository.countByCrewIdAndIsActiveTrue(crew.getId());
+        if (actualMemberCount >= crew.getMaxMembers()) {
+            throw new RuntimeException("크루 정원이 초과되었습니다. (현재: " + actualMemberCount + "명)");
         }
 
         // 가입 신청 승인
@@ -95,16 +99,15 @@ public class CrewJoinServiceImpl implements CrewJoinService {
         joinRequestRepository.saveAndFlush(joinRequest);  // 즉시 DB 반영
 
         // 새로운 멤버 추가 (물리 삭제로 인해 탈퇴한 멤버는 DB에 없음)
-        CrewMemberEntity newMember = CrewMemberEntity.createMember(
-                joinRequest.getCrew(), joinRequest.getUser());
+        CrewMemberEntity newMember = CrewMemberEntity.createMember(crew, joinRequest.getUser());
         crewMemberRepository.save(newMember);
         log.info("새 멤버 추가 - requestId: {}, userId: {}", requestId, newMember.getUser().getId());
 
-        // 크루 멤버 수 증가
-        joinRequest.getCrew().incrementMemberCount();
+        // 크루 멤버 수 증가 (낙관적 락으로 동시성 제어)
+        crew.incrementMemberCount();
 
-        log.info("크루 가입 신청이 승인되었습니다. requestId: {}, approvedBy: {}, newMemberId: {}",
-                requestId, user.getUserId(), joinRequest.getUser().getId());
+        log.info("크루 가입 신청이 승인되었습니다. requestId: {}, approvedBy: {}, newMemberId: {}, actualCount: {}",
+                requestId, user.getUserId(), joinRequest.getUser().getId(), actualMemberCount + 1);
     }
 
     @Override

@@ -162,16 +162,27 @@ public class CrewJoinController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "가입 신청 상세 조회", description = "특정 가입 신청의 상세 정보를 조회합니다.")
+    @Operation(summary = "가입 신청 상세 조회", description = "특정 가입 신청의 상세 정보를 조회합니다. 본인 또는 크루장만 가능합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패"),
+            @ApiResponse(responseCode = "403", description = "권한 없음 (본인 또는 크루장 아님)"),
             @ApiResponse(responseCode = "404", description = "가입 신청을 찾을 수 없음")
     })
     @GetMapping("/join-requests/{requestId}")
     public ResponseEntity<JoinRequestResponse> getJoinRequestDetail(
+            @AuthUser AuthenticatedUser user,
             @Parameter(description = "가입 신청 ID") @PathVariable Long requestId) {
 
         CrewJoinRequestEntity request = crewJoinService.getJoinRequest(requestId);
+
+        // 본인 또는 크루장만 조회 가능
+        boolean isOwner = request.getCrew().getOwner().getId().equals(user.getUserId());
+        boolean isApplicant = request.getUser().getId().equals(user.getUserId());
+
+        if (!isOwner && !isApplicant) {
+            throw new com.waytoearth.exception.UnauthorizedAccessException("본인 또는 크루장만 조회할 수 있습니다.");
+        }
 
         return ResponseEntity.ok(JoinRequestResponse.from(request));
     }

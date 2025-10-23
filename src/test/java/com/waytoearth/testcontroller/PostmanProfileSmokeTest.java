@@ -89,7 +89,7 @@ class PostmanProfileSmokeTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        System.out.println("러닝 플로우 동작 확인 완료 ✅");
+        System.out.println("러닝 플로우 동작 확인 완료 ");
     }
 
     @Test
@@ -116,7 +116,7 @@ class PostmanProfileSmokeTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        System.out.println("주요 API 응답 확인 완료 ✅");
+        System.out.println("주요 API 응답 확인 완료 ");
     }
 
     @Test
@@ -146,7 +146,7 @@ class PostmanProfileSmokeTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        System.out.println("피드 기본 동작 확인 완료 ✅");
+        System.out.println("피드 기본 동작 확인 완료 ");
     }
 
     @Test
@@ -165,7 +165,7 @@ class PostmanProfileSmokeTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        System.out.println("파일 업로드 API 동작 확인 완료 ✅");
+        System.out.println("파일 업로드 API 동작 확인 완료 ");
     }
 
     @Test
@@ -183,6 +183,6 @@ class PostmanProfileSmokeTest {
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        System.out.println("사용자 API 동작 확인 완료 ✅");
+        System.out.println("사용자 API 동작 확인 완료 ");
     }
 }

@@ -1,7 +1,7 @@
 package com.waytoearth.security.mock;
 
 import com.waytoearth.entity.enums.UserRole;
-import com.waytoearth.security.AuthenticatedUser; // ✅ 진짜 principal import
+import com.waytoearth.security.AuthenticatedUser; //  진짜 principal import
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

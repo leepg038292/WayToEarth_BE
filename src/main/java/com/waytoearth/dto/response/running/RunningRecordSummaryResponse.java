@@ -32,7 +32,7 @@ public class RunningRecordSummaryResponse {
     @Schema(description = "시작 시각(한국시간 ISO-8601)", example = "2025-08-14T09:30:00")
     private String startedAt;
 
-    // ✅ 추가
+    //  추가
     @Schema(description = "러닝 타입 (SINGLE / JOURNEY)")
     private String runningType;
 
