@@ -52,7 +52,8 @@ kakao:
 # JWT 설정
 jwt:
   secret: ${JWT_SECRET}
-  expiration: ${JWT_EXPIRATION:86400000}
+  access-token-expiration: ${JWT_ACCESS_EXPIRATION:900000}      # 액세스 토큰 (15분 = 900,000ms)
+  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:2592000000} # 리프레시 토큰 (30일 = 2,592,000,000ms)
 
 # AWS S3 설정 (기본값)
 cloud:

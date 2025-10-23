@@ -40,18 +40,22 @@ public class MockAuthController {
             @RequestBody @Valid MockLoginRequest request) {
         
         log.info("[MockAuthController] Mock 로그인 요청 - userId: {}", request.getUserId());
-        
-        // JWT 토큰 발급
-        String jwtToken = jwtTokenProvider.generateToken(request.getUserId());
-        
+
+        // JWT 액세스 토큰 발급
+        String accessToken = jwtTokenProvider.generateToken(request.getUserId());
+
+        // Mock 리프레시 토큰 발급 (테스트용)
+        String refreshToken = jwtTokenProvider.generateRefreshToken(request.getUserId());
+
         // Mock Login Response 생성
         LoginResponse response = LoginResponse.builder()
                 .userId(request.getUserId())
-                .jwtToken(jwtToken)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .isNewUser(false) // Mock에서는 기존 사용자로 처리
                 .isOnboardingCompleted(true) // Mock에서는 온보딩 완료로 처리
                 .build();
-        
+
         log.info("[MockAuthController] Mock 로그인 완료 - userId: {}, tokenGenerated: true", request.getUserId());
         
         return ResponseEntity.ok(ApiResponse.success(response, "Mock 로그인에 성공했습니다."));
