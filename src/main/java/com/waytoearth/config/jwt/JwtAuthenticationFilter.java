@@ -3,6 +3,7 @@ package com.waytoearth.config.jwt;
 import com.waytoearth.entity.enums.UserRole;
 import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.service.auth.JwtTokenProvider;
+import com.waytoearth.service.auth.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +27,7 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -36,6 +38,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = resolveToken(request);
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
+            // 블랙리스트 체크 (로그아웃된 토큰 차단)
+            if (tokenBlacklistService.isBlacklisted(token)) {
+                log.warn("블랙리스트 토큰 접근 차단");
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             Long userId = jwtTokenProvider.getUserIdFromToken(token);
             UserRole role = jwtTokenProvider.getRoleFromToken(token);
 
