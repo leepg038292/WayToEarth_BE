@@ -2,8 +2,10 @@ package com.waytoearth.controller.v1.auth;
 
 import com.waytoearth.dto.request.auth.KakaoLoginRequest;
 import com.waytoearth.dto.request.auth.OnboardingRequest;
+import com.waytoearth.dto.request.auth.TokenRefreshRequest;
 import com.waytoearth.dto.response.auth.LoginResponse;
 import com.waytoearth.dto.response.auth.OnboardingResponse;
+import com.waytoearth.dto.response.auth.TokenRefreshResponse;
 import com.waytoearth.dto.response.common.ApiResponse;
 import com.waytoearth.security.AuthUser;
 import com.waytoearth.security.AuthenticatedUser;
@@ -106,5 +108,59 @@ public class AuthController {
 
         log.info("[AuthController] 닉네임 중복 확인 결과 - nickname: {}, available: {}", nickname, available);
         return ResponseEntity.ok(ApiResponse.success(data, message));
+    }
+
+    // ===============================
+    //  토큰 재발급
+    // ===============================
+    @Operation(
+            summary = "액세스 토큰 재발급",
+            description = "리프레시 토큰으로 액세스 토큰을 재발급합니다. 리프레시 토큰 만료까지 7일 이하 남은 경우 리프레시 토큰도 함께 재발급됩니다.",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "토큰 재발급 성공"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "유효하지 않은 리프레시 토큰"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
+            }
+    )
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<TokenRefreshResponse>> refreshToken(
+            @Parameter(description = "토큰 재발급 요청", required = true)
+            @RequestBody @Valid TokenRefreshRequest request) {
+
+        log.info("[AuthController] 토큰 재발급 요청");
+
+        TokenRefreshResponse response = authService.refreshAccessToken(request.getRefreshToken());
+
+        log.info("[AuthController] 토큰 재발급 완료");
+        return ResponseEntity.ok(ApiResponse.success(response, "토큰이 재발급되었습니다."));
+    }
+
+    // ===============================
+    //  로그아웃
+    // ===============================
+    @Operation(
+            summary = "로그아웃",
+            description = "로그아웃 처리 - 리프레시 토큰 삭제 및 액세스 토큰 블랙리스트 등록",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 토큰 없음/만료"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
+            }
+    )
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @Parameter(hidden = true) @AuthUser AuthenticatedUser user,
+            @Parameter(description = "Authorization 헤더", required = true)
+            @RequestHeader("Authorization") String authorizationHeader) {
+
+        log.info("[AuthController] 로그아웃 요청 - userId: {}", user.getUserId());
+
+        // Bearer 토큰 추출
+        String accessToken = authorizationHeader.replace("Bearer ", "");
+        authService.logout(user.getUserId(), accessToken);
+
+        log.info("[AuthController] 로그아웃 완료 - userId: {}", user.getUserId());
+        return ResponseEntity.ok(ApiResponse.success(null, "로그아웃되었습니다."));
     }
 }
