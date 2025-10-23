@@ -34,7 +34,6 @@ public class AuthService {
         log.info("[AuthService] 카카오 사용자 정보 조회 완료 - kakaoId: {}", kakaoUserInfo.getId());
 
         // 2. 토큰에서 가져온 사용자 ID와 요청의 사용자 ID 일치 여부 확인 (보안)
-        // 2. 토큰에서 가져온 사용자 ID와 요청의 사용자 ID 일치 여부 확인 (보안)
         String tokenUserId = String.valueOf(kakaoUserInfo.getId());
         String requestUserId = String.valueOf(request.getKakaoId());
 
