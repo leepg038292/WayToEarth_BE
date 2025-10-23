@@ -16,8 +16,11 @@ public class LoginResponse {
     @Schema(description = "사용자 ID", example = "12345")
     private Long userId;
 
-    @Schema(description = "JWT 토큰", example = "eyJhbGciOiJIUzI1NiJ9...")
-    private String jwtToken;
+    @Schema(description = "액세스 토큰 (15분)", example = "eyJhbGciOiJIUzI1NiJ9...")
+    private String accessToken;
+
+    @Schema(description = "리프레시 토큰 (30일)", example = "eyJhbGciOiJIUzI1NiJ9...")
+    private String refreshToken;
 
     @Schema(description = "신규 사용자 여부", example = "true")
     private Boolean isNewUser;
