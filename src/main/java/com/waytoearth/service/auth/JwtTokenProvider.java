@@ -19,12 +19,17 @@ public class JwtTokenProvider {
 
 
     private final SecretKey secretKey;
-    private final long jwtExpirationMs;
+    private final long jwtExpirationMs; // 기존 설정 (하위 호환성)
+    private final long accessTokenExpirationMs;
+    private final long refreshTokenExpirationMs;
 
     public JwtTokenProvider(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.expiration:86400000}") long expiration) {
-        log.info("JWT configuration initialized with expiration: {}ms", expiration);
+            @Value("${jwt.expiration:86400000}") long expiration,
+            @Value("${jwt.access-token-expiration:900000}") long accessTokenExpiration,
+            @Value("${jwt.refresh-token-expiration:2592000000}") long refreshTokenExpiration) {
+        log.info("JWT configuration initialized - access: {}ms, refresh: {}ms",
+                accessTokenExpiration, refreshTokenExpiration);
 
         // 비밀키 최소 길이 검증 (HMAC-SHA256: 256비트 = 32바이트)
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
@@ -33,7 +38,9 @@ public class JwtTokenProvider {
         }
 
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
-        this.jwtExpirationMs = expiration;
+        this.jwtExpirationMs = expiration; // 하위 호환성
+        this.accessTokenExpirationMs = accessTokenExpiration;
+        this.refreshTokenExpirationMs = refreshTokenExpiration;
     }
 
     /**
@@ -109,5 +116,63 @@ public class JwtTokenProvider {
             log.error("[JwtTokenProvider] JWT 토큰 검증 실패: {}", e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * 액세스 토큰 생성 (15분)
+     */
+    public String generateAccessToken(Long userId, UserRole role) {
+        Date expiryDate = new Date(System.currentTimeMillis() + accessTokenExpirationMs);
+        return buildToken(userId, role, expiryDate);
+    }
+
+    /**
+     * 리프레시 토큰 생성 (30일)
+     * - role 정보 없음 (리프레시 전용)
+     */
+    public String generateRefreshToken(Long userId) {
+        Date expiryDate = new Date(System.currentTimeMillis() + refreshTokenExpirationMs);
+        return buildToken(userId, null, expiryDate);
+    }
+
+    /**
+     * 토큰 만료까지 남은 시간 (초 단위)
+     * - 블랙리스트 TTL 계산용
+     */
+    public Long getExpirationTime(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            Date expiration = claims.getExpiration();
+            long remainingTime = (expiration.getTime() - System.currentTimeMillis()) / 1000;
+
+            // 음수 방지 (이미 만료된 토큰)
+            return Math.max(remainingTime, 0L);
+        } catch (JwtException | IllegalArgumentException e) {
+            log.error("[JwtTokenProvider] 토큰 만료 시간 추출 실패: {}", e.getMessage());
+            return 0L;
+        }
+    }
+
+    /**
+     * 토큰 생성 공통 로직
+     */
+    private String buildToken(Long userId, UserRole role, Date expiryDate) {
+        JwtBuilder builder = Jwts.builder()
+                .subject(String.valueOf(userId))
+                .issuedAt(new Date())
+                .expiration(expiryDate)
+                .signWith(secretKey);
+
+        // role이 있을 때만 claim 추가 (액세스 토큰)
+        if (role != null) {
+            builder.claim("role", role.name());
+        }
+
+        return builder.compact();
     }
 }
