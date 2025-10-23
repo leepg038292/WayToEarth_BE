@@ -39,13 +39,21 @@ public class CrewMemberController {
     @Operation(summary = "크루 멤버 목록 조회", description = "특정 크루의 멤버 목록을 페이징하여 조회합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패"),
+            @ApiResponse(responseCode = "403", description = "권한 없음 (크루 멤버가 아님)"),
             @ApiResponse(responseCode = "404", description = "크루를 찾을 수 없음")
     })
     @GetMapping("/{crewId}/members")
     public ResponseEntity<Page<CrewMemberResponse>> getCrewMembers(
+            @AuthUser AuthenticatedUser user,
             @Parameter(description = "크루 ID") @PathVariable Long crewId,
             @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "20") int size) {
+
+        // 크루 멤버만 조회 가능
+        if (!crewMemberService.isCrewMember(crewId, user.getUserId())) {
+            throw new com.waytoearth.exception.UnauthorizedAccessException("크루 멤버만 조회할 수 있습니다.");
+        }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "joinedAt"));
 
