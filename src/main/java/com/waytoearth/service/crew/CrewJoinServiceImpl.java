@@ -10,6 +10,7 @@ import com.waytoearth.repository.crew.CrewJoinRequestRepository;
 import com.waytoearth.repository.crew.CrewMemberRepository;
 import com.waytoearth.repository.user.UserRepository;
 import com.waytoearth.security.AuthenticatedUser;
+import com.waytoearth.service.file.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,6 +33,7 @@ public class CrewJoinServiceImpl implements CrewJoinService {
     private final CrewRepository crewRepository;
     private final CrewMemberRepository crewMemberRepository;
     private final UserRepository userRepository;
+    private final FileService fileService;
 
     @Override
     @Transactional

@@ -29,6 +29,9 @@ public class JoinRequestResponse {
     @Schema(description = "신청자 닉네임", example = "김러너")
     private String userNickname;
 
+    @Schema(description = "신청자 프로필 이미지 URL", example = "https://cdn.waytoearth.com/profiles/123/profile.jpg")
+    private String userProfileImageUrl;
+
     @Schema(description = "신청 메시지", example = "안녕하세요! 함께 러닝하고 싶습니다.")
     private String message;
 
@@ -47,13 +50,14 @@ public class JoinRequestResponse {
     @Schema(description = "처리 메모", example = "환영합니다!")
     private String processingNote;
 
-    public static JoinRequestResponse from(CrewJoinRequestEntity request) {
+    public static JoinRequestResponse from(CrewJoinRequestEntity request, String userProfileImageUrl) {
         return new JoinRequestResponse(
                 request.getId(),
                 request.getCrew().getId(),
                 request.getCrew().getName(),
                 request.getUser().getId(),
                 request.getUser().getNickname(),
+                userProfileImageUrl,
                 request.getMessage(),
                 request.getStatus().name(),
                 request.getCreatedAt(),

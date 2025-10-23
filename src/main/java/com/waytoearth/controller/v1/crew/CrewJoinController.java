@@ -6,6 +6,7 @@ import com.waytoearth.dto.response.crew.JoinRequestResponse;
 import com.waytoearth.entity.crew.CrewJoinRequestEntity;
 import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.service.crew.CrewJoinService;
+import com.waytoearth.service.file.FileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 public class CrewJoinController {
 
     private final CrewJoinService crewJoinService;
+    private final FileService fileService;
 
     @Operation(summary = "크루 가입 신청", description = "특정 크루에 가입 신청을 합니다.")
     @ApiResponses({
@@ -54,7 +56,7 @@ public class CrewJoinController {
                 user, crewId, request.getMessage());
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(JoinRequestResponse.from(joinRequest));
+                .body(toResponse(joinRequest));
     }
 
     @Operation(summary = "가입 신청 승인", description = "대기 중인 가입 신청을 승인합니다. 크루장만 가능합니다.")
@@ -139,7 +141,7 @@ public class CrewJoinController {
         Page<CrewJoinRequestEntity> requests = crewJoinService.getCrewJoinRequests(
                 user, crewId, status, pageable);
 
-        Page<JoinRequestResponse> response = requests.map(JoinRequestResponse::from);
+        Page<JoinRequestResponse> response = requests.map(this::toResponse);
 
         return ResponseEntity.ok(response);
     }
@@ -156,7 +158,7 @@ public class CrewJoinController {
         List<CrewJoinRequestEntity> requests = crewJoinService.getUserJoinRequests(user);
 
         List<JoinRequestResponse> response = requests.stream()
-                .map(JoinRequestResponse::from)
+                .map(this::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
@@ -184,7 +186,7 @@ public class CrewJoinController {
             throw new com.waytoearth.exception.UnauthorizedAccessException("본인 또는 크루장만 조회할 수 있습니다.");
         }
 
-        return ResponseEntity.ok(JoinRequestResponse.from(request));
+        return ResponseEntity.ok(toResponse(request));
     }
 
     @Operation(summary = "특정 크루에 대한 내 가입 신청 상태", description = "특정 크루에 대한 현재 사용자의 가입 신청 상태를 확인합니다.")
@@ -204,7 +206,7 @@ public class CrewJoinController {
             return ResponseEntity.noContent().build();
         }
 
-        return ResponseEntity.ok(JoinRequestResponse.from(request));
+        return ResponseEntity.ok(toResponse(request));
     }
 
     @Operation(summary = "가입 가능한 크루들", description = "현재 사용자가 가입 가능한 크루 ID 목록을 조회합니다.")
@@ -246,5 +248,14 @@ public class CrewJoinController {
         long count = crewJoinService.getPendingRequestCount(crewId);
 
         return ResponseEntity.ok(count);
+    }
+
+    // Helper: CrewJoinRequestEntity → JoinRequestResponse 변환 (프로필 이미지 URL 포함)
+    private JoinRequestResponse toResponse(CrewJoinRequestEntity request) {
+        String profileImageUrl = null;
+        if (request.getUser().getProfileImageKey() != null && !request.getUser().getProfileImageKey().isEmpty()) {
+            profileImageUrl = fileService.createPresignedGetUrl(request.getUser().getProfileImageKey());
+        }
+        return JoinRequestResponse.from(request, profileImageUrl);
     }
 }
