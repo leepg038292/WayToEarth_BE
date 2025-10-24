@@ -276,7 +276,7 @@ public class UserService {
             throw new CrewOwnerCannotDeleteAccountException(message);
         }
 
-        // 2. 카카오 연동 해제
+        // 3. 카카오 연동 해제
         try {
             kakaoApiService.unlinkKakaoAccount(user.getKakaoId());
             log.info("[UserService] 카카오 연동 해제 완료 - kakaoId: {}", user.getKakaoId());
@@ -285,7 +285,7 @@ public class UserService {
                      user.getKakaoId(), e.getMessage());
         }
 
-        // 3. 프로필 이미지가 있다면 S3에서 삭제
+        // 4. 프로필 이미지가 있다면 S3에서 삭제
         if (user.getProfileImageKey() != null && !user.getProfileImageKey().isEmpty()) {
             try {
                 fileService.deleteObject(user.getProfileImageKey());
@@ -296,10 +296,10 @@ public class UserService {
             }
         }
 
-        // 4. 연관 데이터 삭제 (외래키 제약 순서 고려)
+        // 5. 연관 데이터 삭제 (외래키 제약 순서 고려)
         log.info("[UserService] 연관 데이터 삭제 시작 - userId: {}", userId);
 
-        // 4-1. 피드 좋아요 삭제 (FeedLike -> Feed 참조)
+        // 5-1. 피드 좋아요 삭제 (FeedLike -> Feed 참조)
         feedLikeRepository.deleteByUserId(userId);
         log.debug("[UserService] 피드 좋아요 삭제 완료");
 
