@@ -49,10 +49,33 @@ public class LandmarkServiceImpl implements LandmarkService {
         var galleryImages = landmarkImageRepository.findByLandmarkIdOrderByOrderIndexAsc(landmarkId);
         landmark.setImages(galleryImages);
 
-        // 스토리 카드 변환
-        List<StoryCardResponse> storyCards = landmark.getStoryCards().stream()
-                .map(StoryCardResponse::from)
-                .toList();
+        // 스토리 카드 이미지 N+1 방지: 스토리 카드 ID로 이미지 일괄 로드 후 주입
+        List<StoryCardResponse> storyCards;
+        if (landmark.getStoryCards() != null && !landmark.getStoryCards().isEmpty()) {
+            var storyCardIds = landmark.getStoryCards().stream()
+                    .map(com.waytoearth.entity.journey.StoryCardEntity::getId)
+                    .toList();
+            var allImages = storyCardImageRepository
+                    .findByStoryCardIdInOrderByStoryCardIdAscOrderIndexAsc(storyCardIds);
+
+            java.util.Map<Long, java.util.List<com.waytoearth.entity.journey.StoryCardImage>> imagesByStoryId =
+                    new java.util.HashMap<>();
+            for (var img : allImages) {
+                imagesByStoryId
+                        .computeIfAbsent(img.getStoryCard().getId(), k -> new java.util.ArrayList<>())
+                        .add(img);
+            }
+            // 주입 후 DTO 변환
+            for (var sc : landmark.getStoryCards()) {
+                var imgs = imagesByStoryId.get(sc.getId());
+                if (imgs != null) sc.setImages(imgs);
+            }
+            storyCards = landmark.getStoryCards().stream()
+                    .map(StoryCardResponse::from)
+                    .toList();
+        } else {
+            storyCards = java.util.List.of();
+        }
 
         // 사용자의 스탬프 수집 여부 확인
         Boolean hasStamp = false;
