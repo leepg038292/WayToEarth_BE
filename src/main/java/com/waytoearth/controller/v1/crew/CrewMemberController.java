@@ -41,6 +41,36 @@ public class CrewMemberController {
     private final FileService fileService;
     private final RunningRecordRepository runningRecordRepository;
 
+    /**
+     * 여러 멤버의 최근 러닝 날짜를 배치로 조회 (N+1 문제 해결)
+     * @param members 멤버 리스트
+     * @return userId -> lastRunningDate 맵
+     */
+    private Map<Long, LocalDateTime> fetchLastRunningDatesInBatch(List<CrewMemberEntity> members) {
+        if (members.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        // 1. userId 리스트 추출
+        List<Long> userIds = members.stream()
+                .map(member -> member.getUser().getId())
+                .distinct()
+                .collect(Collectors.toList());
+
+        // 2. 배치 조회 (1번의 쿼리)
+        List<Object[]> results = runningRecordRepository.findLatestRunningDatesByUserIds(userIds);
+
+        // 3. Map으로 변환 (userId -> lastRunningDate)
+        Map<Long, LocalDateTime> lastRunningDatesMap = new HashMap<>();
+        for (Object[] result : results) {
+            Long userId = (Long) result[0];
+            LocalDateTime lastRunningDate = (LocalDateTime) result[1];
+            lastRunningDatesMap.put(userId, lastRunningDate);
+        }
+
+        return lastRunningDatesMap;
+    }
+
     @Operation(summary = "크루 멤버 목록 조회", description = "특정 크루의 멤버 목록을 페이징하여 조회합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
@@ -64,10 +94,12 @@ public class CrewMemberController {
 
         Page<CrewMemberEntity> members = crewMemberService.getCrewMembers(crewId, pageable);
 
+        // 배치 조회로 N+1 문제 해결
+        List<CrewMemberEntity> memberList = members.getContent();
+        Map<Long, LocalDateTime> lastRunningDatesMap = fetchLastRunningDatesInBatch(memberList);
+
         Page<CrewMemberResponse> response = members.map(member -> {
-            var lastRunningDate = runningRecordRepository
-                    .findLatestRunningDateByUserId(member.getUser().getId())
-                    .orElse(null);
+            LocalDateTime lastRunningDate = lastRunningDatesMap.get(member.getUser().getId());
             return CrewMemberResponse.from(member, fileService, lastRunningDate);
         });
 
@@ -93,11 +125,12 @@ public class CrewMemberController {
 
         List<CrewMemberEntity> members = crewMemberService.getCrewMembersWithUser(crewId);
 
+        // 배치 조회로 N+1 문제 해결
+        Map<Long, LocalDateTime> lastRunningDatesMap = fetchLastRunningDatesInBatch(members);
+
         List<CrewMemberResponse> response = members.stream()
                 .map(member -> {
-                    var lastRunningDate = runningRecordRepository
-                            .findLatestRunningDateByUserId(member.getUser().getId())
-                            .orElse(null);
+                    LocalDateTime lastRunningDate = lastRunningDatesMap.get(member.getUser().getId());
                     return CrewMemberResponse.from(member, fileService, lastRunningDate);
                 })
                 .collect(Collectors.toList());
@@ -167,6 +200,7 @@ public class CrewMemberController {
         CrewMemberEntity member = crewMemberService.changeMemberRole(
                 user, crewId, userId, request.getNewRole());
 
+        // 단일 조회는 그대로 사용
         var lastRunningDate = runningRecordRepository
                 .findLatestRunningDateByUserId(member.getUser().getId())
                 .orElse(null);
@@ -185,11 +219,12 @@ public class CrewMemberController {
 
         List<CrewMemberEntity> memberships = crewMemberService.getUserCrewMemberships(user);
 
+        // 배치 조회로 N+1 문제 해결
+        Map<Long, LocalDateTime> lastRunningDatesMap = fetchLastRunningDatesInBatch(memberships);
+
         List<CrewMemberResponse> response = memberships.stream()
                 .map(member -> {
-                    var lastRunningDate = runningRecordRepository
-                            .findLatestRunningDateByUserId(member.getUser().getId())
-                            .orElse(null);
+                    LocalDateTime lastRunningDate = lastRunningDatesMap.get(member.getUser().getId());
                     return CrewMemberResponse.from(member, fileService, lastRunningDate);
                 })
                 .collect(Collectors.toList());
@@ -210,6 +245,7 @@ public class CrewMemberController {
 
         CrewMemberEntity membership = crewMemberService.getCrewMembership(crewId, user.getUserId());
 
+        // 단일 조회는 그대로 사용
         var lastRunningDate = runningRecordRepository
                 .findLatestRunningDateByUserId(membership.getUser().getId())
                 .orElse(null);
@@ -272,11 +308,12 @@ public class CrewMemberController {
 
         List<CrewMemberEntity> members = crewMemberService.getRegularMembers(crewId);
 
+        // 배치 조회로 N+1 문제 해결
+        Map<Long, LocalDateTime> lastRunningDatesMap = fetchLastRunningDatesInBatch(members);
+
         List<CrewMemberResponse> response = members.stream()
                 .map(member -> {
-                    var lastRunningDate = runningRecordRepository
-                            .findLatestRunningDateByUserId(member.getUser().getId())
-                            .orElse(null);
+                    LocalDateTime lastRunningDate = lastRunningDatesMap.get(member.getUser().getId());
                     return CrewMemberResponse.from(member, fileService, lastRunningDate);
                 })
                 .collect(Collectors.toList());
