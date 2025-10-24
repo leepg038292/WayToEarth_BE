@@ -70,4 +70,9 @@ public class LandmarkEntity extends BaseTimeEntity {
     @Builder.Default
     @JsonIgnore
     private List<StoryCardEntity> storyCards = new ArrayList<>();
+
+    @OneToMany(mappedBy = "landmark", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("orderIndex ASC")
+    @Builder.Default
+    private List<LandmarkImage> images = new ArrayList<>();
 }

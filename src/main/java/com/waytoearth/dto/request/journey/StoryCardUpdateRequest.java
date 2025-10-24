@@ -16,7 +16,7 @@ public record StoryCardUpdateRequest(
     @Schema(description = "스토리 내용", example = "에펠탑은 1889년 파리 만국박람회를 기념하여 건설되었습니다...")
     String content,
 
-    @Schema(description = "이미지 URL", example = "https://cdn.waytoearth.com/stories/eiffel-tower.jpg")
+    @Schema(description = "대표(커버) 이미지 URL (갤러리는 별도 API)", example = "https://cdn.waytoearth.com/stories/eiffel-tower.jpg")
     String imageUrl,
 
     @NotNull(message = "스토리 타입은 필수입니다")

@@ -2,6 +2,8 @@ package com.waytoearth.controller.v1.admin;
 
 import com.waytoearth.dto.request.file.PresignRequest;
 import com.waytoearth.dto.request.journey.LandmarkImageUpdateRequest;
+import com.waytoearth.dto.request.journey.GalleryImageCreateRequest;
+import com.waytoearth.dto.request.journey.GalleryImagesReorderRequest;
 import com.waytoearth.dto.response.common.ApiResponse;
 import com.waytoearth.dto.response.file.PresignResponse;
 import com.waytoearth.security.AuthUser;
@@ -126,18 +128,15 @@ public class AdminLandmarkController {
         return ResponseEntity.ok(ApiResponse.success(response, "랜드마크 이미지 업로드 URL이 성공적으로 발급되었습니다."));
     }
 
+    @Deprecated
     @Operation(
-        summary = "랜드마크 이미지 URL 업데이트 (관리자 전용)",
+        summary = "랜드마크 대표(커버) 이미지 URL 업데이트 (관리자 전용)",
         description = """
-            관리자가 랜드마크의 이미지 URL을 업데이트합니다.
+            랜드마크의 대표(커버) 이미지를 업데이트합니다. 갤러리 이미지는 별도 API를 사용하세요.
 
-            **권한:**
-            - 관리자만 접근 가능
-
-            **사용 플로우:**
-            1. Presigned URL 발급 받기
-            2. S3에 이미지 업로드
-            3. 이 API로 downloadUrl 저장
+            - 갤러리 이미지 추가: POST /v1/admin/landmarks/{landmarkId}/images
+            - 갤러리 이미지 삭제: DELETE /v1/admin/landmarks/images/{imageId}
+            - 갤러리 이미지 정렬: PATCH /v1/admin/landmarks/{landmarkId}/images/reorder
             """
     )
     @ApiResponses(value = {
@@ -162,5 +161,46 @@ public class AdminLandmarkController {
         landmarkService.updateLandmarkImage(landmarkId, request.imageUrl());
 
         return ResponseEntity.ok(ApiResponse.success(null, "랜드마크 이미지가 성공적으로 업데이트되었습니다."));
+    }
+
+    @Operation(
+        summary = "랜드마크 갤러리 이미지 추가 (관리자 전용)",
+        description = "랜드마크에 갤러리 이미지를 추가합니다. orderIndex는 자동 부여됩니다."
+    )
+    @PostMapping("/{landmarkId}/images")
+    public ResponseEntity<ApiResponse<Void>> addLandmarkImage(
+            @AuthUser AuthenticatedUser user,
+            @io.swagger.v3.oas.annotations.Parameter(description = "랜드마크 ID") @PathVariable Long landmarkId,
+            @Valid @org.springframework.web.bind.annotation.RequestBody GalleryImageCreateRequest request
+    ) {
+        landmarkService.addLandmarkImage(landmarkId, request.imageUrl());
+        return ResponseEntity.ok(ApiResponse.success(null, "갤러리 이미지가 추가되었습니다."));
+    }
+
+    @Operation(
+        summary = "랜드마크 갤러리 이미지 삭제 (관리자 전용)",
+        description = "갤러리 이미지 단건을 삭제합니다."
+    )
+    @DeleteMapping("/images/{imageId}")
+    public ResponseEntity<ApiResponse<Void>> deleteLandmarkImage(
+            @AuthUser AuthenticatedUser user,
+            @io.swagger.v3.oas.annotations.Parameter(description = "이미지 ID") @PathVariable Long imageId
+    ) {
+        landmarkService.deleteLandmarkImage(imageId);
+        return ResponseEntity.ok(ApiResponse.success(null, "갤러리 이미지가 삭제되었습니다."));
+    }
+
+    @Operation(
+        summary = "랜드마크 갤러리 이미지 순서 변경 (관리자 전용)",
+        description = "imageIds를 원하는 순서로 전달하면 orderIndex를 재정렬합니다."
+    )
+    @PatchMapping("/{landmarkId}/images/reorder")
+    public ResponseEntity<ApiResponse<Void>> reorderLandmarkImages(
+            @AuthUser AuthenticatedUser user,
+            @io.swagger.v3.oas.annotations.Parameter(description = "랜드마크 ID") @PathVariable Long landmarkId,
+            @Valid @org.springframework.web.bind.annotation.RequestBody GalleryImagesReorderRequest request
+    ) {
+        landmarkService.reorderLandmarkImages(landmarkId, request.imageIds());
+        return ResponseEntity.ok(ApiResponse.success(null, "갤러리 이미지 순서를 변경했습니다."));
     }
 }

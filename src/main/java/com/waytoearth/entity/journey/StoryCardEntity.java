@@ -46,4 +46,9 @@ public class StoryCardEntity extends BaseTimeEntity {
     @Column(nullable = false)
     private Integer orderIndex;
 
+    @OneToMany(mappedBy = "storyCard", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("orderIndex ASC")
+    @Builder.Default
+    private java.util.List<StoryCardImage> images = new java.util.ArrayList<>();
+
 }

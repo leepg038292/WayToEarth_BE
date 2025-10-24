@@ -43,4 +43,11 @@ public interface LandmarkService {
      * 랜드마크 이미지 URL 업데이트 (관리자 전용)
      */
     void updateLandmarkImage(Long landmarkId, String imageUrl);
+
+    // 갤러리 이미지 관리
+    void addLandmarkImage(Long landmarkId, String imageUrl);
+
+    void deleteLandmarkImage(Long imageId);
+
+    void reorderLandmarkImages(Long landmarkId, java.util.List<Long> imageIds);
 }
