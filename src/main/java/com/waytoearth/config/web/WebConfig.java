@@ -23,14 +23,13 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/v1/**")
                 .allowedOrigins(
-                        "https://api.waytoearth.cloud", // 백엔드 API 도메인
-                        "http://localhost:3000"            // 로컬 개발용
+                        "https://api.waytoearth.cloud",
+                        "http://localhost:3000"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
-
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
@@ -40,7 +39,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public WebClient kakaoAuthWebClient() {
         return WebClient.builder()
-                .baseUrl("https://kauth.kakao.com") // 토큰 발급용
+                .baseUrl("https://kauth.kakao.com")
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .build();
     }
@@ -48,7 +47,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public WebClient kakaoApiWebClient() {
         return WebClient.builder()
-                .baseUrl("https://kapi.kakao.com") // 사용자 정보 조회용
+                .baseUrl("https://kapi.kakao.com")
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
