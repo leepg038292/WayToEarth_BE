@@ -5,9 +5,11 @@ import com.waytoearth.dto.response.journey.StampResponse;
 import com.waytoearth.entity.journey.LandmarkEntity;
 import com.waytoearth.entity.journey.StampEntity;
 import com.waytoearth.entity.journey.UserJourneyProgressEntity;
+import com.waytoearth.exception.UnauthorizedAccessException;
 import com.waytoearth.repository.journey.LandmarkRepository;
 import com.waytoearth.repository.journey.StampRepository;
 import com.waytoearth.repository.journey.UserJourneyProgressRepository;
+import com.waytoearth.security.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,9 +31,13 @@ public class StampServiceImpl implements StampService {
 
     @Override
     @Transactional
-    public StampResponse collectStamp(StampCollectRequest request) {
+    public StampResponse collectStamp(AuthenticatedUser user, StampCollectRequest request) {
         UserJourneyProgressEntity progress = progressRepository.findById(request.progressId())
                 .orElseThrow(() -> new IllegalArgumentException("여행 진행을 찾을 수 없습니다: " + request.progressId()));
+
+        if (!progress.getUser().getId().equals(user.getUserId())) {
+            throw new UnauthorizedAccessException("본인의 여정에 대해서만 스탬프를 수집할 수 있습니다.");
+        }
 
         LandmarkEntity landmark = landmarkRepository.findById(request.landmarkId())
                 .orElseThrow(() -> new IllegalArgumentException("랜드마크를 찾을 수 없습니다: " + request.landmarkId()));
@@ -42,7 +48,7 @@ public class StampServiceImpl implements StampService {
         }
 
         // 수집 가능 거리 확인
-        if (!canCollectStamp(request.progressId(), request.landmarkId(),
+        if (!canCollectStamp(user, request.progressId(), request.landmarkId(),
                 request.collectionLocation().latitude(), request.collectionLocation().longitude())) {
             throw new IllegalArgumentException("랜드마크 근처에 있어야 스탬프를 수집할 수 있습니다.");
         }
@@ -77,7 +83,14 @@ public class StampServiceImpl implements StampService {
     }
 
     @Override
-    public List<StampResponse> getStampsByProgressId(Long progressId) {
+    public List<StampResponse> getStampsByProgressId(AuthenticatedUser user, Long progressId) {
+        UserJourneyProgressEntity progress = progressRepository.findById(progressId)
+                .orElseThrow(() -> new IllegalArgumentException("여행 진행을 찾을 수 없습니다: " + progressId));
+
+        if (!progress.getUser().getId().equals(user.getUserId())) {
+            throw new UnauthorizedAccessException("본인의 여정에 대해서만 스탬프를 조회할 수 있습니다.");
+        }
+
         List<StampEntity> stamps = stampRepository.findByUserJourneyProgressIdWithLandmark(progressId);
 
         return stamps.stream()
@@ -87,7 +100,14 @@ public class StampServiceImpl implements StampService {
 
 
     @Override
-    public boolean canCollectStamp(Long progressId, Long landmarkId, Double userLatitude, Double userLongitude) {
+    public boolean canCollectStamp(AuthenticatedUser user, Long progressId, Long landmarkId, Double userLatitude, Double userLongitude) {
+        UserJourneyProgressEntity progress = progressRepository.findById(progressId)
+                .orElseThrow(() -> new IllegalArgumentException("여행 진행을 찾을 수 없습니다: " + progressId));
+
+        if (!progress.getUser().getId().equals(user.getUserId())) {
+            throw new UnauthorizedAccessException("본인의 여정에 대해서만 수집 가능 여부를 확인할 수 있습니다.");
+        }
+
         LandmarkEntity landmark = landmarkRepository.findById(landmarkId)
                 .orElseThrow(() -> new IllegalArgumentException("랜드마크를 찾을 수 없습니다: " + landmarkId));
 

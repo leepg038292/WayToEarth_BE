@@ -2,6 +2,9 @@ package com.waytoearth.controller.v1.journey;
 
 import com.waytoearth.dto.request.journey.StampCollectRequest;
 import com.waytoearth.dto.response.journey.StampResponse;
+import com.waytoearth.exception.UnauthorizedAccessException;
+import com.waytoearth.security.AuthUser;
+import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.service.journey.StampService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -40,16 +43,23 @@ public class StampController {
             """,
         tags = {"Stamp API"}
     )
-    public ResponseEntity<StampResponse> collectStamp(@Valid @RequestBody StampCollectRequest request) {
-        StampResponse response = stampService.collectStamp(request);
+    public ResponseEntity<StampResponse> collectStamp(
+            @AuthUser AuthenticatedUser user,
+            @Valid @RequestBody StampCollectRequest request) {
+        StampResponse response = stampService.collectStamp(user, request);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/users/{userId}")
     @Operation(summary = "사용자 스탬프 목록", description = "사용자가 수집한 모든 스탬프를 조회합니다.")
     public ResponseEntity<List<StampResponse>> getUserStamps(
+            @AuthUser AuthenticatedUser user,
             @Parameter(description = "사용자 ID")
             @PathVariable Long userId) {
+
+        if (!user.getUserId().equals(userId)) {
+            throw new UnauthorizedAccessException("본인의 스탬프만 조회할 수 있습니다.");
+        }
 
         List<StampResponse> stamps = stampService.getStampsByUserId(userId);
         return ResponseEntity.ok(stamps);
@@ -58,10 +68,11 @@ public class StampController {
     @GetMapping("/progress/{progressId}")
     @Operation(summary = "여행별 스탬프 목록", description = "특정 여행에서 수집한 스탬프를 조회합니다.")
     public ResponseEntity<List<StampResponse>> getProgressStamps(
+            @AuthUser AuthenticatedUser user,
             @Parameter(description = "여행 진행 ID")
             @PathVariable Long progressId) {
 
-        List<StampResponse> stamps = stampService.getStampsByProgressId(progressId);
+        List<StampResponse> stamps = stampService.getStampsByProgressId(user, progressId);
         return ResponseEntity.ok(stamps);
     }
 
@@ -69,8 +80,13 @@ public class StampController {
     @GetMapping("/users/{userId}/statistics")
     @Operation(summary = "스탬프 통계", description = "사용자의 스탬프 수집 통계를 조회합니다.")
     public ResponseEntity<StampService.StampStatistics> getStampStatistics(
+            @AuthUser AuthenticatedUser user,
             @Parameter(description = "사용자 ID")
             @PathVariable Long userId) {
+
+        if (!user.getUserId().equals(userId)) {
+            throw new UnauthorizedAccessException("본인의 통계만 조회할 수 있습니다.");
+        }
 
         StampService.StampStatistics statistics = stampService.getStampStatistics(userId);
         return ResponseEntity.ok(statistics);
@@ -79,6 +95,7 @@ public class StampController {
     @GetMapping("/check-collection")
     @Operation(summary = "스탬프 수집 가능 여부 확인", description = "현재 위치에서 스탬프 수집이 가능한지 확인합니다.")
     public ResponseEntity<Boolean> checkCollectionAvailability(
+            @AuthUser AuthenticatedUser user,
             @Parameter(description = "여행 진행 ID")
             @RequestParam Long progressId,
             @Parameter(description = "랜드마크 ID")
@@ -88,7 +105,7 @@ public class StampController {
             @Parameter(description = "현재 경도")
             @RequestParam Double longitude) {
 
-        boolean canCollect = stampService.canCollectStamp(progressId, landmarkId, latitude, longitude);
+        boolean canCollect = stampService.canCollectStamp(user, progressId, landmarkId, latitude, longitude);
         return ResponseEntity.ok(canCollect);
     }
 }

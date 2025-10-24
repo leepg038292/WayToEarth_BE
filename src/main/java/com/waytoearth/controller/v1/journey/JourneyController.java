@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.waytoearth.security.AuthUser;
+import com.waytoearth.security.AuthenticatedUser;
 
 import java.util.List;
 
@@ -67,10 +69,9 @@ public class JourneyController {
     public ResponseEntity<JourneyProgressResponse> startJourney(
             @Parameter(description = "여행 ID")
             @PathVariable Long journeyId,
-            @Parameter(description = "사용자 ID")
-            @RequestParam Long userId) {
+            @AuthUser AuthenticatedUser user) {
 
-        JourneyStartRequest request = new JourneyStartRequest(userId, journeyId);
+        JourneyStartRequest request = new JourneyStartRequest(user.getUserId(), journeyId);
         JourneyProgressResponse response = journeyService.startJourney(request);
 
         return ResponseEntity.ok(response);
