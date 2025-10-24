@@ -254,6 +254,28 @@ public class UserService {
         // 1. 사용자 존재 확인
         User user = findById(userId);
 
+        // 2. 크루장 여부 확인
+        List<CrewEntity> ownedCrews = crewRepository.findByOwnerAndIsActiveTrue(user);
+        if (!ownedCrews.isEmpty()) {
+            String crewNames = ownedCrews.stream()
+                    .map(CrewEntity::getName)
+                    .limit(3)
+                    .reduce((a, b) -> a + ", " + b)
+                    .orElse("");
+
+            String message = String.format(
+                "크루장은 회원 탈퇴할 수 없습니다. 먼저 크루장 권한을 이양하거나 크루를 삭제해주세요. " +
+                "소유 중인 크루: %s%s (총 %d개)",
+                crewNames,
+                ownedCrews.size() > 3 ? " 외" : "",
+                ownedCrews.size()
+            );
+
+            log.warn("[UserService] 크루장 회원 탈퇴 시도 차단 - userId: {}, ownedCrews: {}",
+                     userId, ownedCrews.size());
+            throw new CrewOwnerCannotDeleteAccountException(message);
+        }
+
         // 2. 카카오 연동 해제
         try {
             kakaoApiService.unlinkKakaoAccount(user.getKakaoId());
