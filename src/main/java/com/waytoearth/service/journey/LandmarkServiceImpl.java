@@ -11,6 +11,7 @@ import com.waytoearth.repository.journey.LandmarkRepository;
 import com.waytoearth.repository.journey.LandmarkImageRepository;
 import com.waytoearth.repository.journey.StampRepository;
 import com.waytoearth.repository.journey.StoryCardRepository;
+import com.waytoearth.repository.journey.StoryCardImageRepository;
 import com.waytoearth.repository.journey.UserJourneyProgressRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ public class LandmarkServiceImpl implements LandmarkService {
     private final LandmarkRepository landmarkRepository;
     private final StoryCardRepository storyCardRepository;
     private final LandmarkImageRepository landmarkImageRepository;
+    private final StoryCardImageRepository storyCardImageRepository;
     private final StampRepository stampRepository;
     private final UserJourneyProgressRepository progressRepository;
 
@@ -92,19 +94,37 @@ public class LandmarkServiceImpl implements LandmarkService {
     @Override
     public List<StoryCardResponse> getStoryCardsByLandmarkId(Long landmarkId) {
         List<StoryCardEntity> storyCards = storyCardRepository.findByLandmarkIdOrderByOrderIndex(landmarkId);
+        if (storyCards.isEmpty()) return java.util.List.of();
 
-        return storyCards.stream()
-                .map(StoryCardResponse::from)
-                .toList();
+        var ids = storyCards.stream().map(StoryCardEntity::getId).toList();
+        var allImages = storyCardImageRepository.findByStoryCardIdInOrderByStoryCardIdAscOrderIndexAsc(ids);
+        java.util.Map<Long, java.util.List<com.waytoearth.entity.journey.StoryCardImage>> byId = new java.util.HashMap<>();
+        for (var img : allImages) {
+            byId.computeIfAbsent(img.getStoryCard().getId(), k -> new java.util.ArrayList<>()).add(img);
+        }
+        for (var sc : storyCards) {
+            var imgs = byId.get(sc.getId());
+            if (imgs != null) sc.setImages(imgs);
+        }
+        return storyCards.stream().map(StoryCardResponse::from).toList();
     }
 
     @Override
     public List<StoryCardResponse> getStoryCardsByType(Long landmarkId, StoryType type) {
         List<StoryCardEntity> storyCards = storyCardRepository.findByLandmarkIdAndTypeOrderByOrderIndex(landmarkId, type);
+        if (storyCards.isEmpty()) return java.util.List.of();
 
-        return storyCards.stream()
-                .map(StoryCardResponse::from)
-                .toList();
+        var ids = storyCards.stream().map(StoryCardEntity::getId).toList();
+        var allImages = storyCardImageRepository.findByStoryCardIdInOrderByStoryCardIdAscOrderIndexAsc(ids);
+        java.util.Map<Long, java.util.List<com.waytoearth.entity.journey.StoryCardImage>> byId = new java.util.HashMap<>();
+        for (var img : allImages) {
+            byId.computeIfAbsent(img.getStoryCard().getId(), k -> new java.util.ArrayList<>()).add(img);
+        }
+        for (var sc : storyCards) {
+            var imgs = byId.get(sc.getId());
+            if (imgs != null) sc.setImages(imgs);
+        }
+        return storyCards.stream().map(StoryCardResponse::from).toList();
     }
 
     @Override
