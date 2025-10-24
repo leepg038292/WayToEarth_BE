@@ -7,6 +7,7 @@ import com.waytoearth.entity.crew.CrewMemberEntity;
 import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.service.crew.CrewMemberService;
 import com.waytoearth.service.file.FileService;
+import com.waytoearth.repository.running.RunningRecordRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

@@ -43,12 +43,13 @@ public class CrewMemberResponse {
     private LocalDateTime lastRunningDate;
 
     /**
-     * CloudFront URL을 사용하는 정적 팩토리 메서드
+     * CloudFront URL을 사용하는 정적 팩토리 메서드 (최근 러닝 날짜 포함)
      * @param member 크루 멤버 엔티티
      * @param fileService CloudFront URL 생성을 위한 파일 서비스
+     * @param lastRunningDate 최근 러닝 날짜 (없으면 null)
      * @return CrewMemberResponse
      */
-    public static CrewMemberResponse from(CrewMemberEntity member, FileService fileService) {
+    public static CrewMemberResponse from(CrewMemberEntity member, FileService fileService, LocalDateTime lastRunningDate) {
         // profileImageKey로 CloudFront URL 생성
         String profileImageUrl = null;
         if (member.getUser().getProfileImageKey() != null &&
@@ -64,8 +65,19 @@ public class CrewMemberResponse {
                 member.getRole().name(),
                 member.getJoinedAt(),
                 member.getIsActive(),
-                member.isOwner()
+                member.isOwner(),
+                lastRunningDate
         );
+    }
+
+    /**
+     * CloudFront URL을 사용하는 정적 팩토리 메서드 (lastRunningDate 없음 - 하위 호환)
+     * @param member 크루 멤버 엔티티
+     * @param fileService CloudFront URL 생성을 위한 파일 서비스
+     * @return CrewMemberResponse
+     */
+    public static CrewMemberResponse from(CrewMemberEntity member, FileService fileService) {
+        return from(member, fileService, null);
     }
 
     /**
@@ -82,7 +94,8 @@ public class CrewMemberResponse {
                 member.getRole().name(),
                 member.getJoinedAt(),
                 member.getIsActive(),
-                member.isOwner()
+                member.isOwner(),
+                null // lastRunningDate
         );
     }
 }
