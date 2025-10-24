@@ -5,10 +5,12 @@ import com.waytoearth.dto.request.journey.StoryCardUpdateRequest;
 import com.waytoearth.dto.response.journey.StoryCardResponse;
 import com.waytoearth.entity.journey.LandmarkEntity;
 import com.waytoearth.entity.journey.StoryCardEntity;
+import com.waytoearth.entity.journey.StoryCardImage;
 import com.waytoearth.exception.LandmarkNotFoundException;
 import com.waytoearth.exception.StoryCardNotFoundException;
 import com.waytoearth.repository.journey.LandmarkRepository;
 import com.waytoearth.repository.journey.StoryCardRepository;
+import com.waytoearth.repository.journey.StoryCardImageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ public class StoryCardServiceImpl implements StoryCardService {
 
     private final StoryCardRepository storyCardRepository;
     private final LandmarkRepository landmarkRepository;
+    private final StoryCardImageRepository storyCardImageRepository;
 
     @Override
     @Transactional
@@ -95,5 +98,45 @@ public class StoryCardServiceImpl implements StoryCardService {
                 .orElseThrow(() -> new StoryCardNotFoundException(storyId));
 
         return StoryCardResponse.from(storyCard);
+    }
+
+    @Override
+    @Transactional
+    public void addStoryCardImage(Long storyId, String imageUrl) {
+        StoryCardEntity story = storyCardRepository.findById(storyId)
+                .orElseThrow(() -> new StoryCardNotFoundException(storyId));
+
+        var existing = storyCardImageRepository.findByStoryCardIdOrderByOrderIndexAsc(storyId);
+        int nextOrder = existing.size();
+
+        StoryCardImage img = StoryCardImage.builder()
+                .storyCard(story)
+                .imageUrl(imageUrl)
+                .orderIndex(nextOrder)
+                .build();
+        storyCardImageRepository.save(img);
+    }
+
+    @Override
+    @Transactional
+    public void deleteStoryCardImage(Long imageId) {
+        storyCardImageRepository.deleteById(imageId);
+    }
+
+    @Override
+    @Transactional
+    public void reorderStoryCardImages(Long storyId, java.util.List<Long> imageIds) {
+        var images = storyCardImageRepository.findByStoryCardIdOrderByOrderIndexAsc(storyId);
+        java.util.Map<Long, Integer> orderMap = new java.util.HashMap<>();
+        for (int i = 0; i < imageIds.size(); i++) {
+            orderMap.put(imageIds.get(i), i);
+        }
+        for (var img : images) {
+            Integer newOrder = orderMap.get(img.getId());
+            if (newOrder != null) {
+                img.setOrderIndex(newOrder);
+            }
+        }
+        // JPA dirty checking으로 저장
     }
 }

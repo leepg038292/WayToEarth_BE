@@ -1,6 +1,8 @@
 package com.waytoearth.controller.v1.admin;
 
 import com.waytoearth.dto.request.file.PresignRequest;
+import com.waytoearth.dto.request.journey.GalleryImageCreateRequest;
+import com.waytoearth.dto.request.journey.GalleryImagesReorderRequest;
 import com.waytoearth.dto.request.journey.StoryCardCreateRequest;
 import com.waytoearth.dto.request.journey.StoryCardUpdateRequest;
 import com.waytoearth.dto.response.common.ApiResponse;
@@ -244,5 +246,46 @@ public class AdminStoryController {
         storyCardService.deleteStoryCard(storyId);
 
         return ResponseEntity.ok(ApiResponse.success(null, "스토리 카드가 성공적으로 삭제되었습니다."));
+    }
+
+    @Operation(
+        summary = "스토리 카드 갤러리 이미지 추가 (관리자 전용)",
+        description = "스토리 카드에 갤러리 이미지를 추가합니다. orderIndex는 자동 부여됩니다."
+    )
+    @PostMapping("/{storyId}/images")
+    public ResponseEntity<ApiResponse<Void>> addStoryCardImage(
+            @AuthUser AuthenticatedUser user,
+            @io.swagger.v3.oas.annotations.Parameter(description = "스토리 카드 ID") @PathVariable Long storyId,
+            @Valid @org.springframework.web.bind.annotation.RequestBody GalleryImageCreateRequest request
+    ) {
+        storyCardService.addStoryCardImage(storyId, request.imageUrl());
+        return ResponseEntity.ok(ApiResponse.success(null, "갤러리 이미지가 추가되었습니다."));
+    }
+
+    @Operation(
+        summary = "스토리 카드 갤러리 이미지 삭제 (관리자 전용)",
+        description = "갤러리 이미지 단건을 삭제합니다."
+    )
+    @DeleteMapping("/images/{imageId}")
+    public ResponseEntity<ApiResponse<Void>> deleteStoryCardImage(
+            @AuthUser AuthenticatedUser user,
+            @io.swagger.v3.oas.annotations.Parameter(description = "이미지 ID") @PathVariable Long imageId
+    ) {
+        storyCardService.deleteStoryCardImage(imageId);
+        return ResponseEntity.ok(ApiResponse.success(null, "갤러리 이미지가 삭제되었습니다."));
+    }
+
+    @Operation(
+        summary = "스토리 카드 갤러리 이미지 순서 변경 (관리자 전용)",
+        description = "imageIds를 원하는 순서로 전달하면 orderIndex를 재정렬합니다."
+    )
+    @PatchMapping("/{storyId}/images/reorder")
+    public ResponseEntity<ApiResponse<Void>> reorderStoryCardImages(
+            @AuthUser AuthenticatedUser user,
+            @io.swagger.v3.oas.annotations.Parameter(description = "스토리 카드 ID") @PathVariable Long storyId,
+            @Valid @org.springframework.web.bind.annotation.RequestBody GalleryImagesReorderRequest request
+    ) {
+        storyCardService.reorderStoryCardImages(storyId, request.imageIds());
+        return ResponseEntity.ok(ApiResponse.success(null, "갤러리 이미지 순서를 변경했습니다."));
     }
 }

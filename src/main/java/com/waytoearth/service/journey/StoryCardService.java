@@ -41,4 +41,11 @@ public interface StoryCardService {
      * @return 스토리 카드 응답
      */
     StoryCardResponse getStoryCard(Long storyId);
+
+    // 갤러리 이미지 관리
+    void addStoryCardImage(Long storyId, String imageUrl);
+
+    void deleteStoryCardImage(Long imageId);
+
+    void reorderStoryCardImages(Long storyId, java.util.List<Long> imageIds);
 }

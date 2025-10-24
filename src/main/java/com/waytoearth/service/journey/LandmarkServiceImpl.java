@@ -3,6 +3,7 @@ package com.waytoearth.service.journey;
 import com.waytoearth.dto.response.journey.LandmarkDetailResponse;
 import com.waytoearth.dto.response.journey.LandmarkSummaryResponse;
 import com.waytoearth.dto.response.journey.StoryCardResponse;
+import com.waytoearth.entity.journey.LandmarkImage;
 import com.waytoearth.entity.journey.LandmarkEntity;
 import com.waytoearth.entity.journey.StoryCardEntity;
 import com.waytoearth.entity.enums.StoryType;
@@ -110,5 +111,45 @@ public class LandmarkServiceImpl implements LandmarkService {
         landmarkRepository.save(landmark);
 
         log.info("랜드마크 이미지 업데이트 완료: landmarkId={}", landmarkId);
+    }
+
+    @Override
+    @Transactional
+    public void addLandmarkImage(Long landmarkId, String imageUrl) {
+        LandmarkEntity landmark = landmarkRepository.findById(landmarkId)
+                .orElseThrow(() -> new IllegalArgumentException("랜드마크를 찾을 수 없습니다: " + landmarkId));
+
+        var existing = landmarkImageRepository.findByLandmarkIdOrderByOrderIndexAsc(landmarkId);
+        int nextOrder = existing.size();
+
+        LandmarkImage img = LandmarkImage.builder()
+                .landmark(landmark)
+                .imageUrl(imageUrl)
+                .orderIndex(nextOrder)
+                .build();
+        landmarkImageRepository.save(img);
+    }
+
+    @Override
+    @Transactional
+    public void deleteLandmarkImage(Long imageId) {
+        landmarkImageRepository.deleteById(imageId);
+    }
+
+    @Override
+    @Transactional
+    public void reorderLandmarkImages(Long landmarkId, java.util.List<Long> imageIds) {
+        var images = landmarkImageRepository.findByLandmarkIdOrderByOrderIndexAsc(landmarkId);
+        java.util.Map<Long, Integer> orderMap = new java.util.HashMap<>();
+        for (int i = 0; i < imageIds.size(); i++) {
+            orderMap.put(imageIds.get(i), i);
+        }
+        for (var img : images) {
+            Integer newOrder = orderMap.get(img.getId());
+            if (newOrder != null) {
+                img.setOrderIndex(newOrder);
+            }
+        }
+        // JPA dirty checking으로 저장
     }
 }
