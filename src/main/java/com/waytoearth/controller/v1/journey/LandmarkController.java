@@ -38,7 +38,18 @@ public class LandmarkController {
     private final FileService fileService;
 
     @GetMapping("/{landmarkId}")
-    @Operation(summary = "랜드마크 상세 정보", description = "랜드마크의 상세 정보를 조회합니다.")
+    @Operation(
+        summary = "랜드마크 상세 정보",
+        description = """
+            랜드마크의 상세 정보를 조회합니다.
+
+            응답 포함 항목:
+            - 기본 정보: 이름, 설명, 위경도, 거리
+            - 이미지: 대표(커버) 이미지 `imageUrl`, 갤러리 `images[]`
+            - 스토리 카드 목록: 각 스토리 카드의 `imageUrl`(커버) 및 `images[]`(갤러리)
+            - 사용자 스탬프 수집 여부 `hasStamp`
+            """
+    )
     public ResponseEntity<LandmarkDetailResponse> getLandmark(
             @Parameter(description = "랜드마크 ID")
             @PathVariable Long landmarkId,

@@ -38,17 +38,11 @@ public class StoryCardController {
         description = """
             스토리 카드의 상세 정보를 조회합니다.
 
-            **조회 정보:**
+            조회 정보:
             - 스토리 제목 및 내용
-            - 스토리 이미지
-            - 오디오 가이드 URL (있는 경우)
+            - 이미지: 대표(커버) 이미지 `imageUrl`, 갤러리 `images[]`
             - 스토리 타입 (HISTORY/CULTURE/NATURE)
             - 표시 순서
-
-            **스토리 타입:**
-            - HISTORY: 역사 정보
-            - CULTURE: 문화 정보
-            - NATURE: 자연 정보
             """,
         tags = {"Story Card API"}
     )
