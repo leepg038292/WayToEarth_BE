@@ -7,6 +7,7 @@ import com.waytoearth.entity.journey.LandmarkEntity;
 import com.waytoearth.entity.journey.StoryCardEntity;
 import com.waytoearth.entity.enums.StoryType;
 import com.waytoearth.repository.journey.LandmarkRepository;
+import com.waytoearth.repository.journey.LandmarkImageRepository;
 import com.waytoearth.repository.journey.StampRepository;
 import com.waytoearth.repository.journey.StoryCardRepository;
 import com.waytoearth.repository.journey.UserJourneyProgressRepository;
@@ -25,6 +26,7 @@ public class LandmarkServiceImpl implements LandmarkService {
 
     private final LandmarkRepository landmarkRepository;
     private final StoryCardRepository storyCardRepository;
+    private final LandmarkImageRepository landmarkImageRepository;
     private final StampRepository stampRepository;
     private final UserJourneyProgressRepository progressRepository;
 
@@ -41,6 +43,10 @@ public class LandmarkServiceImpl implements LandmarkService {
     public LandmarkDetailResponse getLandmarkDetail(Long landmarkId, Long userId) {
         LandmarkEntity landmark = landmarkRepository.findLandmarkWithStoryCards(landmarkId)
                 .orElseThrow(() -> new IllegalArgumentException("랜드마크를 찾을 수 없습니다: " + landmarkId));
+
+        // 갤러리 이미지 로드 및 주입 (정렬된 순서)
+        var galleryImages = landmarkImageRepository.findByLandmarkIdOrderByOrderIndexAsc(landmarkId);
+        landmark.setImages(galleryImages);
 
         // 스토리 카드 변환
         List<StoryCardResponse> storyCards = landmark.getStoryCards().stream()
