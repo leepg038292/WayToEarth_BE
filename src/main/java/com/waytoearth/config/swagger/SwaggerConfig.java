@@ -106,36 +106,22 @@ public class SwaggerConfig {
 
 
 
+    // ===== Crew System APIs =====
+
     @Bean
-    public GroupedOpenApi themeCourseApi() {
+    public GroupedOpenApi crewApi() {
         return GroupedOpenApi.builder()
-                .group("09. 테마 코스 API")
-                .pathsToMatch("/v1/theme-courses/**")
+                .group("09. 크루 관리 API")
+                .pathsToMatch("/v1/crews/**")
                 .build();
     }
 
-    @Bean
-    public GroupedOpenApi customCourseApi() {
-        return GroupedOpenApi.builder()
-                .group("10. 커스텀 코스 API")
-                .pathsToMatch("/v1/custom-courses/**")
-                .build();
-    }
-
-    @Bean
-    public GroupedOpenApi courseSegmentApi() {
-        return GroupedOpenApi.builder()
-                .group("11. 코스 세그먼트 API")
-                .pathsToMatch("/v1/course-segments/**")
-                .build();
-    }
-
-    // ===== Journey Running APIs (New System) =====
+    // ===== Journey Running APIs =====
 
     @Bean
     public GroupedOpenApi journeyApi() {
         return GroupedOpenApi.builder()
-                .group("12. Journey 여정 관리 API")
+                .group("10. Journey 여정 관리 API")
                 .pathsToMatch("/v1/journeys/**", "/v1/journey-progress/**")
                 .build();
     }
@@ -143,7 +129,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi landmarkApi() {
         return GroupedOpenApi.builder()
-                .group("13. Landmark 랜드마크 API")
+                .group("11. Landmark 랜드마크 API")
                 .pathsToMatch("/v1/landmarks/**", "/v1/story-cards/**")
                 .build();
     }
@@ -151,7 +137,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi stampApi() {
         return GroupedOpenApi.builder()
-                .group("14. Stamp 스탬프 수집 API")
+                .group("12. Stamp 스탬프 수집 API")
                 .pathsToMatch("/v1/stamps/**")
                 .build();
     }
@@ -159,8 +145,26 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi guestbookApi() {
         return GroupedOpenApi.builder()
-                .group("15. Guestbook 방명록 API")
+                .group("13. Guestbook 방명록 API")
                 .pathsToMatch("/v1/guestbook/**")
+                .build();
+    }
+
+    // ===== Additional APIs =====
+
+    @Bean
+    public GroupedOpenApi notificationApi() {
+        return GroupedOpenApi.builder()
+                .group("14. 알림 API")
+                .pathsToMatch("/v1/notifications/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi adminApi() {
+        return GroupedOpenApi.builder()
+                .group("15. 관리자 API")
+                .pathsToMatch("/v1/admin/**")
                 .build();
     }
 
