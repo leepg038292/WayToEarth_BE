@@ -207,6 +207,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
+    @ExceptionHandler(CrewOwnerCannotDeleteAccountException.class)
+    public ResponseEntity<ErrorResponse> handleCrewOwnerCannotDeleteAccountException(CrewOwnerCannotDeleteAccountException e) {
+        log.warn("크루장 회원 탈퇴 차단: {}", e.getMessage());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .success(false)
+                .error(ErrorDetail.builder()
+                        .code("CREW_OWNER_CANNOT_DELETE_ACCOUNT")
+                        .message(e.getMessage())
+                        .build())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception e) {
         log.error("예상치 못한 서버 오류", e);

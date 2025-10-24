@@ -16,6 +16,7 @@ import java.util.List;
            @Index(name = "idx_crew_chat_crew_sent_at", columnList = "crew_id, sent_at"),
            @Index(name = "idx_crew_chat_crew_deleted", columnList = "crew_id, is_deleted"),
            @Index(name = "idx_crew_chat_sender", columnList = "sender_id")
+
        })
 @Getter
 @Setter

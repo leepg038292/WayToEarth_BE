@@ -25,6 +25,9 @@ import com.waytoearth.repository.crew.CrewChatNotificationSettingRepository;
 import com.waytoearth.repository.crew.CrewChatRepository;
 import com.waytoearth.service.auth.KakaoApiService;
 import com.waytoearth.repository.crew.CrewStatisticsRepository;
+import com.waytoearth.repository.crew.CrewRepository;
+import com.waytoearth.entity.crew.CrewEntity;
+import com.waytoearth.exception.CrewOwnerCannotDeleteAccountException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -61,6 +64,7 @@ public class UserService {
     private final CrewChatNotificationSettingRepository crewChatNotificationSettingRepository;
     private final CrewChatRepository crewChatRepository;
     private final CrewStatisticsRepository crewStatisticsRepository;
+    private final CrewRepository crewRepository;
 
     // 카카오 연동 해제를 위한 서비스
     private final KakaoApiService kakaoApiService;
@@ -250,7 +254,29 @@ public class UserService {
         // 1. 사용자 존재 확인
         User user = findById(userId);
 
-        // 2. 카카오 연동 해제
+        // 2. 크루장 여부 확인
+        List<CrewEntity> ownedCrews = crewRepository.findByOwnerAndIsActiveTrue(user);
+        if (!ownedCrews.isEmpty()) {
+            String crewNames = ownedCrews.stream()
+                    .map(CrewEntity::getName)
+                    .limit(3)
+                    .reduce((a, b) -> a + ", " + b)
+                    .orElse("");
+
+            String message = String.format(
+                "크루장은 회원 탈퇴할 수 없습니다. 먼저 크루장 권한을 이양하거나 크루를 삭제해주세요. " +
+                "소유 중인 크루: %s%s (총 %d개)",
+                crewNames,
+                ownedCrews.size() > 3 ? " 외" : "",
+                ownedCrews.size()
+            );
+
+            log.warn("[UserService] 크루장 회원 탈퇴 시도 차단 - userId: {}, ownedCrews: {}",
+                     userId, ownedCrews.size());
+            throw new CrewOwnerCannotDeleteAccountException(message);
+        }
+
+        // 3. 카카오 연동 해제
         try {
             kakaoApiService.unlinkKakaoAccount(user.getKakaoId());
             log.info("[UserService] 카카오 연동 해제 완료 - kakaoId: {}", user.getKakaoId());
@@ -259,7 +285,7 @@ public class UserService {
                      user.getKakaoId(), e.getMessage());
         }
 
-        // 3. 프로필 이미지가 있다면 S3에서 삭제
+        // 4. 프로필 이미지가 있다면 S3에서 삭제
         if (user.getProfileImageKey() != null && !user.getProfileImageKey().isEmpty()) {
             try {
                 fileService.deleteObject(user.getProfileImageKey());
@@ -270,26 +296,26 @@ public class UserService {
             }
         }
 
-        // 4. 연관 데이터 삭제 (외래키 제약 순서 고려)
+        // 5. 연관 데이터 삭제 (외래키 제약 순서 고려)
         log.info("[UserService] 연관 데이터 삭제 시작 - userId: {}", userId);
 
-        // 4-1. 피드 좋아요 삭제 (FeedLike -> Feed 참조)
+        // 5-1. 피드 좋아요 삭제 (FeedLike -> Feed 참조)
         feedLikeRepository.deleteByUserId(userId);
         log.debug("[UserService] 피드 좋아요 삭제 완료");
 
-        // 4-2. 피드 삭제 (Feed -> RunningRecord 참조)
+        // 5-2. 피드 삭제 (Feed -> RunningRecord 참조)
         feedRepository.deleteByUserId(userId);
         log.debug("[UserService] 피드 삭제 완료");
 
-        // 4-3. 방명록 삭제
+        // 5-3. 방명록 삭제
         guestbookRepository.deleteByUserId(userId);
         log.debug("[UserService] 방명록 삭제 완료");
 
-        // 4-4. 크루 가입 신청 삭제
+        // 5-4. 크루 가입 신청 삭제
         crewJoinRequestRepository.deleteByUserId(userId);
         log.debug("[UserService] 크루 가입 신청 삭제 완료");
 
-        // 4-5. 크루 멤버십 삭제
+        // 5-5. 크루 멤버십 삭제 (크루장이 아닌 일반 멤버십만 존재)
         var memberships = crewMemberRepository.findByUserIdWithCrew(userId);
         var affectedCrewIds = memberships.stream().map(m -> m.getCrew().getId()).distinct().toList();
         crewMemberRepository.deleteByUserId(userId);
@@ -298,40 +324,40 @@ public class UserService {
         }
         log.debug("[UserService] 크루 멤버십 삭제 완료");
 
-        // 4-6. 러닝 기록 삭제 (RunningRoute는 cascade로 자동 삭제됨)
+        // 5-6. 러닝 기록 삭제 (RunningRoute는 cascade로 자동 삭제됨)
         runningRecordRepository.deleteByUserId(userId);
         log.debug("[UserService] 러닝 기록 삭제 완료");
 
-        // 4-7. 여행 진행 내역 삭제 (StampEntity는 cascade로 자동 삭제됨)
+        // 5-7. 여행 진행 내역 삭제 (StampEntity는 cascade로 자동 삭제됨)
         userJourneyProgressRepository.deleteByUserId(userId);
         log.debug("[UserService] 여행 진행 내역 삭제 완료");
 
-        // 4-8. 사용자 엠블럼 삭제
+        // 5-8. 사용자 엠블럼 삭제
         userEmblemRepository.deleteByUserId(userId);
         log.debug("[UserService] 사용자 엠블럼 삭제 완료");
 
-        // 4-9. FCM 토큰 삭제
+        // 5-9. FCM 토큰 삭제
         fcmTokenRepository.deleteByUserId(userId);
         log.debug("[UserService] FCM 토큰 삭제 완료");
 
-        // 4-10. 알림 설정 삭제 (글로벌)
+        // 5-10. 알림 설정 삭제 (글로벌)
         notificationSettingRepository.deleteByUserId(userId);
         log.debug("[UserService] 알림 설정 삭제 완료");
 
-        // 4-11. 크루 채팅 읽음 상태 삭제
+        // 5-11. 크루 채팅 읽음 상태 삭제
         crewChatReadStatusRepository.deleteByReaderId(userId);
         log.debug("[UserService] 크루 채팅 읽음 상태 삭제 완료");
 
-        // 4-12. 크루 채팅 알림 설정 삭제
+        // 5-12. 크루 채팅 알림 설정 삭제
         crewChatNotificationSettingRepository.deleteByUserId(userId);
         log.debug("[UserService] 크루 채팅 알림 설정 삭제 완료");
 
-        // 4-13. 사용자가 보낸 채팅은 보존: 발신자를 '탈퇴한 사용자'로 치환
+        // 5-13. 사용자가 보낸 채팅은 보존: 발신자를 '탈퇴한 사용자'로 치환
         User deletedSentinel = getOrCreateDeletedUserSentinel();
         int reassigned = crewChatRepository.reassignSenderToDeleted(userId, deletedSentinel);
         log.debug("[UserService] 보낸 채팅 발신자 치환 완료 - reassigned: {}", reassigned);
 
-        // 5. 최종적으로 사용자 삭제
+        // 6. 최종적으로 사용자 삭제
         userRepository.delete(user);
         log.info("[UserService] 회원 탈퇴 완료 - userId: {}, kakaoId: {}", userId, user.getKakaoId());
     }
