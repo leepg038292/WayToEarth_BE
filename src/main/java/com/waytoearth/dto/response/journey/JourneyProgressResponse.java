@@ -33,7 +33,10 @@ public record JourneyProgressResponse(
     Integer collectedStamps,
 
     @Schema(description = "총 랜드마크 수", example = "15")
-    Integer totalLandmarks
+    Integer totalLandmarks,
+
+    @Schema(description = "함께 뛰는 러너 수 (진행 중 + 완료)", example = "42")
+    Long runningTogether
 ) {
     public static JourneyProgressResponse from(
             UserJourneyProgressEntity progress,
