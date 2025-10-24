@@ -3,6 +3,7 @@ package com.waytoearth.service.crew;
 import com.waytoearth.entity.crew.CrewEntity;
 import com.waytoearth.entity.crew.CrewMemberEntity;
 import com.waytoearth.entity.user.User;
+import com.waytoearth.exception.CrewAlreadyOwnedException;
 import com.waytoearth.exception.CrewNotFoundException;
 import com.waytoearth.exception.InvalidParameterException;
 import com.waytoearth.exception.UnauthorizedAccessException;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +47,19 @@ public class CrewServiceImpl implements CrewService {
         // 사용자 조회
         User owner = userRepository.findById(user.getUserId())
                 .orElseThrow(() -> new UserNotFoundException(user.getUserId()));
+
+        // 크루장 중복 생성 방지
+        List<CrewEntity> ownedCrews = crewRepository.findByOwnerAndIsActiveTrue(owner);
+        if (!ownedCrews.isEmpty()) {
+            String existingCrewName = ownedCrews.get(0).getName();
+            String message = String.format(
+                "이미 크루를 소유하고 있습니다. 한 사용자는 하나의 크루만 생성할 수 있습니다. (소유 중인 크루: %s)",
+                existingCrewName
+            );
+            log.warn("[CrewService] 크루 중복 생성 시도 차단 - userId: {}, existingCrew: {}",
+                     user.getUserId(), existingCrewName);
+            throw new com.waytoearth.exception.CrewAlreadyOwnedException(message);
+        }
 
         // 이름 유효성 추가 검증 (서버 측 보강)
         validateCrewName(name);
@@ -196,6 +211,19 @@ public class CrewServiceImpl implements CrewService {
     public CrewEntity createCrew(Long userId, CrewEntity crewData) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다. userId: " + userId));
+
+        // 크루장 중복 생성 방지
+        List<CrewEntity> ownedCrews = crewRepository.findByOwnerAndIsActiveTrue(user);
+        if (!ownedCrews.isEmpty()) {
+            String existingCrewName = ownedCrews.get(0).getName();
+            String message = String.format(
+                "이미 크루를 소유하고 있습니다. 한 사용자는 하나의 크루만 생성할 수 있습니다. (소유 중인 크루: %s)",
+                existingCrewName
+            );
+            log.warn("[CrewService] 크루 중복 생성 시도 차단 - userId: {}, existingCrew: {}",
+                     userId, existingCrewName);
+            throw new com.waytoearth.exception.CrewAlreadyOwnedException(message);
+        }
 
         CrewEntity crew = CrewEntity.builder()
                 .name(crewData.getName())
