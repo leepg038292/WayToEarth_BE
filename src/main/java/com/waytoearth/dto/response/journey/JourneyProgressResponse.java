@@ -42,7 +42,8 @@ public record JourneyProgressResponse(
             UserJourneyProgressEntity progress,
             LandmarkSummaryResponse nextLandmark,
             Integer collectedStamps,
-            Integer totalLandmarks
+            Integer totalLandmarks,
+            Long runningTogether
     ) {
         return new JourneyProgressResponse(
             progress.getId(),
@@ -54,7 +55,8 @@ public record JourneyProgressResponse(
             progress.getStatus().name(),
             nextLandmark,
             collectedStamps,
-            totalLandmarks
+            totalLandmarks,
+            runningTogether
         );
     }
 }
