@@ -256,11 +256,15 @@ public class JourneyServiceImpl implements JourneyService {
         // 총 랜드마크 수
         Long totalLandmarks = landmarkRepository.countLandmarksByJourneyId(progress.getJourney().getId());
 
+        // 함께 뛰는 러너 수 (진행 중 + 완료)
+        Long runningTogether = progressRepository.countActiveOrCompletedRunnersByJourneyId(progress.getJourney().getId());
+
         return JourneyProgressResponse.from(
                 progress,
                 nextLandmark,
                 collectedStamps.intValue(),
-                totalLandmarks.intValue()
+                totalLandmarks.intValue(),
+                runningTogether
         );
     }
 

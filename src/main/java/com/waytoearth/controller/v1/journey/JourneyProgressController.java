@@ -107,6 +107,7 @@ public class JourneyProgressController {
             - 다음 랜드마크 정보
             - 수집한 스탬프 수
             - 총 랜드마크 수
+            - 함께 뛰는 러너 수 (진행 중 + 완료)
             """,
         tags = {"Journey Progress API"}
     )
@@ -154,6 +155,7 @@ public class JourneyProgressController {
             - 다음 랜드마크 정보
             - 수집한 스탬프 수
             - 총 랜드마크 수
+            - 함께 뛰는 러너 수 (진행 중 + 완료)
 
             **사용 예시:**
             - 여정 리스트에서 특정 여정 선택 시
