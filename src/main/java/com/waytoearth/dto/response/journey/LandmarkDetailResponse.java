@@ -25,8 +25,11 @@ public record LandmarkDetailResponse(
     @Schema(description = "시작점으로부터 거리 (km)", example = "25.5")
     Double distanceFromStart,
 
-    @Schema(description = "랜드마크 이미지 URL", example = "https://example.com/landmark.jpg")
+    @Schema(description = "대표 이미지 URL (하위호환)", example = "https://example.com/landmark.jpg")
     String imageUrl,
+
+    @Schema(description = "갤러리 이미지 목록")
+    List<String> images,
 
     @Schema(description = "국가 코드", example = "KR")
     String countryCode,
@@ -45,6 +48,12 @@ public record LandmarkDetailResponse(
             List<StoryCardResponse> storyCards,
             Boolean hasStamp
     ) {
+        List<String> gallery = landmark.getImages() == null ? List.of()
+                : landmark.getImages().stream()
+                .sorted(java.util.Comparator.comparingInt(i -> i.getOrderIndex() == null ? 0 : i.getOrderIndex()))
+                .map(img -> img.getImageUrl())
+                .toList();
+
         return new LandmarkDetailResponse(
             landmark.getId(),
             landmark.getName(),
@@ -53,6 +62,7 @@ public record LandmarkDetailResponse(
             landmark.getLongitude(),
             landmark.getDistanceFromStart(),
             landmark.getImageUrl(),
+            gallery,
             landmark.getCountryCode(),
             landmark.getCityName(),
             storyCards,
