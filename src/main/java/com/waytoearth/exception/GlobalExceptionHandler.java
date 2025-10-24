@@ -223,6 +223,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    @ExceptionHandler(CrewAlreadyOwnedException.class)
+    public ResponseEntity<ErrorResponse> handleCrewAlreadyOwnedException(CrewAlreadyOwnedException e) {
+        log.warn("크루 중복 생성 시도 차단: {}", e.getMessage());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .success(false)
+                .error(ErrorDetail.builder()
+                        .code("CREW_ALREADY_OWNED")
+                        .message(e.getMessage())
+                        .build())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception e) {
         log.error("예상치 못한 서버 오류", e);
