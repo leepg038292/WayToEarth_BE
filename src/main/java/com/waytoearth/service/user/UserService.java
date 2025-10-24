@@ -25,6 +25,9 @@ import com.waytoearth.repository.crew.CrewChatNotificationSettingRepository;
 import com.waytoearth.repository.crew.CrewChatRepository;
 import com.waytoearth.service.auth.KakaoApiService;
 import com.waytoearth.repository.crew.CrewStatisticsRepository;
+import com.waytoearth.repository.crew.CrewRepository;
+import com.waytoearth.entity.crew.CrewEntity;
+import com.waytoearth.exception.CrewOwnerCannotDeleteAccountException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -61,6 +64,7 @@ public class UserService {
     private final CrewChatNotificationSettingRepository crewChatNotificationSettingRepository;
     private final CrewChatRepository crewChatRepository;
     private final CrewStatisticsRepository crewStatisticsRepository;
+    private final CrewRepository crewRepository;
 
     // 카카오 연동 해제를 위한 서비스
     private final KakaoApiService kakaoApiService;
