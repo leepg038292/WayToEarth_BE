@@ -107,4 +107,13 @@ public interface RunningRecordRepository extends JpaRepository<RunningRecord, Lo
            LIMIT 1
            """)
     Optional<LocalDateTime> findLatestRunningDateByUserId(@Param("userId") Long userId);
+
+    // 여러 사용자의 최근 러닝 날짜를 배치 조회 (N+1 문제 해결)
+    @Query("""
+           SELECT r.user.id, MAX(r.startedAt)
+           FROM RunningRecord r
+           WHERE r.user.id IN :userIds AND r.isCompleted = true
+           GROUP BY r.user.id
+           """)
+    List<Object[]> findLatestRunningDatesByUserIds(@Param("userIds") List<Long> userIds);
 }
