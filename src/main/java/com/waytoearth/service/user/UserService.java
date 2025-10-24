@@ -303,19 +303,19 @@ public class UserService {
         feedLikeRepository.deleteByUserId(userId);
         log.debug("[UserService] 피드 좋아요 삭제 완료");
 
-        // 4-2. 피드 삭제 (Feed -> RunningRecord 참조)
+        // 5-2. 피드 삭제 (Feed -> RunningRecord 참조)
         feedRepository.deleteByUserId(userId);
         log.debug("[UserService] 피드 삭제 완료");
 
-        // 4-3. 방명록 삭제
+        // 5-3. 방명록 삭제
         guestbookRepository.deleteByUserId(userId);
         log.debug("[UserService] 방명록 삭제 완료");
 
-        // 4-4. 크루 가입 신청 삭제
+        // 5-4. 크루 가입 신청 삭제
         crewJoinRequestRepository.deleteByUserId(userId);
         log.debug("[UserService] 크루 가입 신청 삭제 완료");
 
-        // 4-5. 크루 멤버십 삭제
+        // 5-5. 크루 멤버십 삭제 (크루장이 아닌 일반 멤버십만 존재)
         var memberships = crewMemberRepository.findByUserIdWithCrew(userId);
         var affectedCrewIds = memberships.stream().map(m -> m.getCrew().getId()).distinct().toList();
         crewMemberRepository.deleteByUserId(userId);
@@ -324,40 +324,40 @@ public class UserService {
         }
         log.debug("[UserService] 크루 멤버십 삭제 완료");
 
-        // 4-6. 러닝 기록 삭제 (RunningRoute는 cascade로 자동 삭제됨)
+        // 5-6. 러닝 기록 삭제 (RunningRoute는 cascade로 자동 삭제됨)
         runningRecordRepository.deleteByUserId(userId);
         log.debug("[UserService] 러닝 기록 삭제 완료");
 
-        // 4-7. 여행 진행 내역 삭제 (StampEntity는 cascade로 자동 삭제됨)
+        // 5-7. 여행 진행 내역 삭제 (StampEntity는 cascade로 자동 삭제됨)
         userJourneyProgressRepository.deleteByUserId(userId);
         log.debug("[UserService] 여행 진행 내역 삭제 완료");
 
-        // 4-8. 사용자 엠블럼 삭제
+        // 5-8. 사용자 엠블럼 삭제
         userEmblemRepository.deleteByUserId(userId);
         log.debug("[UserService] 사용자 엠블럼 삭제 완료");
 
-        // 4-9. FCM 토큰 삭제
+        // 5-9. FCM 토큰 삭제
         fcmTokenRepository.deleteByUserId(userId);
         log.debug("[UserService] FCM 토큰 삭제 완료");
 
-        // 4-10. 알림 설정 삭제 (글로벌)
+        // 5-10. 알림 설정 삭제 (글로벌)
         notificationSettingRepository.deleteByUserId(userId);
         log.debug("[UserService] 알림 설정 삭제 완료");
 
-        // 4-11. 크루 채팅 읽음 상태 삭제
+        // 5-11. 크루 채팅 읽음 상태 삭제
         crewChatReadStatusRepository.deleteByReaderId(userId);
         log.debug("[UserService] 크루 채팅 읽음 상태 삭제 완료");
 
-        // 4-12. 크루 채팅 알림 설정 삭제
+        // 5-12. 크루 채팅 알림 설정 삭제
         crewChatNotificationSettingRepository.deleteByUserId(userId);
         log.debug("[UserService] 크루 채팅 알림 설정 삭제 완료");
 
-        // 4-13. 사용자가 보낸 채팅은 보존: 발신자를 '탈퇴한 사용자'로 치환
+        // 5-13. 사용자가 보낸 채팅은 보존: 발신자를 '탈퇴한 사용자'로 치환
         User deletedSentinel = getOrCreateDeletedUserSentinel();
         int reassigned = crewChatRepository.reassignSenderToDeleted(userId, deletedSentinel);
         log.debug("[UserService] 보낸 채팅 발신자 치환 완료 - reassigned: {}", reassigned);
 
-        // 5. 최종적으로 사용자 삭제
+        // 6. 최종적으로 사용자 삭제
         userRepository.delete(user);
         log.info("[UserService] 회원 탈퇴 완료 - userId: {}, kakaoId: {}", userId, user.getKakaoId());
     }
