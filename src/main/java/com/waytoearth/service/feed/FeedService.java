@@ -12,6 +12,7 @@ import com.waytoearth.repository.feed.FeedRepository;
 import com.waytoearth.repository.running.RunningRecordRepository;
 import com.waytoearth.repository.user.UserRepository;
 import com.waytoearth.security.AuthenticatedUser;
+import com.waytoearth.exception.UnauthorizedAccessException;
 import com.waytoearth.service.file.FileService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,10 @@ public class FeedService {
 
         RunningRecord record = runningRecordRepository.findById(req.getRunningRecordId())
                 .orElseThrow(() -> new RuntimeException("Running record not found"));
+
+        if (!record.getUser().getId().equals(authUser.getUserId())) {
+            throw new UnauthorizedAccessException("본인의 러닝기록만 사용할 수 있습니다.");
+        }
 
         Feed feed = Feed.builder()
                 .user(user)
