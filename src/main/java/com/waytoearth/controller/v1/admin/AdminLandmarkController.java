@@ -128,18 +128,15 @@ public class AdminLandmarkController {
         return ResponseEntity.ok(ApiResponse.success(response, "랜드마크 이미지 업로드 URL이 성공적으로 발급되었습니다."));
     }
 
+    @Deprecated
     @Operation(
-        summary = "랜드마크 이미지 URL 업데이트 (관리자 전용)",
+        summary = "랜드마크 대표(커버) 이미지 URL 업데이트 (관리자 전용)",
         description = """
-            관리자가 랜드마크의 이미지 URL을 업데이트합니다.
+            랜드마크의 대표(커버) 이미지를 업데이트합니다. 갤러리 이미지는 별도 API를 사용하세요.
 
-            **권한:**
-            - 관리자만 접근 가능
-
-            **사용 플로우:**
-            1. Presigned URL 발급 받기
-            2. S3에 이미지 업로드
-            3. 이 API로 downloadUrl 저장
+            - 갤러리 이미지 추가: POST /v1/admin/landmarks/{landmarkId}/images
+            - 갤러리 이미지 삭제: DELETE /v1/admin/landmarks/images/{imageId}
+            - 갤러리 이미지 정렬: PATCH /v1/admin/landmarks/{landmarkId}/images/reorder
             """
     )
     @ApiResponses(value = {
