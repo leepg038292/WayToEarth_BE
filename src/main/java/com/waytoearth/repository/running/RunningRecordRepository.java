@@ -97,4 +97,14 @@ public interface RunningRecordRepository extends JpaRepository<RunningRecord, Lo
 
     // 사용자 ID로 러닝 기록 일괄 삭제 (회원 탈퇴용)
     void deleteByUserId(Long userId);
+
+    // 사용자의 최근 러닝 날짜 조회 (완료된 러닝 중 가장 최근 started_at)
+    @Query("""
+           SELECT r.startedAt
+           FROM RunningRecord r
+           WHERE r.user.id = :userId AND r.isCompleted = true
+           ORDER BY r.startedAt DESC
+           LIMIT 1
+           """)
+    Optional<LocalDateTime> findLatestRunningDateByUserId(@Param("userId") Long userId);
 }
