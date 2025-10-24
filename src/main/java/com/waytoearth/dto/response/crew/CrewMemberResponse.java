@@ -39,6 +39,9 @@ public class CrewMemberResponse {
     @Schema(description = "크루장 여부", example = "false")
     private Boolean isOwner;
 
+    @Schema(description = "최근 러닝 날짜 (없으면 null)", example = "2024-10-20T14:30:00")
+    private LocalDateTime lastRunningDate;
+
     /**
      * CloudFront URL을 사용하는 정적 팩토리 메서드
      * @param member 크루 멤버 엔티티
