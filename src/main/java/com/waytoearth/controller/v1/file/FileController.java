@@ -1,8 +1,6 @@
-// com/waytoearth/controller/v1/FileController.java
 package com.waytoearth.controller.v1.file;
 
 import com.waytoearth.dto.request.file.PresignRequest;
-import com.waytoearth.dto.response.common.ApiResponse;
 import com.waytoearth.dto.response.file.PresignResponse;
 import com.waytoearth.security.AuthUser;
 import com.waytoearth.security.AuthenticatedUser;

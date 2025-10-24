@@ -1,6 +1,5 @@
 package com.waytoearth.repository.crew;
 
-import com.waytoearth.dto.response.crew.CrewChatMessageDto;
 import com.waytoearth.entity.crew.CrewChatEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

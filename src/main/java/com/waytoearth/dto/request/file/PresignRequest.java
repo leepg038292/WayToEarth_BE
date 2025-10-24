@@ -1,4 +1,3 @@
-// com/waytoearth/dto/request/file/PresignRequest.java
 package com.waytoearth.dto.request.file;
 
 import jakarta.validation.constraints.NotBlank;

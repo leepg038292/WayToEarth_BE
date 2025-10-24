@@ -1,4 +1,3 @@
-// com/waytoearth/repository/EmblemRepository.java
 package com.waytoearth.repository.emblem;
 
 import com.waytoearth.entity.emblem.Emblem;

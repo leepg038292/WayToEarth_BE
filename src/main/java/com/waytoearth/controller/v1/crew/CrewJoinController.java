@@ -250,7 +250,7 @@ public class CrewJoinController {
         return ResponseEntity.ok(count);
     }
 
-    // Helper: CrewJoinRequestEntity → JoinRequestResponse 변환 (프로필 이미지 URL 포함)
+    // CrewJoinRequestEntity → JoinRequestResponse 변환 (프로필 이미지 URL 포함)
     private JoinRequestResponse toResponse(CrewJoinRequestEntity request) {
         String profileImageUrl = null;
         if (request.getUser().getProfileImageKey() != null && !request.getUser().getProfileImageKey().isEmpty()) {

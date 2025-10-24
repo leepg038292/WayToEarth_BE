@@ -33,7 +33,7 @@ public class FcmConfig {
 
             // 1. Base64 인코딩된 JSON 우선 (Docker 배포 시)
             if (firebaseConfigJsonBase64 != null && !firebaseConfigJsonBase64.isBlank()) {
-                log.info("🔧 Firebase 초기화: Base64 JSON 사용");
+                log.info(" Firebase 초기화: Base64 JSON 사용");
                 byte[] decodedJson = java.util.Base64.getDecoder().decode(firebaseConfigJsonBase64);
                 credentials = GoogleCredentials.fromStream(
                     new ByteArrayInputStream(decodedJson)
@@ -41,14 +41,14 @@ public class FcmConfig {
             }
             // 2. 일반 JSON 환경변수
             else if (firebaseConfigJson != null && !firebaseConfigJson.isBlank()) {
-                log.info("🔧 Firebase 초기화: 환경변수 JSON 사용");
+                log.info(" Firebase 초기화: 환경변수 JSON 사용");
                 credentials = GoogleCredentials.fromStream(
                     new ByteArrayInputStream(firebaseConfigJson.getBytes(StandardCharsets.UTF_8))
                 );
             }
             // 3. 파일 경로 (로컬 개발 시)
             else if (firebaseConfigPath != null && !firebaseConfigPath.isBlank()) {
-                log.info("🔧 Firebase 초기화: 파일 경로 사용 ({})", firebaseConfigPath);
+                log.info(" Firebase 초기화: 파일 경로 사용 ({})", firebaseConfigPath);
                 credentials = GoogleCredentials.fromStream(
                     new FileInputStream(firebaseConfigPath)
                 );

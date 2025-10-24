@@ -1,4 +1,3 @@
-// com/waytoearth/service/emblem/EmblemService.java
 package com.waytoearth.service.emblem;
 
 import com.waytoearth.dto.response.emblem.EmblemAwardResult;

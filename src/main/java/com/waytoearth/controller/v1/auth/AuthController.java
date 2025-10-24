@@ -82,9 +82,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(response, "온보딩이 완료되었습니다."));
     }
 
-    // ===============================
     //  닉네임 중복 확인 (추가)
-    // ===============================
     @Operation(
             summary = "닉네임 중복 확인",
             description = "닉네임 사용 가능 여부를 확인합니다. (무인증)",
@@ -110,9 +108,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(data, message));
     }
 
-    // ===============================
     //  토큰 재발급
-    // ===============================
     @Operation(
             summary = "액세스 토큰 재발급",
             description = "리프레시 토큰으로 액세스 토큰을 재발급합니다. 리프레시 토큰 만료까지 7일 이하 남은 경우 리프레시 토큰도 함께 재발급됩니다.",
@@ -135,9 +131,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(response, "토큰이 재발급되었습니다."));
     }
 
-    // ===============================
     //  로그아웃
-    // ===============================
     @Operation(
             summary = "로그아웃",
             description = "로그아웃 처리 - 리프레시 토큰 삭제 및 액세스 토큰 블랙리스트 등록",

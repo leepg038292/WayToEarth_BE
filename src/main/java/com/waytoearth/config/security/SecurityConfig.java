@@ -23,7 +23,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Profile("!postman")
 public class SecurityConfig {
 
-    //  @Autowired(required = false)로 Bean이 없어도 에러 안나게 처리.
+    //  @Autowired(required = false)로 Bean이 없어도 에러 안나게 처리. postman 프로필 접속하기 위함
     @Autowired(required = false)
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 

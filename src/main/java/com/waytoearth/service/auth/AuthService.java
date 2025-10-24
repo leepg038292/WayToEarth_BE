@@ -2,7 +2,6 @@ package com.waytoearth.service.auth;
 
 import com.waytoearth.dto.request.auth.KakaoLoginRequest;
 import com.waytoearth.dto.request.auth.OnboardingRequest;
-import com.waytoearth.dto.request.auth.TokenRefreshRequest;
 import com.waytoearth.dto.response.auth.KakaoUserInfo;
 import com.waytoearth.dto.response.auth.LoginResponse;
 import com.waytoearth.dto.response.auth.OnboardingResponse;

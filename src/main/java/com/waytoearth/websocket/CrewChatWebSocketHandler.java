@@ -3,7 +3,6 @@ package com.waytoearth.websocket;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waytoearth.dto.websocket.ChatMessage;
 import com.waytoearth.entity.crew.CrewChatEntity;
-import com.waytoearth.entity.crew.CrewEntity;
 import com.waytoearth.entity.user.User;
 import com.waytoearth.repository.crew.CrewMemberRepository;
 import com.waytoearth.repository.crew.CrewRepository;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

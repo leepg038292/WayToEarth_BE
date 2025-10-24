@@ -8,6 +8,7 @@ import com.waytoearth.entity.crew.CrewEntity;
 import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.service.crew.CrewJoinService;
 import com.waytoearth.service.crew.CrewService;
+import com.waytoearth.service.file.FileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -34,7 +35,7 @@ public class CrewController {
 
     private final CrewService crewService;
     private final CrewJoinService crewJoinService;
-    private final com.waytoearth.service.file.FileService fileService;
+    private final FileService fileService;
 
     @Operation(summary = "크루 생성", description = "새로운 크루를 생성합니다. 생성자가 자동으로 크루장이 됩니다.")
     @ApiResponses({

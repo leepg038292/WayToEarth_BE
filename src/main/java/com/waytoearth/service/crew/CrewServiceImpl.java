@@ -3,7 +3,6 @@ package com.waytoearth.service.crew;
 import com.waytoearth.entity.crew.CrewEntity;
 import com.waytoearth.entity.crew.CrewMemberEntity;
 import com.waytoearth.entity.user.User;
-import com.waytoearth.exception.CrewAlreadyOwnedException;
 import com.waytoearth.exception.CrewNotFoundException;
 import com.waytoearth.exception.InvalidParameterException;
 import com.waytoearth.exception.UnauthorizedAccessException;
@@ -21,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service

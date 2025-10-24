@@ -1,4 +1,3 @@
-// com/waytoearth/config/AwsS3Config.java
 package com.waytoearth.config.awsS3;
 
 import org.springframework.beans.factory.annotation.Value;

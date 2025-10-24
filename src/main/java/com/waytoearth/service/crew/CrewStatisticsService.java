@@ -4,7 +4,6 @@ import com.waytoearth.dto.response.crew.CrewStatisticsSummaryDto;
 import com.waytoearth.dto.response.crew.CrewMemberRankingDto;
 import com.waytoearth.dto.response.crew.CrewRankingDto;
 import com.waytoearth.entity.crew.CrewStatisticsEntity;
-import com.waytoearth.entity.user.User;
 
 import java.math.BigDecimal;
 import java.util.List;

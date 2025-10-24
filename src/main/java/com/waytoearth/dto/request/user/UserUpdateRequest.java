@@ -1,4 +1,3 @@
-// com/waytoearth/dto/request/user/UserUpdateRequest.java
 package com.waytoearth.dto.request.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;

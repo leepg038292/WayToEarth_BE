@@ -3,14 +3,12 @@ package com.waytoearth.service.notification;
 import com.google.firebase.messaging.*;
 import com.waytoearth.entity.notification.FcmToken;
 import com.waytoearth.entity.notification.NotificationSetting;
-import com.waytoearth.entity.user.User;
 import com.waytoearth.repository.notification.FcmTokenRepository;
 import com.waytoearth.repository.notification.NotificationSettingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
