@@ -33,9 +33,6 @@ public class CrewMemberResponse {
     @Schema(description = "가입일", example = "2024-01-15T10:30:00")
     private LocalDateTime joinedAt;
 
-    @Schema(description = "활성화 상태", example = "true")
-    private Boolean isActive;
-
     @Schema(description = "크루장 여부", example = "false")
     private Boolean isOwner;
 
@@ -66,7 +63,6 @@ public class CrewMemberResponse {
                 profileImageUrl,
                 member.getRole().name(),
                 member.getJoinedAt(),
-                member.getIsActive(),
                 member.isOwner(),
                 lastRunningDate
         );
@@ -95,7 +91,6 @@ public class CrewMemberResponse {
                 member.getUser().getProfileImageUrl(),
                 member.getRole().name(),
                 member.getJoinedAt(),
-                member.getIsActive(),
                 member.isOwner(),
                 null // lastRunningDate
         );

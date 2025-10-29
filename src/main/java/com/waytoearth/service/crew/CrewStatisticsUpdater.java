@@ -49,18 +49,16 @@ public class CrewStatisticsUpdater {
                 .format(DateTimeFormatter.ofPattern("yyyyMM"));
 
         for (CrewMemberEntity membership : memberships) {
-            if (membership.getIsActive()) {
-                crewStatisticsService.updateStatisticsAfterRun(
-                        membership.getCrew().getId(),
-                        userId,
-                        month,
-                        distanceKm,
-                        durationSeconds.longValue()
-                );
+            crewStatisticsService.updateStatisticsAfterRun(
+                    membership.getCrew().getId(),
+                    userId,
+                    month,
+                    distanceKm,
+                    durationSeconds.longValue()
+            );
 
-                log.info("크루 통계 업데이트 완료: crewId={}, userId={}, distance={}km",
-                        membership.getCrew().getId(), userId, distanceKm);
-            }
+            log.info("크루 통계 업데이트 완료: crewId={}, userId={}, distance={}km",
+                    membership.getCrew().getId(), userId, distanceKm);
         }
     }
 
