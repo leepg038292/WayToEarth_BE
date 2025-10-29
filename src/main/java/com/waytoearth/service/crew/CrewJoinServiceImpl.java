@@ -88,7 +88,7 @@ public class CrewJoinServiceImpl implements CrewJoinService {
         }
 
         // 실시간 멤버 수 확인 (Race Condition 방지)
-        long actualMemberCount = crewMemberRepository.countByCrewIdAndIsActiveTrue(crew.getId());
+        long actualMemberCount = crewMemberRepository.countByCrewId(crew.getId());
         if (actualMemberCount >= crew.getMaxMembers()) {
             throw new RuntimeException("크루 정원이 초과되었습니다. (현재: " + actualMemberCount + "명)");
         }
