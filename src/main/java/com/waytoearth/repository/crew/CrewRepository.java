@@ -42,21 +42,20 @@ public interface CrewRepository extends JpaRepository<CrewEntity, Long> {
      */
     @Query("SELECT c FROM CrewEntity c " +
            "JOIN FETCH c.owner " +
-           "WHERE c.isActive = true " +
            "ORDER BY c.createdAt DESC")
-    Page<CrewEntity> findByIsActiveTrueOrderByCreatedAtDesc(Pageable pageable);
+    Page<CrewEntity> findAllWithOwner(Pageable pageable);
 
     //페이징 지원 크루 검색 - N+1 방지
     @Query("SELECT c FROM CrewEntity c " +
            "JOIN FETCH c.owner " +
-           "WHERE c.name LIKE %:keyword% AND c.isActive = true")
+           "WHERE c.name LIKE %:keyword%")
     Page<CrewEntity> findByNameContainingWithOwner(@Param("keyword") String keyword, Pageable pageable);
 
     //페이징 지원 사용자 크루 조회 - N+1 방지
     @Query("SELECT DISTINCT c FROM CrewEntity c " +
            "JOIN FETCH c.owner " +
            "JOIN c.members m " +
-           "WHERE m.user = :user AND m.isActive = true AND c.isActive = true")
+           "WHERE m.user = :user")
     Page<CrewEntity> findCrewsByUserWithOwnerPaged(@Param("user") User user, Pageable pageable);
 
     // Concurrency control: lock crew row for updates within a transaction
