@@ -18,26 +18,16 @@ import java.util.Optional;
 @Repository
 public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Long> {
 
-    List<CrewMemberEntity> findByCrewAndIsActiveTrueOrderByJoinedAtAsc(CrewEntity crew);
-
-    Optional<CrewMemberEntity> findByCrewAndUserAndIsActiveTrue(CrewEntity crew, User user);
-
-    List<CrewMemberEntity> findByCrewAndRoleAndIsActiveTrue(CrewEntity crew, CrewRole role);
-
     Optional<CrewMemberEntity> findByCrewAndRole(CrewEntity crew, CrewRole role);
 
-    List<CrewMemberEntity> findByUserAndIsActiveTrueOrderByJoinedAtDesc(User user);
-
-    // userId로 활성 크루 조회 (크루 정보 포함, 통계 업데이트용)
+    // userId로 크루 조회 (크루 정보 포함, 통계 업데이트용)
     @Query("SELECT cm FROM CrewMemberEntity cm " +
            "JOIN FETCH cm.crew " +
-           "WHERE cm.user.id = :userId AND cm.isActive = true " +
+           "WHERE cm.user.id = :userId " +
            "ORDER BY cm.joinedAt DESC")
     List<CrewMemberEntity> findByUserIdWithCrew(@Param("userId") Long userId);
 
-    boolean existsByCrewAndUserAndIsActiveTrue(CrewEntity crew, User user);
-
-    long countByCrewAndIsActiveTrue(CrewEntity crew);
+    long countByCrew(CrewEntity crew);
 
     //N+1 해결을 위한 fetch join
     @Query("SELECT cm FROM CrewMemberEntity cm " +
