@@ -69,7 +69,6 @@ public class CrewServiceImpl implements CrewService {
                 .maxMembers(maxMembers != null ? maxMembers : 50)
                 .profileImageUrl(profileImageUrl)
                 .owner(owner)
-                .isActive(true)
                 .build();
 
         CrewEntity savedCrew = crewRepository.save(crew);

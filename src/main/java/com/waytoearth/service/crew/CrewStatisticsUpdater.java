@@ -49,7 +49,7 @@ public class CrewStatisticsUpdater {
                 .format(DateTimeFormatter.ofPattern("yyyyMM"));
 
         for (CrewMemberEntity membership : memberships) {
-            if (membership.getIsActive() && membership.getCrew().getIsActive()) {
+            if (membership.getIsActive()) {
                 crewStatisticsService.updateStatisticsAfterRun(
                         membership.getCrew().getId(),
                         userId,

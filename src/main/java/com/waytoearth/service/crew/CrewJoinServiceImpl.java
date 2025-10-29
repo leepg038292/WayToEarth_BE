@@ -43,11 +43,6 @@ public class CrewJoinServiceImpl implements CrewJoinService {
             throw new RuntimeException("해당 크루에 가입할 수 없습니다.");
         }
 
-        // 크루가 활성 상태인지 확인
-        if (!crew.getIsActive()) {
-            throw new RuntimeException("비활성화된 크루에는 가입 신청할 수 없습니다.");
-        }
-
         // 크루 인원이 가득 찬지 확인
         if (crew.isFull()) {
             throw new RuntimeException("크루 정원이 가득 찼습니다.");
@@ -206,13 +201,8 @@ public class CrewJoinServiceImpl implements CrewJoinService {
             return false;
         }
 
-        // 3. 크루가 활성 상태인지 확인
+        // 3. 크루 정원이 가득 찼는지 확인
         CrewEntity crew = getCrewEntity(crewId);
-        if (!crew.getIsActive()) {
-            return false;
-        }
-
-        // 4. 크루 정원이 가득 찼는지 확인
         if (crew.isFull()) {
             return false;
         }
