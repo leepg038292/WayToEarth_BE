@@ -256,7 +256,7 @@ public class UserService {
         User user = findById(userId);
 
         // 2. 크루장 여부 확인
-        List<CrewEntity> ownedCrews = crewRepository.findByOwnerAndIsActiveTrue(user);
+        List<CrewEntity> ownedCrews = crewRepository.findByOwner(user);
         if (!ownedCrews.isEmpty()) {
             String crewNames = ownedCrews.stream()
                     .map(CrewEntity::getName)
