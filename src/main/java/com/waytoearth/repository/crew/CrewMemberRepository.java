@@ -32,28 +32,28 @@ public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Lo
     //N+1 해결을 위한 fetch join
     @Query("SELECT cm FROM CrewMemberEntity cm " +
            "JOIN FETCH cm.user " +
-           "WHERE cm.crew = :crew AND cm.isActive = true " +
+           "WHERE cm.crew = :crew " +
            "ORDER BY cm.joinedAt ASC")
     List<CrewMemberEntity> findByCrewWithUser(@Param("crew") CrewEntity crew);
 
     //사용자별 크루 조회 (크루 정보 포함)
     @Query("SELECT cm FROM CrewMemberEntity cm " +
            "JOIN FETCH cm.crew " +
-           "WHERE cm.user = :user AND cm.isActive = true " +
+           "WHERE cm.user = :user " +
            "ORDER BY cm.joinedAt DESC")
     List<CrewMemberEntity> findByUserWithCrew(@Param("user") User user);
 
     //멤버십 확인
     @Query("SELECT CASE WHEN COUNT(cm) > 0 THEN true ELSE false END " +
            "FROM CrewMemberEntity cm " +
-           "WHERE cm.crew.id = :crewId AND cm.user.id = :userId AND cm.isActive = true")
+           "WHERE cm.crew.id = :crewId AND cm.user.id = :userId")
     boolean isUserMemberOfCrew(@Param("userId") Long userId, @Param("crewId") Long crewId);
 
     //크루장 확인
     @Query("SELECT CASE WHEN COUNT(cm) > 0 THEN true ELSE false END " +
            "FROM CrewMemberEntity cm " +
            "WHERE cm.crew.id = :crewId AND cm.user.id = :userId " +
-           "AND cm.role = 'OWNER' AND cm.isActive = true")
+           "AND cm.role = 'OWNER'")
     boolean isUserOwnerOfCrew(@Param("userId") Long userId, @Param("crewId") Long crewId);
 
     //멤버 제거 (물리 삭제)
