@@ -50,11 +50,13 @@ public class CrewMemberResponse {
      * @return CrewMemberResponse
      */
     public static CrewMemberResponse from(CrewMemberEntity member, FileService fileService, LocalDateTime lastRunningDate) {
-        // profileImageKey로 CloudFront URL 생성
+        // profileImageKey로 CloudFront URL 생성, 없으면 기존 profileImageUrl 사용
         String profileImageUrl = null;
         if (member.getUser().getProfileImageKey() != null &&
             !member.getUser().getProfileImageKey().isEmpty()) {
             profileImageUrl = fileService.createPresignedGetUrl(member.getUser().getProfileImageKey());
+        } else if (member.getUser().getProfileImageUrl() != null) {
+            profileImageUrl = member.getUser().getProfileImageUrl();
         }
 
         return new CrewMemberResponse(
