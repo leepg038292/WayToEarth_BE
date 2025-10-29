@@ -48,7 +48,7 @@ public class CrewStatisticsServiceImpl implements CrewStatisticsService {
         }
 
         // 새로운 월간 통계 생성
-        long activeMemberCount = crewMemberRepository.countByCrewAndIsActiveTrue(crew);
+        long activeMemberCount = crewMemberRepository.countByCrew(crew);
 
         CrewStatisticsEntity newStats = CrewStatisticsEntity.builder()
                 .crew(crew)
