@@ -148,7 +148,7 @@ public class CrewMemberServiceImpl implements CrewMemberService {
     @Override
     public long getCrewMemberCount(Long crewId) {
         CrewEntity crew = getCrewEntity(crewId);
-        return crewMemberRepository.countByCrewAndIsActiveTrue(crew);
+        return crewMemberRepository.countByCrew(crew);
     }
 
     @Override

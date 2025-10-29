@@ -64,42 +64,28 @@ public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, Lo
 
     //일반 멤버만 조회
     @Query("SELECT cm FROM CrewMemberEntity cm " +
-           "WHERE cm.crew = :crew AND cm.isActive = true " +
+           "WHERE cm.crew = :crew " +
            "AND cm.role = 'MEMBER' " +
            "ORDER BY cm.joinedAt ASC")
     List<CrewMemberEntity> findActiveMembers(@Param("crew") CrewEntity crew);
 
-    //랭킹용 멤버 조회 (사용자 정보 포함)
-    @Query("SELECT cm FROM CrewMemberEntity cm " +
-           "JOIN FETCH cm.user " +
-           "WHERE cm.crew.id = :crewId AND cm.isActive = true " +
-           "ORDER BY cm.joinedAt ASC")
-    List<CrewMemberEntity> findMembersForRanking(@Param("crewId") Long crewId);
-
-    //멤버십 조회 (활성/비활성 무관)
+    //멤버십 조회
     @Query("SELECT cm FROM CrewMemberEntity cm " +
            "JOIN FETCH cm.user " +
            "WHERE cm.user.id = :userId AND cm.crew.id = :crewId")
     Optional<CrewMemberEntity> findMembership(@Param("userId") Long userId, @Param("crewId") Long crewId);
 
-
     //DB 페이징을 사용한 크루 멤버 조회 (성능 최적화)
     @Query("SELECT cm FROM CrewMemberEntity cm " +
            "JOIN FETCH cm.user " +
-           "WHERE cm.crew.id = :crewId AND cm.isActive = true")
+           "WHERE cm.crew.id = :crewId")
     Page<CrewMemberEntity> findCrewMembersWithPaging(@Param("crewId") Long crewId, Pageable pageable);
-
-    //DB 페이징을 사용한 일반 멤버만 조회 (크루장 제외)
-    @Query("SELECT cm FROM CrewMemberEntity cm " +
-           "JOIN FETCH cm.user " +
-           "WHERE cm.crew.id = :crewId AND cm.isActive = true AND cm.role = 'MEMBER'")
-    Page<CrewMemberEntity> findRegularMembersWithPaging(@Param("crewId") Long crewId, Pageable pageable);
 
     // 사용자 ID로 크루 멤버십 일괄 삭제 (회원 탈퇴용)
     void deleteByUserId(Long userId);
 
     // 크루 ID로 실시간 멤버 수 카운트 (Race Condition 방지)
     @Query("SELECT COUNT(cm) FROM CrewMemberEntity cm " +
-           "WHERE cm.crew.id = :crewId AND cm.isActive = true")
-    long countByCrewIdAndIsActiveTrue(@Param("crewId") Long crewId);
+           "WHERE cm.crew.id = :crewId")
+    long countByCrewId(@Param("crewId") Long crewId);
 }
