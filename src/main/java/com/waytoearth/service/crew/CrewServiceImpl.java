@@ -47,7 +47,7 @@ public class CrewServiceImpl implements CrewService {
                 .orElseThrow(() -> new UserNotFoundException(user.getUserId()));
 
         // 크루장 중복 생성 방지
-        List<CrewEntity> ownedCrews = crewRepository.findByOwnerAndIsActiveTrue(owner);
+        List<CrewEntity> ownedCrews = crewRepository.findByOwner(owner);
         if (!ownedCrews.isEmpty()) {
             String existingCrewName = ownedCrews.get(0).getName();
             String message = String.format(
@@ -163,13 +163,13 @@ public class CrewServiceImpl implements CrewService {
 
     @Override
     public Page<CrewEntity> findCrewsByRegion(String region, Pageable pageable) {
-        // region 필드가 CrewEntity에 없으므로 전체 활성 크루 반환
-        return crewRepository.findByIsActiveTrueOrderByCreatedAtDesc(pageable);
+        // region 필드가 CrewEntity에 없으므로 전체 크루 반환
+        return crewRepository.findAllWithOwner(pageable);
     }
 
     @Override
     public Page<CrewEntity> findAllActiveCrews(Pageable pageable) {
-        return crewRepository.findByIsActiveTrueOrderByCreatedAtDesc(pageable);
+        return crewRepository.findAllWithOwner(pageable);
     }
 
     @Override
