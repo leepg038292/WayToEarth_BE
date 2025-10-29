@@ -195,23 +195,4 @@ public class CrewController {
 
         return ResponseEntity.noContent().build();
     }
-
-    @Operation(summary = "크루 활성화/비활성화 토글", description = "크루 상태를 활성화/비활성화로 변경합니다. 크루장만 가능합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "상태 변경 성공"),
-            @ApiResponse(responseCode = "401", description = "인증 실패"),
-            @ApiResponse(responseCode = "403", description = "권한 없음 (크루장이 아님)"),
-            @ApiResponse(responseCode = "404", description = "크루를 찾을 수 없음")
-    })
-    @PatchMapping("/{crewId}/toggle-status")
-    public ResponseEntity<CrewDetailResponse> toggleCrewStatus(
-            @Parameter(description = "크루 ID") @PathVariable Long crewId,
-            @AuthUser AuthenticatedUser user) {
-
-        log.info("크루 상태 변경 요청 - crewId: {}, userId: {}", crewId, user.getUserId());
-
-        CrewEntity crew = crewService.toggleCrewStatus(user, crewId);
-
-        return ResponseEntity.ok(CrewDetailResponse.from(crew, fileService));
-    }
 }

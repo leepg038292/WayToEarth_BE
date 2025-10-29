@@ -46,7 +46,7 @@ class PostmanProfileSmokeTest {
 
     @BeforeEach
     void setupSecurity() {
-        AuthenticatedUser fakeUser = new AuthenticatedUser(1L);
+        AuthenticatedUser fakeUser = new AuthenticatedUser(1L, com.waytoearth.entity.enums.UserRole.USER);
         var auth = new UsernamePasswordAuthenticationToken(fakeUser, null, List.of());
         SecurityContextHolder.getContext().setAuthentication(auth);
     }

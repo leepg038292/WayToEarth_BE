@@ -46,11 +46,6 @@ public class CrewMemberEntity extends BaseTimeEntity {
     @Column(nullable = false)
     private LocalDateTime joinedAt;
 
-    @Schema(description = "활성화 상태", example = "true")
-    @Column(nullable = false)
-    @Builder.Default
-    private Boolean isActive = true;
-
     public boolean isOwner() {
         return role == CrewRole.OWNER;
     }
@@ -65,7 +60,6 @@ public class CrewMemberEntity extends BaseTimeEntity {
                 .user(user)
                 .role(CrewRole.MEMBER)
                 .joinedAt(LocalDateTime.now())
-                .isActive(true)
                 .build();
     }
 
@@ -75,7 +69,6 @@ public class CrewMemberEntity extends BaseTimeEntity {
                 .user(user)
                 .role(CrewRole.OWNER)
                 .joinedAt(LocalDateTime.now())
-                .isActive(true)
                 .build();
     }
 }

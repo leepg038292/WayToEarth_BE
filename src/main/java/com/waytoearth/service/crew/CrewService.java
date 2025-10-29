@@ -35,19 +35,9 @@ public interface CrewService {
                          String description, Integer maxMembers, String profileImageUrl, String profileImageKey);
 
     /**
-     * 크루 삭제 (크루장만 가능)
-     */
-    void deleteCrew(AuthenticatedUser user, Long crewId);
-
-    /**
      * 사용자의 크루 목록 조회
      */
     Page<CrewEntity> getUserCrews(AuthenticatedUser user, Pageable pageable);
-
-    /**
-     * 크루 활성화/비활성화 (크루장만 가능)
-     */
-    CrewEntity toggleCrewStatus(AuthenticatedUser user, Long crewId);
 
     /**
      * 크루 소유자인지 확인
@@ -70,17 +60,7 @@ public interface CrewService {
     Page<CrewEntity> findAllActiveCrews(Pageable pageable);
 
     /**
-     * 크루 생성 (간단 버전)
-     */
-    CrewEntity createCrew(Long userId, CrewEntity crewData);
-
-    /**
-     * 크루 정보 수정 (간단 버전)
-     */
-    CrewEntity updateCrew(Long userId, Long crewId, CrewEntity updateData);
-
-    /**
-     * 크루 삭제 (간단 버전)
+     * 크루 삭제 (물리 삭제)
      */
     void deleteCrew(Long userId, Long crewId);
 

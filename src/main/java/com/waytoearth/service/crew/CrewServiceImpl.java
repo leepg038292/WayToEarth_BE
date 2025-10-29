@@ -47,7 +47,7 @@ public class CrewServiceImpl implements CrewService {
                 .orElseThrow(() -> new UserNotFoundException(user.getUserId()));
 
         // 크루장 중복 생성 방지
-        List<CrewEntity> ownedCrews = crewRepository.findByOwnerAndIsActiveTrue(owner);
+        List<CrewEntity> ownedCrews = crewRepository.findByOwner(owner);
         if (!ownedCrews.isEmpty()) {
             String existingCrewName = ownedCrews.get(0).getName();
             String message = String.format(
@@ -69,7 +69,6 @@ public class CrewServiceImpl implements CrewService {
                 .maxMembers(maxMembers != null ? maxMembers : 50)
                 .profileImageUrl(profileImageUrl)
                 .owner(owner)
-                .isActive(true)
                 .build();
 
         CrewEntity savedCrew = crewRepository.save(crew);
@@ -136,22 +135,6 @@ public class CrewServiceImpl implements CrewService {
     }
 
     @Override
-    @Transactional
-    public void deleteCrew(AuthenticatedUser user, Long crewId) {
-        CrewEntity crew = getCrewById(crewId);
-
-        // 크루장인지 확인
-        if (!isCrewOwner(crewId, user.getUserId())) {
-            throw new UnauthorizedAccessException("크루 삭제는 크루장만 가능합니다.");
-        }
-
-        // 소프트 삭제 (비활성화)
-        crew.setIsActive(false);
-
-        log.info("크루가 삭제되었습니다. crewId: {}, userId: {}", crewId, user.getUserId());
-    }
-
-    @Override
     public Page<CrewEntity> getUserCrews(AuthenticatedUser user, Pageable pageable) {
         User userEntity = userRepository.findById(user.getUserId())
                 .orElseThrow(() -> new UserNotFoundException(user.getUserId()));
@@ -168,23 +151,6 @@ public class CrewServiceImpl implements CrewService {
     }
 
     @Override
-    @Transactional
-    public CrewEntity toggleCrewStatus(AuthenticatedUser user, Long crewId) {
-        CrewEntity crew = getCrewById(crewId);
-
-        // 크루장인지 확인
-        if (!isCrewOwner(crewId, user.getUserId())) {
-            throw new UnauthorizedAccessException("크루 상태 변경은 크루장만 가능합니다.");
-        }
-
-        crew.setIsActive(!crew.getIsActive());
-
-        log.info("크루 상태가 변경되었습니다. crewId: {}, isActive: {}, userId: {}",
-                crewId, crew.getIsActive(), user.getUserId());
-        return crew;
-    }
-
-    @Override
     public boolean isCrewOwner(Long crewId, Long userId) {
         return crewMemberRepository.isUserOwnerOfCrew(userId, crewId);
     }
@@ -196,73 +162,13 @@ public class CrewServiceImpl implements CrewService {
 
     @Override
     public Page<CrewEntity> findCrewsByRegion(String region, Pageable pageable) {
-        // region 필드가 CrewEntity에 없으므로 전체 활성 크루 반환
-        return crewRepository.findByIsActiveTrueOrderByCreatedAtDesc(pageable);
+        // region 필드가 CrewEntity에 없으므로 전체 크루 반환
+        return crewRepository.findAllWithOwner(pageable);
     }
 
     @Override
     public Page<CrewEntity> findAllActiveCrews(Pageable pageable) {
-        return crewRepository.findByIsActiveTrueOrderByCreatedAtDesc(pageable);
-    }
-
-    @Override
-    public CrewEntity createCrew(Long userId, CrewEntity crewData) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다. userId: " + userId));
-
-        // 크루장 중복 생성 방지
-        List<CrewEntity> ownedCrews = crewRepository.findByOwnerAndIsActiveTrue(user);
-        if (!ownedCrews.isEmpty()) {
-            String existingCrewName = ownedCrews.get(0).getName();
-            String message = String.format(
-                "이미 크루를 소유하고 있습니다. 한 사용자는 하나의 크루만 생성할 수 있습니다. (소유 중인 크루: %s)",
-                existingCrewName
-            );
-            log.warn("[CrewService] 크루 중복 생성 시도 차단 - userId: {}, existingCrew: {}",
-                     userId, existingCrewName);
-            throw new com.waytoearth.exception.CrewAlreadyOwnedException(message);
-        }
-
-        CrewEntity crew = CrewEntity.builder()
-                .name(crewData.getName())
-                .description(crewData.getDescription())
-                .maxMembers(crewData.getMaxMembers())
-                .profileImageUrl(crewData.getProfileImageUrl())
-                .owner(user)
-                .isActive(true)
-                .currentMembers(1) // 생성자가 첫 멤버
-                .build();
-
-        CrewEntity savedCrew = crewRepository.save(crew);
-
-        // 크루 생성자를 OWNER로 추가
-        CrewMemberEntity owner = CrewMemberEntity.createOwner(savedCrew, user);
-        crewMemberRepository.save(owner);
-
-        // 현재 멤버 수 업데이트 (실제 멤버 수로 동기화)
-        savedCrew.incrementMemberCount();
-
-        log.info("새 크루가 생성되었습니다. crewId: {}, name: {}, ownerId: {}",
-                savedCrew.getId(), savedCrew.getName(), userId);
-
-        return savedCrew;
-    }
-
-    @Override
-    public CrewEntity updateCrew(Long userId, Long crewId, CrewEntity updateData) {
-        CrewEntity crew = getCrewById(crewId);
-
-        if (!isCrewOwner(crewId, userId)) {
-            throw new RuntimeException("크루 정보 수정은 크루장만 가능합니다.");
-        }
-
-        if (updateData.getName() != null) crew.setName(updateData.getName());
-        if (updateData.getDescription() != null) crew.setDescription(updateData.getDescription());
-        if (updateData.getMaxMembers() != null) crew.setMaxMembers(updateData.getMaxMembers());
-        if (updateData.getProfileImageUrl() != null) crew.setProfileImageUrl(updateData.getProfileImageUrl());
-
-        log.info("크루 정보가 수정되었습니다. crewId: {}, userId: {}", crewId, userId);
-        return crew;
+        return crewRepository.findAllWithOwner(pageable);
     }
 
     @Override

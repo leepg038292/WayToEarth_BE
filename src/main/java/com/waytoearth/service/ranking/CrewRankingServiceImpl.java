@@ -162,13 +162,11 @@ public class CrewRankingServiceImpl implements CrewRankingService {
      * 모든 크루의 멤버 랭킹 재구축
      */
     private void rebuildAllCrewMemberRankings(String month) {
-        // 활성 크루 목록 조회
-        List<CrewEntity> activeCrews = crewRepository.findAll().stream()
-                .filter(CrewEntity::getIsActive)
-                .toList();
+        // 모든 크루 목록 조회
+        List<CrewEntity> crews = crewRepository.findAll();
 
         int rebuiltCount = 0;
-        for (CrewEntity crew : activeCrews) {
+        for (CrewEntity crew : crews) {
             rebuildCrewMemberRanking(crew.getId(), month);
             rebuiltCount++;
         }

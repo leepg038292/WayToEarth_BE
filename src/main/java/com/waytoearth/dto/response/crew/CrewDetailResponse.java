@@ -33,9 +33,6 @@ public class CrewDetailResponse {
     @Schema(description = "프로필 이미지 URL", example = "https://example.com/crew-profile.jpg")
     private String profileImageUrl;
 
-    @Schema(description = "활성화 상태", example = "true")
-    private Boolean isActive;
-
     @Schema(description = "크루장 ID", example = "123")
     private Long ownerId;
 
@@ -65,7 +62,6 @@ public class CrewDetailResponse {
                 crew.getMaxMembers(),
                 crew.getCurrentMembers(),
                 profileImageUrl,
-                crew.getIsActive(),
                 crew.getOwner().getId(),
                 crew.getOwner().getNickname(),
                 crew.getCreatedAt(),
@@ -83,7 +79,6 @@ public class CrewDetailResponse {
                 crew.getMaxMembers(),
                 crew.getCurrentMembers(),
                 crew.getProfileImageUrl(),
-                crew.getIsActive(),
                 crew.getOwner().getId(),
                 crew.getOwner().getNickname(),
                 crew.getCreatedAt(),

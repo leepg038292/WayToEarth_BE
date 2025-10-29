@@ -31,8 +31,7 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
     public List<CrewStatisticsEntity> findTopCrewsByDistance(String month, int limit) {
         return queryFactory
                 .selectFrom(crewStatisticsEntity)
-                .where(crewStatisticsEntity.month.eq(month)
-                        .and(crewStatisticsEntity.crew.isActive.isTrue()))
+                .where(crewStatisticsEntity.month.eq(month))
                 .orderBy(crewStatisticsEntity.totalDistance.desc())
                 .limit(limit)
                 .fetch();
@@ -42,8 +41,7 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
     public List<CrewStatisticsEntity> findTopCrewsByRunCount(String month, int limit) {
         return queryFactory
                 .selectFrom(crewStatisticsEntity)
-                .where(crewStatisticsEntity.month.eq(month)
-                        .and(crewStatisticsEntity.crew.isActive.isTrue()))
+                .where(crewStatisticsEntity.month.eq(month))
                 .orderBy(crewStatisticsEntity.runCount.desc())
                 .limit(limit)
                 .fetch();
@@ -53,8 +51,7 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
     public List<CrewStatisticsEntity> findTopCrewsByActiveMembers(String month, int limit) {
         return queryFactory
                 .selectFrom(crewStatisticsEntity)
-                .where(crewStatisticsEntity.month.eq(month)
-                        .and(crewStatisticsEntity.crew.isActive.isTrue()))
+                .where(crewStatisticsEntity.month.eq(month))
                 .orderBy(crewStatisticsEntity.activeMembers.desc())
                 .limit(limit)
                 .fetch();
@@ -109,13 +106,12 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
         // 해당 월 통계가 없는 크루들을 찾음
         return queryFactory
                 .selectFrom(crewEntity)
-                .where(crewEntity.isActive.isTrue()
-                        .and(crewEntity.id.notIn(
-                                queryFactory
-                                        .select(crewStatisticsEntity.crew.id)
-                                        .from(crewStatisticsEntity)
-                                        .where(crewStatisticsEntity.month.eq(month))
-                        )))
+                .where(crewEntity.id.notIn(
+                        queryFactory
+                                .select(crewStatisticsEntity.crew.id)
+                                .from(crewStatisticsEntity)
+                                .where(crewStatisticsEntity.month.eq(month))
+                ))
                 .fetch();
     }
 
@@ -190,13 +186,11 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
                         Expressions.constant(0) // rank는 서비스에서 처리
                 ))
                 .from(crewEntity)
-                .leftJoin(crewMemberEntity).on(crewMemberEntity.crew.eq(crewEntity)
-                        .and(crewMemberEntity.isActive.isTrue()))
+                .leftJoin(crewMemberEntity).on(crewMemberEntity.crew.eq(crewEntity))
                 .leftJoin(runningRecord).on(runningRecord.user.eq(crewMemberEntity.user)
                         .and(runningRecord.isCompleted.isTrue())
                         .and(runningRecord.startedAt.year().eq(Integer.parseInt(month.substring(0, 4))))
                         .and(runningRecord.startedAt.month().eq(Integer.parseInt(month.substring(4, 6)))))
-                .where(crewEntity.isActive.isTrue())
                 .groupBy(crewEntity.id, crewEntity.name)
                 .orderBy(runningRecord.distance.sum().coalesce(BigDecimal.ZERO).desc())
                 .limit(limit)
@@ -220,8 +214,7 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
                         .and(runningRecord.isCompleted.isTrue())
                         .and(runningRecord.startedAt.year().eq(Integer.parseInt(month.substring(0, 4))))
                         .and(runningRecord.startedAt.month().eq(Integer.parseInt(month.substring(4, 6)))))
-                .where(crewMemberEntity.crew.id.eq(crewId)
-                        .and(crewMemberEntity.isActive.isTrue()))
+                .where(crewMemberEntity.crew.id.eq(crewId))
                 .groupBy(crewMemberEntity.user.id, crewMemberEntity.user.nickname)
                 .orderBy(runningRecord.distance.sum().coalesce(BigDecimal.ZERO).desc())
                 .limit(limit)
@@ -245,8 +238,7 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
                         .and(runningRecord.isCompleted.isTrue())
                         .and(runningRecord.startedAt.year().eq(Integer.parseInt(month.substring(0, 4))))
                         .and(runningRecord.startedAt.month().eq(Integer.parseInt(month.substring(4, 6)))))
-                .where(crewMemberEntity.crew.id.eq(crewId)
-                        .and(crewMemberEntity.isActive.isTrue()))
+                .where(crewMemberEntity.crew.id.eq(crewId))
                 .groupBy(crewMemberEntity.user.id, crewMemberEntity.user.nickname)
                 .orderBy(runningRecord.distance.sum().coalesce(BigDecimal.ZERO).desc())
                 .limit(1)
@@ -261,7 +253,6 @@ public class CrewStatisticsRepositoryImpl implements CrewStatisticsRepositoryCus
                 .join(crewMemberEntity).on(crewMemberEntity.user.id.eq(runningRecord.user.id))
                 .where(crewMemberEntity.crew.id.eq(crewId)
                         .and(crewMemberEntity.user.id.eq(userId))
-                        .and(crewMemberEntity.isActive.isTrue())
                         .and(runningRecord.isCompleted.isTrue())
                         .and(runningRecord.startedAt.year().eq(Integer.parseInt(month.substring(0, 4))))
                         .and(runningRecord.startedAt.month().eq(Integer.parseInt(month.substring(4, 6)))))

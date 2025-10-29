@@ -33,9 +33,6 @@ public class CrewMemberResponse {
     @Schema(description = "가입일", example = "2024-01-15T10:30:00")
     private LocalDateTime joinedAt;
 
-    @Schema(description = "활성화 상태", example = "true")
-    private Boolean isActive;
-
     @Schema(description = "크루장 여부", example = "false")
     private Boolean isOwner;
 
@@ -50,11 +47,13 @@ public class CrewMemberResponse {
      * @return CrewMemberResponse
      */
     public static CrewMemberResponse from(CrewMemberEntity member, FileService fileService, LocalDateTime lastRunningDate) {
-        // profileImageKey로 CloudFront URL 생성
+        // profileImageKey로 CloudFront URL 생성, 없으면 기존 profileImageUrl 사용
         String profileImageUrl = null;
         if (member.getUser().getProfileImageKey() != null &&
             !member.getUser().getProfileImageKey().isEmpty()) {
             profileImageUrl = fileService.createPresignedGetUrl(member.getUser().getProfileImageKey());
+        } else if (member.getUser().getProfileImageUrl() != null) {
+            profileImageUrl = member.getUser().getProfileImageUrl();
         }
 
         return new CrewMemberResponse(
@@ -64,7 +63,6 @@ public class CrewMemberResponse {
                 profileImageUrl,
                 member.getRole().name(),
                 member.getJoinedAt(),
-                member.getIsActive(),
                 member.isOwner(),
                 lastRunningDate
         );
@@ -93,7 +91,6 @@ public class CrewMemberResponse {
                 member.getUser().getProfileImageUrl(),
                 member.getRole().name(),
                 member.getJoinedAt(),
-                member.getIsActive(),
                 member.isOwner(),
                 null // lastRunningDate
         );

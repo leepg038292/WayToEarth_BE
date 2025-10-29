@@ -48,11 +48,6 @@ public class CrewEntity extends BaseTimeEntity {
     @Column(name = "profile_image_key", length = 512)
     private String profileImageKey;
 
-    @Schema(description = "활성화 상태", example = "true")
-    @Column(nullable = false)
-    @Builder.Default
-    private Boolean isActive = true;
-
     @Schema(description = "현재 멤버 수", example = "10")
     @Column(nullable = false)
     @Builder.Default
