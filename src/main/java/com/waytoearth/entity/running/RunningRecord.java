@@ -71,6 +71,14 @@ public class RunningRecord extends BaseTimeEntity {
     @Column(name = "calories")
     private Integer calories;
 
+    /** 평균 심박수(bpm) */
+    @Column(name = "average_heart_rate")
+    private Integer averageHeartRate;
+
+    /** 최대 심박수(bpm) */
+    @Column(name = "max_heart_rate")
+    private Integer maxHeartRate;
+
     /** 완료 여부 */
     @Column(name = "is_completed", columnDefinition = "TINYINT(1)", nullable = false)
     private Boolean isCompleted;
@@ -91,23 +99,45 @@ public class RunningRecord extends BaseTimeEntity {
 
     /** 러닝 완료 처리 */
     public void complete(BigDecimal distanceKm, Integer durationSeconds, Integer paceSec,
-                         Integer calories, LocalDateTime endedAt) {
+                         Integer calories, Integer avgHeartRate, Integer maxHeartRate, LocalDateTime endedAt) {
         this.distance = distanceKm;
         this.duration = durationSeconds;
         this.averagePaceSeconds = paceSec;
         this.calories = calories;
+        this.averageHeartRate = avgHeartRate;
+        this.maxHeartRate = maxHeartRate;
         this.endedAt = endedAt;
         this.isCompleted = true;
         this.status = RunningStatus.COMPLETED;
     }
 
-    /** 경로 포인트 추가 */
-    public void addRoutePoint(Double latitude, Double longitude, Integer sequence) {
-        RunningRoute route = new RunningRoute();
-        route.setRunningRecord(this);
-        route.setLatitude(latitude);
-        route.setLongitude(longitude);
-        route.setSequence(sequence);
+    /** 러닝 완료 처리 (하위 호환성 유지 - 심박수 없는 버전) */
+    public void complete(BigDecimal distanceKm, Integer durationSeconds, Integer paceSec,
+                         Integer calories, LocalDateTime endedAt) {
+        this.complete(distanceKm, durationSeconds, paceSec, calories, null, null, endedAt);
+    }
+
+    /** 경로 포인트 추가 (차트용 상세 데이터 포함) */
+    public void addRoutePoint(Double latitude, Double longitude, Integer sequence,
+                              Integer timestampSeconds, Integer heartRate, Integer paceSeconds,
+                              Double altitude, Double accuracy, Integer cumulativeDistanceMeters) {
+        RunningRoute route = RunningRoute.builder()
+                .runningRecord(this)
+                .latitude(latitude)
+                .longitude(longitude)
+                .sequence(sequence)
+                .timestampSeconds(timestampSeconds)
+                .heartRate(heartRate)
+                .paceSeconds(paceSeconds)
+                .altitude(altitude)
+                .accuracy(accuracy)
+                .cumulativeDistanceMeters(cumulativeDistanceMeters)
+                .build();
         this.routes.add(route);
+    }
+
+    /** 경로 포인트 추가 (하위 호환성 유지 - 기본 3개 필드만) */
+    public void addRoutePoint(Double latitude, Double longitude, Integer sequence) {
+        this.addRoutePoint(latitude, longitude, sequence, null, null, null, null, null, null);
     }
 }
