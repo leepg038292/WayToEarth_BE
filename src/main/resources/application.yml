@@ -12,8 +12,10 @@ spring:
       - optional:file:.env
 
   # Flyway 설정 (모든 환경 공통)
+  # 현재는 비활성화 상태 (ddl-auto: update 사용 중)
+  # 베타 테스트 전에 활성화 예정
   flyway:
-    enabled: true
+    enabled: false  # TODO: 베타 테스트 전에 true로 변경
     baseline-on-migrate: true
     baseline-version: 0
     locations: classpath:db/migration
