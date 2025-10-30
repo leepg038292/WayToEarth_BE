@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CrewRepository extends JpaRepository<CrewEntity, Long> {
+public interface CrewRepository extends JpaRepository<CrewEntity, Long>, CrewRepositoryCustom {
 
     List<CrewEntity> findByOwner(User owner);
 
