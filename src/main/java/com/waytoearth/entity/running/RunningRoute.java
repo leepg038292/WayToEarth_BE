@@ -38,4 +38,30 @@ public class RunningRoute extends BaseTimeEntity {
     /** 경로 순서 */
     @Column(name = "sequence", nullable = false)
     private Integer sequence;
+
+    // ========== 워치 연동 차트용 필드 ==========
+
+    /** 러닝 시작 후 경과 시간(초) */
+    @Column(name = "timestamp_seconds")
+    private Integer timestampSeconds;
+
+    /** 이 지점에서의 심박수(bpm) */
+    @Column(name = "heart_rate")
+    private Integer heartRate;
+
+    /** 이 구간의 페이스(초/km) */
+    @Column(name = "pace_seconds")
+    private Integer paceSeconds;
+
+    /** 고도(미터) */
+    @Column(name = "altitude")
+    private Double altitude;
+
+    /** GPS 정확도(미터) */
+    @Column(name = "accuracy")
+    private Double accuracy;
+
+    /** 이 지점까지의 누적 거리(미터) */
+    @Column(name = "cumulative_distance_meters")
+    private Integer cumulativeDistanceMeters;
 }
