@@ -13,7 +13,7 @@ import java.util.List;
 import com.waytoearth.entity.user.User;
 
 @Repository
-public interface CrewChatRepository extends JpaRepository<CrewChatEntity, Long> {
+public interface CrewChatRepository extends JpaRepository<CrewChatEntity, Long>, CrewChatRepositoryCustom {
 
     @Query("""
         SELECT c FROM CrewChatEntity c

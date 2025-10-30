@@ -50,28 +50,14 @@ public class JourneyServiceImpl implements JourneyService {
 
     @Override
     public List<JourneySummaryResponse> getActiveJourneys() {
-        List<JourneyEntity> journeys = journeyRepository.findByIsActiveTrueOrderByCreatedAtDesc();
-
-        return journeys.stream()
-                .map(journey -> {
-                    Long landmarkCount = landmarkRepository.countLandmarksByJourneyId(journey.getId());
-                    Long completedRunners = progressRepository.countCompletedRunnersByJourneyId(journey.getId());
-                    return JourneySummaryResponse.from(journey, landmarkCount.intValue(), completedRunners);
-                })
-                .toList();
+        // QueryDSL로 최적화: 101개 쿼리 → 1개 쿼리
+        return journeyRepository.findActiveJourneysWithStats();
     }
 
     @Override
     public List<JourneySummaryResponse> getJourneysByCategory(JourneyCategory category) {
-        List<JourneyEntity> journeys = journeyRepository.findByIsActiveTrueAndCategoryOrderByCreatedAtDesc(category);
-
-        return journeys.stream()
-                .map(journey -> {
-                    Long landmarkCount = landmarkRepository.countLandmarksByJourneyId(journey.getId());
-                    Long completedRunners = progressRepository.countCompletedRunnersByJourneyId(journey.getId());
-                    return JourneySummaryResponse.from(journey, landmarkCount.intValue(), completedRunners);
-                })
-                .toList();
+        // QueryDSL로 최적화: N+1 문제 해결
+        return journeyRepository.findJourneysByCategoryWithStats(category);
     }
 
     @Override
@@ -220,15 +206,8 @@ public class JourneyServiceImpl implements JourneyService {
 
     @Override
     public List<JourneySummaryResponse> searchJourneysByTitle(String keyword) {
-        List<JourneyEntity> journeys = journeyRepository.searchByTitle(keyword);
-
-        return journeys.stream()
-                .map(journey -> {
-                    Long landmarkCount = landmarkRepository.countLandmarksByJourneyId(journey.getId());
-                    Long completedRunners = progressRepository.countCompletedRunnersByJourneyId(journey.getId());
-                    return JourneySummaryResponse.from(journey, landmarkCount.intValue(), completedRunners);
-                })
-                .toList();
+        // QueryDSL로 최적화: N+1 문제 해결
+        return journeyRepository.searchJourneysByTitleWithStats(keyword);
     }
 
     @Override
