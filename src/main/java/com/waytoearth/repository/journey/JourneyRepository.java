@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface JourneyRepository extends JpaRepository<JourneyEntity, Long> {
+public interface JourneyRepository extends JpaRepository<JourneyEntity, Long>, JourneyRepositoryCustom {
 
     /**
      * 활성화된 여행 목록 조회
