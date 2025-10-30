@@ -142,12 +142,24 @@ public class RunningServiceImpl implements RunningService {
                 request.getDurationSeconds(),
                 request.getAveragePaceSeconds(),
                 request.getCalories(),
+                request.getAverageHeartRate(),
+                request.getMaxHeartRate(),
                 LocalDateTime.now(ZoneId.of("Asia/Seoul"))
         );
 
         if (request.getRoutePoints() != null) {
             request.getRoutePoints().forEach(p ->
-                    record.addRoutePoint(p.getLatitude(), p.getLongitude(), p.getSequence())
+                    record.addRoutePoint(
+                            p.getLatitude(),
+                            p.getLongitude(),
+                            p.getSequence(),
+                            p.getTimestampSeconds(),
+                            p.getHeartRate(),
+                            p.getPaceSeconds(),
+                            p.getAltitude(),
+                            p.getAccuracy(),
+                            p.getCumulativeDistanceMeters()
+                    )
             );
         }
 
@@ -181,13 +193,25 @@ public class RunningServiceImpl implements RunningService {
                 .averagePace(formatPace(savedRecord.getAveragePaceSeconds()))
                 .durationSeconds(savedRecord.getDuration())
                 .calories(savedRecord.getCalories())
+                .averageHeartRate(savedRecord.getAverageHeartRate())
+                .maxHeartRate(savedRecord.getMaxHeartRate())
                 .startedAt(savedRecord.getStartedAt() != null ? savedRecord.getStartedAt().toString() : null)
                 .endedAt(savedRecord.getEndedAt() != null ? savedRecord.getEndedAt().toString() : null)
                 .routePoints(savedRecord.getRoutes().stream()
-                        .map(rt -> new RunningCompleteResponse.RoutePoint(
-                                rt.getLatitude(), rt.getLongitude(), rt.getSequence()
-                        ))
+                        .map(rt -> RunningCompleteResponse.RoutePoint.builder()
+                                .latitude(rt.getLatitude())
+                                .longitude(rt.getLongitude())
+                                .sequence(rt.getSequence())
+                                .timestampSeconds(rt.getTimestampSeconds())
+                                .heartRate(rt.getHeartRate())
+                                .paceSeconds(rt.getPaceSeconds())
+                                .altitude(rt.getAltitude())
+                                .accuracy(rt.getAccuracy())
+                                .cumulativeDistanceMeters(rt.getCumulativeDistanceMeters())
+                                .build()
+                        )
                         .collect(Collectors.toList()))
+                .routePointsCount(savedRecord.getRoutes().size())
                 .emblemAwardResult(awardResult)
                 .runningType(savedRecord.getRunningType().name())
                 .build();
@@ -223,17 +247,29 @@ public class RunningServiceImpl implements RunningService {
                 .averagePace(formatPace(r.getAveragePaceSeconds()))
                 .durationSeconds(r.getDuration())
                 .calories(r.getCalories())
+                .averageHeartRate(r.getAverageHeartRate())
+                .maxHeartRate(r.getMaxHeartRate())
                 .startedAt(r.getStartedAt() != null ? r.getStartedAt().toString() : null)
                 .endedAt(r.getEndedAt() != null ? r.getEndedAt().toString() : null)
                 .routePoints(
                         r.getRoutes().stream()
-                                .map(rt -> new RunningCompleteResponse.RoutePoint(
-                                        rt.getLatitude(), rt.getLongitude(), rt.getSequence()
-                                ))
+                                .map(rt -> RunningCompleteResponse.RoutePoint.builder()
+                                        .latitude(rt.getLatitude())
+                                        .longitude(rt.getLongitude())
+                                        .sequence(rt.getSequence())
+                                        .timestampSeconds(rt.getTimestampSeconds())
+                                        .heartRate(rt.getHeartRate())
+                                        .paceSeconds(rt.getPaceSeconds())
+                                        .altitude(rt.getAltitude())
+                                        .accuracy(rt.getAccuracy())
+                                        .cumulativeDistanceMeters(rt.getCumulativeDistanceMeters())
+                                        .build()
+                                )
                                 .collect(Collectors.toList())
                 )
+                .routePointsCount(r.getRoutes().size())
                 .emblemAwardResult(null)
-                .runningType(r.getRunningType().name())   //  추가
+                .runningType(r.getRunningType().name())
                 .build();
     }
 
