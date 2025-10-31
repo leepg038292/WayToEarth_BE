@@ -34,6 +34,14 @@ public class RunningCompleteRequest {
     @PositiveOrZero(message = "calories는 0 이상이어야 합니다.")
     private Integer calories;
 
+    @Schema(description = "평균 심박수(bpm)", example = "145")
+    @PositiveOrZero(message = "averageHeartRate는 0 이상이어야 합니다.")
+    private Integer averageHeartRate;
+
+    @Schema(description = "최대 심박수(bpm)", example = "178")
+    @PositiveOrZero(message = "maxHeartRate는 0 이상이어야 합니다.")
+    private Integer maxHeartRate;
+
     @Schema(description = "경로 좌표 리스트(선택). sequence 오름차순으로 정렬해 주세요.")
     @Valid
     private List<RoutePoint> routePoints;
@@ -53,5 +61,30 @@ public class RunningCompleteRequest {
         @Schema(description = "경로 순서(0부터 시작 권장)", example = "0", requiredMode = Schema.RequiredMode.REQUIRED)
         @Min(value = 0, message = "sequence는 0 이상이어야 합니다.")
         private Integer sequence;
+
+        // ========== 워치 연동 차트용 필드 ==========
+
+        @Schema(description = "러닝 시작 후 경과 시간(초)", example = "120")
+        @PositiveOrZero(message = "timestampSeconds는 0 이상이어야 합니다.")
+        private Integer timestampSeconds;
+
+        @Schema(description = "심박수(bpm)", example = "145")
+        @PositiveOrZero(message = "heartRate는 0 이상이어야 합니다.")
+        private Integer heartRate;
+
+        @Schema(description = "페이스(초/km)", example = "330")
+        @PositiveOrZero(message = "paceSeconds는 0 이상이어야 합니다.")
+        private Integer paceSeconds;
+
+        @Schema(description = "고도(미터)", example = "45.2")
+        private Double altitude;
+
+        @Schema(description = "GPS 정확도(미터)", example = "5.0")
+        @PositiveOrZero(message = "accuracy는 0 이상이어야 합니다.")
+        private Double accuracy;
+
+        @Schema(description = "누적 거리(미터)", example = "1500")
+        @PositiveOrZero(message = "cumulativeDistanceMeters는 0 이상이어야 합니다.")
+        private Integer cumulativeDistanceMeters;
     }
 }

@@ -30,6 +30,12 @@ public class RunningCompleteResponse {
     @Schema(description = "칼로리 소모량")
     private Integer calories;
 
+    @Schema(description = "평균 심박수(bpm)")
+    private Integer averageHeartRate;
+
+    @Schema(description = "최대 심박수(bpm)")
+    private Integer maxHeartRate;
+
     @Schema(description = "시작 시각 (ISO 8601 문자열)")
     private String startedAt;
 
@@ -38,6 +44,9 @@ public class RunningCompleteResponse {
 
     @Schema(description = "러닝 경로 좌표 목록")
     private List<RoutePoint> routePoints;
+
+    @Schema(description = "저장된 경로 포인트 개수")
+    private Integer routePointsCount;
 
     @Schema(description = "엠블럼 지급 결과")
     private EmblemAwardResult emblemAwardResult;
@@ -50,9 +59,18 @@ public class RunningCompleteResponse {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class RoutePoint {
         private Double latitude;
         private Double longitude;
         private Integer sequence;
+
+        // ========== 워치 연동 차트용 필드 ==========
+        private Integer timestampSeconds;
+        private Integer heartRate;
+        private Integer paceSeconds;
+        private Double altitude;
+        private Double accuracy;
+        private Integer cumulativeDistanceMeters;
     }
 }
