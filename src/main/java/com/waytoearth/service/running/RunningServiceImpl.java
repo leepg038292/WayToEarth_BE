@@ -17,6 +17,7 @@ import com.waytoearth.security.AuthenticatedUser;
 import com.waytoearth.service.emblem.EmblemService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -122,7 +123,15 @@ public class RunningServiceImpl implements RunningService {
         runningRecordRepository.save(record);
     }
 
+    /**
+     * 러닝 완료
+     *
+     * 캐시 무효화: 러닝 완료 시 사용자의 통계가 업데이트되므로 캐시 삭제
+     * - userInfo: 총 거리, 러닝 횟수 변경
+     * - userSummary: 통계 정보 변경
+     */
     @Override
+    @CacheEvict(value = {"userInfo", "userSummary"}, key = "#authUser.userId")
     public RunningCompleteResponse completeRunning(AuthenticatedUser authUser, RunningCompleteRequest request) {
         if (request.getSessionId() == null || request.getSessionId().isBlank()) {
             throw new InvalidParameterException("sessionId는 필수입니다.");
