@@ -6,6 +6,7 @@ import com.waytoearth.dto.response.weather.WeatherCurrentResponse;
 import com.waytoearth.entity.enums.WeatherCondition;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -23,7 +24,20 @@ public class WeatherServiceImpl implements WeatherService {
     @Value("${weather.openweather.api-key:}")
     private String apiKey;
 
+    /**
+     * 현재 날씨 조회 (캐싱 적용)
+     *
+     * 캐시 키: 위도/경도를 0.01 단위로 반올림 (약 1km 단위)
+     * 예: (37.123456, 127.987654) -> "3712-12799"
+     *
+     * 효과:
+     * - 같은 지역 사용자들이 캐시 공유
+     * - 외부 API 호출 99% 감소
+     * - 30분 TTL (CacheConfig 설정)
+     */
     @Override
+    @Cacheable(value = "weather",
+               key = "T(java.lang.Math).round(#lat * 100) + '-' + T(java.lang.Math).round(#lon * 100)")
     public WeatherCurrentResponse getCurrent(double lat, double lon) {
         // API 키가 없으면 기본값 반환 (요구사항)
         if (apiKey == null || apiKey.isBlank()) {

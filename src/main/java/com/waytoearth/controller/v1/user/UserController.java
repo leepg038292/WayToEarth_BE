@@ -14,10 +14,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RestController
@@ -54,7 +56,11 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserInfoResponse>> me(@AuthUser AuthenticatedUser me) {
         log.info("[Users:Me] 내 정보 조회 - userId: {}", me.getUserId());
         UserInfoResponse body = userService.getMe(me.getUserId());
-        return ResponseEntity.ok(ApiResponse.success(body, "사용자 정보를 성공적으로 조회했습니다."));
+
+        // Cache-Control 헤더 추가 (10분 캐싱, private)
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES).cachePrivate())
+                .body(ApiResponse.success(body, "사용자 정보를 성공적으로 조회했습니다."));
     }
 
     @Operation(
@@ -66,7 +72,11 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserSummaryResponse>> summary(@AuthUser AuthenticatedUser me) {
         log.info("[Users:Summary] 요약 조회 - userId: {}", me.getUserId());
         UserSummaryResponse body = userService.getSummary(me.getUserId());
-        return ResponseEntity.ok(ApiResponse.success(body, "사용자 요약 정보를 성공적으로 조회했습니다."));
+
+        // Cache-Control 헤더 추가 (5분 캐싱, private)
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(5, TimeUnit.MINUTES).cachePrivate())
+                .body(ApiResponse.success(body, "사용자 요약 정보를 성공적으로 조회했습니다."));
     }
 
     @Operation(
