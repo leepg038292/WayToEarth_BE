@@ -30,6 +30,8 @@ import com.waytoearth.entity.crew.CrewEntity;
 import com.waytoearth.exception.CrewOwnerCannotDeleteAccountException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -136,8 +138,10 @@ public class UserService {
 
     /**
      * 내 정보 조회 (GET /v1/users/me)
+     *
+     * 캐싱 적용: userId 기반으로 10분간 캐시
      */
-
+    @Cacheable(value = "userInfo", key = "#userId")
     public UserInfoResponse getMe(Long userId) {
         User u = findById(userId);
 
@@ -174,7 +178,10 @@ public class UserService {
      * 내 정보 요약 (GET /v1/users/me/summary)
      * - 보유 엠블럼 수 / 전체 엠블럼 수 = completion_rate
      * - 총거리/러닝 횟수는 users 테이블의 캐시 필드 사용
+     *
+     * 캐싱 적용: userId 기반으로 10분간 캐시
      */
+    @Cacheable(value = "userSummary", key = "#userId")
     public UserSummaryResponse getSummary(Long userId) {
         int owned = (int) userEmblemRepository.countByUserId(userId);
         int total = (int) emblemRepository.count();
@@ -191,8 +198,11 @@ public class UserService {
      * 프로필 수정 (PUT /v1/users/me)
      * - 닉네임, 프로필 이미지 URL, 거주지, 주간 목표 거리 (부분 수정 가능)
      * - 닉네임은 변경 시 중복 체크
+     *
+     * 캐시 무효화: 프로필 수정 시 userInfo 캐시 삭제
      */
     @Transactional
+    @CacheEvict(value = "userInfo", key = "#userId")
     public void updateProfile(Long userId, UserUpdateRequest req) {
         User u = findById(userId);
 
