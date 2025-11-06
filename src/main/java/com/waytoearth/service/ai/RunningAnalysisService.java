@@ -412,4 +412,79 @@ public class RunningAnalysisService {
 
         return trend.toString();
     }
+
+    /**
+     * 요일별 패턴 분석
+     * - 요일별 평균 페이스
+     * - 가장 잘 뛰는 요일 vs 힘든 요일
+     *
+     * @param recentRecords 과거 러닝 기록 (최신순 정렬)
+     * @return 요일별 패턴 분석 결과 문자열
+     */
+    private String analyzeWeekdayPattern(List<RunningRecord> recentRecords) {
+        if (recentRecords.isEmpty()) {
+            return "";
+        }
+
+        // 요일별 페이스 그룹핑
+        Map<DayOfWeek, List<Integer>> paceByDay = recentRecords.stream()
+                .filter(r -> r.getStartedAt() != null && r.getAveragePaceSeconds() != null && r.getAveragePaceSeconds() > 0)
+                .collect(Collectors.groupingBy(
+                        r -> r.getStartedAt().getDayOfWeek(),
+                        Collectors.mapping(RunningRecord::getAveragePaceSeconds, Collectors.toList())
+                ));
+
+        // 요일별 평균 페이스 계산
+        Map<DayOfWeek, Double> avgPaceByDay = paceByDay.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue().stream().mapToInt(Integer::intValue).average().orElse(0.0)
+                ));
+
+        if (avgPaceByDay.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder pattern = new StringBuilder();
+        pattern.append("### 요일별 패턴\n");
+
+        // 가장 빠른 요일 (페이스 값이 작을수록 빠름)
+        Map.Entry<DayOfWeek, Double> bestDay = avgPaceByDay.entrySet().stream()
+                .min(Map.Entry.comparingByValue())
+                .orElse(null);
+
+        // 가장 느린 요일 (페이스 값이 클수록 느림)
+        Map.Entry<DayOfWeek, Double> slowestDay = avgPaceByDay.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .orElse(null);
+
+        if (bestDay != null) {
+            String bestDayName = bestDay.getKey().getDisplayName(TextStyle.FULL, Locale.KOREAN);
+            pattern.append(String.format("- 가장 잘 뛰는 요일: %s (평균 %s)\n",
+                    bestDayName,
+                    formatPace(bestDay.getValue().intValue())));
+        }
+
+        if (slowestDay != null && !slowestDay.equals(bestDay)) {
+            String slowestDayName = slowestDay.getKey().getDisplayName(TextStyle.FULL, Locale.KOREAN);
+            pattern.append(String.format("- 가장 느린 요일: %s (평균 %s)\n",
+                    slowestDayName,
+                    formatPace(slowestDay.getValue().intValue())));
+        }
+
+        // 요일별 상세 데이터 (월~일 순서)
+        pattern.append("- 요일별 평균 페이스:\n");
+        avgPaceByDay.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry -> {
+                    String dayName = entry.getKey().getDisplayName(TextStyle.SHORT, Locale.KOREAN);
+                    int count = paceByDay.get(entry.getKey()).size();
+                    pattern.append(String.format("  • %s: %s (%d회)\n",
+                            dayName,
+                            formatPace(entry.getValue().intValue()),
+                            count));
+                });
+
+        return pattern.toString();
+    }
 }
