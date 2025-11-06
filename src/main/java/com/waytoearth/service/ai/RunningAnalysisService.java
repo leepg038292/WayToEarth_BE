@@ -239,13 +239,19 @@ public class RunningAnalysisService {
         StringBuilder prompt = new StringBuilder();
 
         // 1. 현재 기록
-        prompt.append("## 오늘 러닝 기록\n");
+        prompt.append("## Today's Running Record\n");
         prompt.append(formatRecordDetails(currentRecord));
-        prompt.append("\n\n");
+        prompt.append("\n");
 
-        // 2. 과거 기록 통계
+        // 2. 구간별 페이스 분석 (워치 데이터가 있을 경우)
+        String segmentAnalysis = analyzeSegmentPace(currentRecord);
+        if (!segmentAnalysis.isEmpty()) {
+            prompt.append("\n").append(segmentAnalysis);
+        }
+
+        // 3. 과거 기록 통계
         if (!recentRecords.isEmpty()) {
-            prompt.append("## 최근 러닝 기록 (참고용)\n");
+            prompt.append("\n## Recent Running Statistics\n");
 
             // 평균 계산
             double avgDistance = recentRecords.stream()
@@ -262,8 +268,8 @@ public class RunningAnalysisService {
                     .average()
                     .orElse(0.0);
 
-            prompt.append(String.format("- 최근 %d회 평균 거리: %.2f km\n", recentRecords.size(), avgDistance));
-            prompt.append(String.format("- 최근 %d회 평균 페이스: %s\n", recentRecords.size(), formatPace((int) avgPace)));
+            prompt.append(String.format("- Recent %d runs average distance: %.2f km\n", recentRecords.size(), avgDistance));
+            prompt.append(String.format("- Recent %d runs average pace: %s\n", recentRecords.size(), formatPace((int) avgPace)));
 
             // 최고 기록
             RunningRecord bestDistance = recentRecords.stream()
@@ -275,7 +281,7 @@ public class RunningAnalysisService {
                     .orElse(null);
 
             if (bestDistance != null && bestDistance.getDistance() != null) {
-                prompt.append(String.format("- 최장 거리 기록: %.2f km\n", bestDistance.getDistance()));
+                prompt.append(String.format("- Best distance record: %.2f km\n", bestDistance.getDistance()));
             }
 
             RunningRecord bestPace = recentRecords.stream()
@@ -284,13 +290,26 @@ public class RunningAnalysisService {
                     .orElse(null);
 
             if (bestPace != null) {
-                prompt.append(String.format("- 최고 페이스 기록: %s\n", formatPace(bestPace.getAveragePaceSeconds())));
+                prompt.append(String.format("- Best pace record: %s\n", formatPace(bestPace.getAveragePaceSeconds())));
             }
         }
 
-        prompt.append("\n## 요청\n");
-        prompt.append("위 데이터를 바탕으로 오늘 러닝에 대한 구체적인 피드백을 제공해주세요.\n");
-        prompt.append("과거 기록과 비교하여 성장한 부분과 개선할 부분을 분석해주세요.");
+        // 4. 추세 분석 (6회 이상일 경우)
+        String trendAnalysis = analyzeTrend(recentRecords);
+        if (!trendAnalysis.isEmpty()) {
+            prompt.append("\n").append(trendAnalysis);
+        }
+
+        // 5. 요일별 패턴 분석
+        String weekdayPattern = analyzeWeekdayPattern(recentRecords);
+        if (!weekdayPattern.isEmpty()) {
+            prompt.append("\n").append(weekdayPattern);
+        }
+
+        prompt.append("\n## Request\n");
+        prompt.append("Based on the data above, provide specific feedback on today's run.\n");
+        prompt.append("Analyze improvements and areas for development compared to past records.\n");
+        prompt.append("Use the trend analysis, weekday patterns, and segment pace data if available.");
 
         return prompt.toString();
     }
