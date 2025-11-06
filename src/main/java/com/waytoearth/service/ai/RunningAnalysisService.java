@@ -4,6 +4,7 @@ import com.theokanning.openai.completion.chat.ChatCompletionResult;
 import com.waytoearth.dto.response.running.ai.RunningAnalysisResponse;
 import com.waytoearth.entity.running.RunningFeedback;
 import com.waytoearth.entity.running.RunningRecord;
+import com.waytoearth.entity.running.RunningRoute;
 import com.waytoearth.entity.user.User;
 import com.waytoearth.exception.DuplicateResourceException;
 import com.waytoearth.exception.InvalidParameterException;
@@ -22,6 +23,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.DayOfWeek;
 import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -566,11 +570,11 @@ public class RunningAnalysisService {
         }
 
         // 1km 구간별 평균 페이스 계산
-        Map<Integer, List<Integer>> paceByKm = new java.util.HashMap<>();
+        Map<Integer, List<Integer>> paceByKm = new HashMap<>();
         for (RunningRoute route : routesWithPace) {
             if (route.getCumulativeDistanceMeters() != null) {
                 int km = route.getCumulativeDistanceMeters() / 1000; // 0km, 1km, 2km...
-                paceByKm.computeIfAbsent(km, k -> new java.util.ArrayList<>()).add(route.getPaceSeconds());
+                paceByKm.computeIfAbsent(km, k -> new ArrayList<>()).add(route.getPaceSeconds());
             }
         }
 
@@ -579,7 +583,7 @@ public class RunningAnalysisService {
         }
 
         // 각 km의 평균 페이스 계산
-        Map<Integer, Double> avgPaceByKm = new java.util.LinkedHashMap<>();
+        Map<Integer, Double> avgPaceByKm = new LinkedHashMap<>();
         paceByKm.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
                 .forEach(entry -> {
