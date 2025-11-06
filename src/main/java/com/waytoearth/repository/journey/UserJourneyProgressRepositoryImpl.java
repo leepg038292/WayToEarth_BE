@@ -117,14 +117,14 @@ public class UserJourneyProgressRepositoryImpl implements UserJourneyProgressRep
     private Map<Long, Long> getCollectedStampsCount(List<JourneyProgressDto> progressDtos) {
         List<Long> progressIds = progressDtos.stream().map(dto -> dto.progressId).toList();
         return queryFactory
-                .select(stampEntity.progress.id, stampEntity.count())
+                .select(stampEntity.userJourneyProgress.id, stampEntity.count())
                 .from(stampEntity)
-                .where(stampEntity.progress.id.in(progressIds))
-                .groupBy(stampEntity.progress.id)
+                .where(stampEntity.userJourneyProgress.id.in(progressIds))
+                .groupBy(stampEntity.userJourneyProgress.id)
                 .fetch()
                 .stream()
                 .collect(Collectors.toMap(
-                        tuple -> tuple.get(stampEntity.progress.id),
+                        tuple -> tuple.get(stampEntity.userJourneyProgress.id),
                         tuple -> tuple.get(stampEntity.count())
                 ));
     }
