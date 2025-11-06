@@ -4,6 +4,7 @@ import com.waytoearth.entity.crew.CrewEntity;
 import com.waytoearth.entity.crew.CrewMemberEntity;
 import com.waytoearth.entity.enums.CrewRole;
 import com.waytoearth.entity.user.User;
+import com.waytoearth.exception.InvalidParameterException;
 import com.waytoearth.repository.crew.CrewRepository;
 import com.waytoearth.repository.crew.CrewMemberRepository;
 import com.waytoearth.repository.user.UserRepository;
@@ -82,12 +83,12 @@ public class CrewMemberServiceImpl implements CrewMemberService {
 
         // 크루장인 경우 탈퇴 불가
         if (isCrewOwner(crew, user.getUserId())) {
-            throw new RuntimeException("크루장은 탈퇴할 수 없습니다. 크루장 권한을 이양하거나 크루를 삭제하세요.");
+            throw new InvalidParameterException("크루장은 탈퇴할 수 없습니다. 크루장 권한을 이양하거나 크루를 삭제하세요.");
         }
 
         // 멤버십 확인
         crewMemberRepository.findMembership(user.getUserId(), crewId)
-                .orElseThrow(() -> new RuntimeException("해당 크루의 멤버가 아닙니다."));
+                .orElseThrow(() -> new InvalidParameterException("해당 크루의 멤버가 아닙니다."));
 
         // 물리 삭제
         int affected = crewMemberRepository.deleteByCrewIdAndUserId(crewId, user.getUserId());
