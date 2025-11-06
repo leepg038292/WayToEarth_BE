@@ -58,8 +58,10 @@ public class UserController {
         UserInfoResponse body = userService.getMe(me.getUserId());
 
         // Cache-Control 헤더 추가 (10분 캐싱, private)
+        // Vary 헤더로 토큰별 캐시 분리 (계정 전환 시 이전 계정 정보 표시 방지)
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES).cachePrivate())
+                .varyBy("Authorization")
                 .body(ApiResponse.success(body, "사용자 정보를 성공적으로 조회했습니다."));
     }
 
@@ -74,8 +76,10 @@ public class UserController {
         UserSummaryResponse body = userService.getSummary(me.getUserId());
 
         // Cache-Control 헤더 추가 (5분 캐싱, private)
+        // Vary 헤더로 토큰별 캐시 분리 (계정 전환 시 이전 계정 정보 표시 방지)
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(5, TimeUnit.MINUTES).cachePrivate())
+                .varyBy("Authorization")
                 .body(ApiResponse.success(body, "사용자 요약 정보를 성공적으로 조회했습니다."));
     }
 
