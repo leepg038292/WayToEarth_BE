@@ -487,4 +487,88 @@ public class RunningAnalysisService {
 
         return pattern.toString();
     }
+
+    /**
+     * 구간별 페이스 분석 (1km 단위)
+     * - 초반/중반/후반 페이스 일관성
+     * - 페이스 유지 능력 평가
+     *
+     * @param currentRecord 현재 러닝 기록
+     * @return 구간별 페이스 분석 결과 문자열
+     */
+    private String analyzeSegmentPace(RunningRecord currentRecord) {
+        if (currentRecord.getRoutes() == null || currentRecord.getRoutes().isEmpty()) {
+            return ""; // 구간 데이터 없음 (워치 미연동)
+        }
+
+        // paceSeconds가 있는 route만 필터링
+        List<RunningRoute> routesWithPace = currentRecord.getRoutes().stream()
+                .filter(r -> r.getPaceSeconds() != null && r.getPaceSeconds() > 0)
+                .toList();
+
+        if (routesWithPace.isEmpty()) {
+            return ""; // 페이스 데이터 없음
+        }
+
+        // 1km 구간별 평균 페이스 계산
+        Map<Integer, List<Integer>> paceByKm = new java.util.HashMap<>();
+        for (RunningRoute route : routesWithPace) {
+            if (route.getCumulativeDistanceMeters() != null) {
+                int km = route.getCumulativeDistanceMeters() / 1000; // 0km, 1km, 2km...
+                paceByKm.computeIfAbsent(km, k -> new java.util.ArrayList<>()).add(route.getPaceSeconds());
+            }
+        }
+
+        if (paceByKm.size() < 2) {
+            return ""; // 최소 2개 구간 필요
+        }
+
+        // 각 km의 평균 페이스 계산
+        Map<Integer, Double> avgPaceByKm = new java.util.LinkedHashMap<>();
+        paceByKm.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry -> {
+                    double avg = entry.getValue().stream().mapToInt(Integer::intValue).average().orElse(0.0);
+                    avgPaceByKm.put(entry.getKey(), avg);
+                });
+
+        StringBuilder segment = new StringBuilder();
+        segment.append("### 구간별 페이스 (1km 단위)\n");
+
+        // 구간별 페이스 나열
+        avgPaceByKm.forEach((km, pace) -> {
+            segment.append(String.format("- %dkm: %s\n", km + 1, formatPace(pace.intValue())));
+        });
+
+        // 초반/후반 페이스 차이 분석
+        Double firstKmPace = avgPaceByKm.get(0);
+        Double lastKmPace = avgPaceByKm.get(avgPaceByKm.size() - 1);
+
+        if (firstKmPace != null && lastKmPace != null) {
+            double paceDiff = lastKmPace - firstKmPace;
+            segment.append("\n");
+            if (paceDiff > 40) {
+                segment.append(String.format("- 페이스 변화: 초반 %s → 후반 %s (%.0f초 느려짐, 초반 과속 주의)\n",
+                        formatPace(firstKmPace.intValue()),
+                        formatPace(lastKmPace.intValue()),
+                        paceDiff));
+            } else if (paceDiff > 20) {
+                segment.append(String.format("- 페이스 변화: 초반 %s → 후반 %s (%.0f초 느려짐, 적당한 수준)\n",
+                        formatPace(firstKmPace.intValue()),
+                        formatPace(lastKmPace.intValue()),
+                        paceDiff));
+            } else if (paceDiff < -20) {
+                segment.append(String.format("- 페이스 변화: 초반 %s → 후반 %s (%.0f초 빨라짐, 후반 스퍼트!)\n",
+                        formatPace(firstKmPace.intValue()),
+                        formatPace(lastKmPace.intValue()),
+                        -paceDiff));
+            } else {
+                segment.append(String.format("- 페이스 변화: 초반 %s → 후반 %s (일관성 우수!)\n",
+                        formatPace(firstKmPace.intValue()),
+                        formatPace(lastKmPace.intValue())));
+            }
+        }
+
+        return segment.toString();
+    }
 }
