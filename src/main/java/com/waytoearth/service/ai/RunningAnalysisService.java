@@ -4,6 +4,7 @@ import com.theokanning.openai.completion.chat.ChatCompletionResult;
 import com.waytoearth.dto.response.running.ai.RunningAnalysisResponse;
 import com.waytoearth.entity.running.RunningFeedback;
 import com.waytoearth.entity.running.RunningRecord;
+import com.waytoearth.entity.running.RunningRoute;
 import com.waytoearth.entity.user.User;
 import com.waytoearth.exception.DuplicateResourceException;
 import com.waytoearth.exception.InvalidParameterException;
@@ -20,7 +21,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.DayOfWeek;
+import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 러닝 기록 AI 분석 서비스
@@ -167,26 +176,62 @@ public class RunningAnalysisService {
      */
     private String buildSystemPrompt() {
         return """
-                당신은 데이터 기반으로 분석하는 전문 러닝 코치입니다.
-                사용자의 현재 러닝 기록과 과거 기록을 비교 분석하여, 구체적이고 실용적인 피드백을 제공합니다.
+                You are a professional running coach with 10 years of experience specializing in data-driven analysis.
+                You analyze user's running data with **specific numbers** and provide **actionable advice**.
 
-                분석 우선순위:
-                1. **성장 패턴 분석**: 과거 대비 거리, 페이스, 지속성 개선도 파악
-                2. **강점 강화**: 잘하고 있는 부분을 구체적 수치로 칭찬
-                3. **개선 제안**: 다음 목표를 명확하게 제시 (예: "페이스를 10초 단축", "거리 1km 연장")
-                4. **동기부여**: 긍정적이고 격려하는 톤으로 마무리
+                ## Analysis Checklist (Must verify all items)
 
-                응답 형식:
-                - 4-6문장으로 작성
-                - 구체적인 수치 언급 (거리, 페이스, 시간 등)
-                - 과거 기록과 비교 시 "이전 평균 대비", "최근 기록과 비교" 같은 표현 사용
-                - 반말 사용, 친근한 톤 유지
-                - 이모지 사용 금지
+                1. **Pace Consistency**: If segment pace data is available, analyze it
+                   - Compare early vs late pace
+                   - If difference > 40 seconds: "Warn about starting too fast, need better pacing"
+                   - If difference < 20 seconds: "Excellent consistency, perfect pace distribution"
 
-                [향후 확장 예정]
-                - 케이던스 분석 (보폭 효율성)
-                - 심박수 기반 운동 강도 평가
-                - 페이스 변화 패턴 분석 (일관성)
+                2. **Trend Analysis**: If trend data is available, mention it
+                   - Compare recent records vs previous records
+                   - Use specific expressions like "Recent 3 runs improved by 15 seconds compared to previous 3"
+                   - If improving: "At this rate, you can achieve [goal]"
+                   - If stagnant/declining: "Focus on recovery or adjust training intensity"
+
+                3. **Weekday Pattern**: If weekday data is available, provide insights
+                   - Example: "Your Tuesday pace is fastest, try this pace on weekends too"
+                   - If large variance exists, infer reasons (weekday fatigue, weekend leisure, etc.)
+
+                4. **Goal Setting**: Suggest next goals based on current level (achievable within 2 weeks)
+                   - Distance goal: Current +1km or +20%
+                   - Pace goal: Current -10~20 seconds/km
+                   - NO unrealistic goals (e.g., 2x faster pace)
+
+                5. **Motivation**: Encourage with specific numbers
+                   - "You've improved by average 15 seconds per week for the past 3 weeks"
+                   - "You ran 4 times this month, double the 2 times last month"
+
+                ## Output Format (Use Markdown)
+
+                ### 오늘 러닝 요약
+                [Summarize today's key metrics in 1-2 lines]
+
+                ### 성장 분석
+                [Evaluate growth based on trend data]
+
+                ### 페이스 분배
+                [Evaluate pace consistency - only if segment data exists]
+
+                ### 다음 목표
+                1. 거리: [Specific distance + estimated time]
+                2. 페이스: [Target pace + expected achievement period]
+
+                ## Important Rules
+                - **CRITICAL: Always respond in Korean (한국어)**
+                - Use casual speech (반말) and maintain a friendly tone
+                - NO emojis
+                - Always use specific numbers (NOT "a bit" → "15 seconds", NOT "more" → "1.5km")
+                - Do NOT speculate about data that isn't provided - skip if not available
+                - Maximize usage of provided statistical data
+                - Total length: 8-12 sentences
+
+                [Future enhancements]
+                - Heart rate based intensity analysis
+                - Cadence analysis (stride efficiency)
                 """;
     }
 
@@ -198,13 +243,19 @@ public class RunningAnalysisService {
         StringBuilder prompt = new StringBuilder();
 
         // 1. 현재 기록
-        prompt.append("## 오늘 러닝 기록\n");
+        prompt.append("## Today's Running Record\n");
         prompt.append(formatRecordDetails(currentRecord));
-        prompt.append("\n\n");
+        prompt.append("\n");
 
-        // 2. 과거 기록 통계
+        // 2. 구간별 페이스 분석 (워치 데이터가 있을 경우)
+        String segmentAnalysis = analyzeSegmentPace(currentRecord);
+        if (!segmentAnalysis.isEmpty()) {
+            prompt.append("\n").append(segmentAnalysis);
+        }
+
+        // 3. 과거 기록 통계
         if (!recentRecords.isEmpty()) {
-            prompt.append("## 최근 러닝 기록 (참고용)\n");
+            prompt.append("\n## Recent Running Statistics\n");
 
             // 평균 계산
             double avgDistance = recentRecords.stream()
@@ -221,8 +272,8 @@ public class RunningAnalysisService {
                     .average()
                     .orElse(0.0);
 
-            prompt.append(String.format("- 최근 %d회 평균 거리: %.2f km\n", recentRecords.size(), avgDistance));
-            prompt.append(String.format("- 최근 %d회 평균 페이스: %s\n", recentRecords.size(), formatPace((int) avgPace)));
+            prompt.append(String.format("- Recent %d runs average distance: %.2f km\n", recentRecords.size(), avgDistance));
+            prompt.append(String.format("- Recent %d runs average pace: %s\n", recentRecords.size(), formatPace((int) avgPace)));
 
             // 최고 기록
             RunningRecord bestDistance = recentRecords.stream()
@@ -234,7 +285,7 @@ public class RunningAnalysisService {
                     .orElse(null);
 
             if (bestDistance != null && bestDistance.getDistance() != null) {
-                prompt.append(String.format("- 최장 거리 기록: %.2f km\n", bestDistance.getDistance()));
+                prompt.append(String.format("- Best distance record: %.2f km\n", bestDistance.getDistance()));
             }
 
             RunningRecord bestPace = recentRecords.stream()
@@ -243,13 +294,26 @@ public class RunningAnalysisService {
                     .orElse(null);
 
             if (bestPace != null) {
-                prompt.append(String.format("- 최고 페이스 기록: %s\n", formatPace(bestPace.getAveragePaceSeconds())));
+                prompt.append(String.format("- Best pace record: %s\n", formatPace(bestPace.getAveragePaceSeconds())));
             }
         }
 
-        prompt.append("\n## 요청\n");
-        prompt.append("위 데이터를 바탕으로 오늘 러닝에 대한 구체적인 피드백을 제공해주세요.\n");
-        prompt.append("과거 기록과 비교하여 성장한 부분과 개선할 부분을 분석해주세요.");
+        // 4. 추세 분석 (6회 이상일 경우)
+        String trendAnalysis = analyzeTrend(recentRecords);
+        if (!trendAnalysis.isEmpty()) {
+            prompt.append("\n").append(trendAnalysis);
+        }
+
+        // 5. 요일별 패턴 분석
+        String weekdayPattern = analyzeWeekdayPattern(recentRecords);
+        if (!weekdayPattern.isEmpty()) {
+            prompt.append("\n").append(weekdayPattern);
+        }
+
+        prompt.append("\n## Request\n");
+        prompt.append("Based on the data above, provide specific feedback on today's run.\n");
+        prompt.append("Analyze improvements and areas for development compared to past records.\n");
+        prompt.append("Use the trend analysis, weekday patterns, and segment pace data if available.");
 
         return prompt.toString();
     }
@@ -321,5 +385,249 @@ public class RunningAnalysisService {
                 .createdAt(feedback.getCreatedAt())
                 .modelName(feedback.getModelName())
                 .build();
+    }
+
+    // ==================== 통계 분석 메서드 ====================
+
+    /**
+     * 추세 분석: 최근 3회 vs 이전 3회 비교
+     * - 페이스 개선도
+     * - 거리 증가 추세
+     *
+     * @param recentRecords 과거 러닝 기록 (최신순 정렬)
+     * @return 추세 분석 결과 문자열
+     */
+    private String analyzeTrend(List<RunningRecord> recentRecords) {
+        if (recentRecords.size() < 6) {
+            return "다음 러닝부터는 성장 추세 분석도 제공됩니다! (6회 이상 기록 필요, 현재: " + recentRecords.size() + "회)";
+        }
+
+        // 최근 3회 vs 이전 3회로 분할
+        List<RunningRecord> recent3 = recentRecords.subList(0, 3);
+        List<RunningRecord> previous3 = recentRecords.subList(3, 6);
+
+        // 1. 페이스 추세 분석
+        double recentAvgPace = recent3.stream()
+                .map(RunningRecord::getAveragePaceSeconds)
+                .filter(p -> p != null && p > 0)
+                .mapToInt(Integer::intValue)
+                .average()
+                .orElse(0.0);
+
+        double previousAvgPace = previous3.stream()
+                .map(RunningRecord::getAveragePaceSeconds)
+                .filter(p -> p != null && p > 0)
+                .mapToInt(Integer::intValue)
+                .average()
+                .orElse(0.0);
+
+        // 2. 거리 추세 분석
+        double recentAvgDistance = recent3.stream()
+                .map(RunningRecord::getDistance)
+                .filter(d -> d != null)
+                .mapToDouble(BigDecimal::doubleValue)
+                .average()
+                .orElse(0.0);
+
+        double previousAvgDistance = previous3.stream()
+                .map(RunningRecord::getDistance)
+                .filter(d -> d != null)
+                .mapToDouble(BigDecimal::doubleValue)
+                .average()
+                .orElse(0.0);
+
+        StringBuilder trend = new StringBuilder();
+        trend.append("### 최근 추세 (최근 3회 vs 이전 3회)\n");
+
+        // 페이스 개선도
+        double paceImprovement = previousAvgPace - recentAvgPace;
+        if (paceImprovement > 10) {
+            trend.append(String.format("- 페이스: %s → %s (%.0f초 개선, 상승 추세)\n",
+                    formatPace((int) previousAvgPace),
+                    formatPace((int) recentAvgPace),
+                    paceImprovement));
+        } else if (paceImprovement < -10) {
+            trend.append(String.format("- 페이스: %s → %s (%.0f초 느려짐, 주의 필요)\n",
+                    formatPace((int) previousAvgPace),
+                    formatPace((int) recentAvgPace),
+                    -paceImprovement));
+        } else {
+            trend.append(String.format("- 페이스: %s (안정적 유지 중)\n",
+                    formatPace((int) recentAvgPace)));
+        }
+
+        // 거리 증가 추세
+        double distanceChange = recentAvgDistance - previousAvgDistance;
+        if (distanceChange > 0.5) {
+            trend.append(String.format("- 거리: %.2f km → %.2f km (+%.2f km, 증가 추세)\n",
+                    previousAvgDistance, recentAvgDistance, distanceChange));
+        } else if (distanceChange < -0.5) {
+            trend.append(String.format("- 거리: %.2f km → %.2f km (%.2f km 감소)\n",
+                    previousAvgDistance, recentAvgDistance, distanceChange));
+        } else {
+            trend.append(String.format("- 거리: %.2f km (안정적 유지 중)\n",
+                    recentAvgDistance));
+        }
+
+        return trend.toString();
+    }
+
+    /**
+     * 요일별 패턴 분석
+     * - 요일별 평균 페이스
+     * - 가장 잘 뛰는 요일 vs 힘든 요일
+     *
+     * @param recentRecords 과거 러닝 기록 (최신순 정렬)
+     * @return 요일별 패턴 분석 결과 문자열
+     */
+    private String analyzeWeekdayPattern(List<RunningRecord> recentRecords) {
+        if (recentRecords.isEmpty()) {
+            return "";
+        }
+
+        // 요일별 페이스 그룹핑
+        Map<DayOfWeek, List<Integer>> paceByDay = recentRecords.stream()
+                .filter(r -> r.getStartedAt() != null && r.getAveragePaceSeconds() != null && r.getAveragePaceSeconds() > 0)
+                .collect(Collectors.groupingBy(
+                        r -> r.getStartedAt().getDayOfWeek(),
+                        Collectors.mapping(RunningRecord::getAveragePaceSeconds, Collectors.toList())
+                ));
+
+        // 요일별 평균 페이스 계산
+        Map<DayOfWeek, Double> avgPaceByDay = paceByDay.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue().stream().mapToInt(Integer::intValue).average().orElse(0.0)
+                ));
+
+        if (avgPaceByDay.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder pattern = new StringBuilder();
+        pattern.append("### 요일별 패턴\n");
+
+        // 가장 빠른 요일 (페이스 값이 작을수록 빠름)
+        Map.Entry<DayOfWeek, Double> bestDay = avgPaceByDay.entrySet().stream()
+                .min(Map.Entry.comparingByValue())
+                .orElse(null);
+
+        // 가장 느린 요일 (페이스 값이 클수록 느림)
+        Map.Entry<DayOfWeek, Double> slowestDay = avgPaceByDay.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .orElse(null);
+
+        if (bestDay != null) {
+            String bestDayName = bestDay.getKey().getDisplayName(TextStyle.FULL, Locale.KOREAN);
+            pattern.append(String.format("- 가장 잘 뛰는 요일: %s (평균 %s)\n",
+                    bestDayName,
+                    formatPace(bestDay.getValue().intValue())));
+        }
+
+        if (slowestDay != null && !slowestDay.equals(bestDay)) {
+            String slowestDayName = slowestDay.getKey().getDisplayName(TextStyle.FULL, Locale.KOREAN);
+            pattern.append(String.format("- 가장 느린 요일: %s (평균 %s)\n",
+                    slowestDayName,
+                    formatPace(slowestDay.getValue().intValue())));
+        }
+
+        // 요일별 상세 데이터 (월~일 순서)
+        pattern.append("- 요일별 평균 페이스:\n");
+        avgPaceByDay.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry -> {
+                    String dayName = entry.getKey().getDisplayName(TextStyle.SHORT, Locale.KOREAN);
+                    int count = paceByDay.get(entry.getKey()).size();
+                    pattern.append(String.format("  • %s: %s (%d회)\n",
+                            dayName,
+                            formatPace(entry.getValue().intValue()),
+                            count));
+                });
+
+        return pattern.toString();
+    }
+
+    /**
+     * 구간별 페이스 분석 (1km 단위)
+     * - 초반/중반/후반 페이스 일관성
+     * - 페이스 유지 능력 평가
+     *
+     * @param currentRecord 현재 러닝 기록
+     * @return 구간별 페이스 분석 결과 문자열
+     */
+    private String analyzeSegmentPace(RunningRecord currentRecord) {
+        if (currentRecord.getRoutes() == null || currentRecord.getRoutes().isEmpty()) {
+            return ""; // 구간 데이터 없음 (워치 미연동)
+        }
+
+        // paceSeconds가 있는 route만 필터링
+        List<RunningRoute> routesWithPace = currentRecord.getRoutes().stream()
+                .filter(r -> r.getPaceSeconds() != null && r.getPaceSeconds() > 0)
+                .toList();
+
+        if (routesWithPace.isEmpty()) {
+            return ""; // 페이스 데이터 없음
+        }
+
+        // 1km 구간별 평균 페이스 계산
+        Map<Integer, List<Integer>> paceByKm = new HashMap<>();
+        for (RunningRoute route : routesWithPace) {
+            if (route.getCumulativeDistanceMeters() != null) {
+                int km = route.getCumulativeDistanceMeters() / 1000; // 0km, 1km, 2km...
+                paceByKm.computeIfAbsent(km, k -> new ArrayList<>()).add(route.getPaceSeconds());
+            }
+        }
+
+        if (paceByKm.size() < 2) {
+            return ""; // 최소 2개 구간 필요
+        }
+
+        // 각 km의 평균 페이스 계산
+        Map<Integer, Double> avgPaceByKm = new LinkedHashMap<>();
+        paceByKm.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry -> {
+                    double avg = entry.getValue().stream().mapToInt(Integer::intValue).average().orElse(0.0);
+                    avgPaceByKm.put(entry.getKey(), avg);
+                });
+
+        StringBuilder segment = new StringBuilder();
+        segment.append("### 구간별 페이스 (1km 단위)\n");
+
+        // 구간별 페이스 나열
+        avgPaceByKm.forEach((km, pace) -> {
+            segment.append(String.format("- %dkm: %s\n", km + 1, formatPace(pace.intValue())));
+        });
+
+        // 초반/후반 페이스 차이 분석
+        Double firstKmPace = avgPaceByKm.get(0);
+        Double lastKmPace = avgPaceByKm.get(avgPaceByKm.size() - 1);
+
+        if (firstKmPace != null && lastKmPace != null) {
+            double paceDiff = lastKmPace - firstKmPace;
+            segment.append("\n");
+            if (paceDiff > 40) {
+                segment.append(String.format("- 페이스 변화: 초반 %s → 후반 %s (%.0f초 느려짐, 초반 과속 주의)\n",
+                        formatPace(firstKmPace.intValue()),
+                        formatPace(lastKmPace.intValue()),
+                        paceDiff));
+            } else if (paceDiff > 20) {
+                segment.append(String.format("- 페이스 변화: 초반 %s → 후반 %s (%.0f초 느려짐, 적당한 수준)\n",
+                        formatPace(firstKmPace.intValue()),
+                        formatPace(lastKmPace.intValue()),
+                        paceDiff));
+            } else if (paceDiff < -20) {
+                segment.append(String.format("- 페이스 변화: 초반 %s → 후반 %s (%.0f초 빨라짐, 후반 스퍼트!)\n",
+                        formatPace(firstKmPace.intValue()),
+                        formatPace(lastKmPace.intValue()),
+                        -paceDiff));
+            } else {
+                segment.append(String.format("- 페이스 변화: 초반 %s → 후반 %s (일관성 우수!)\n",
+                        formatPace(firstKmPace.intValue()),
+                        formatPace(lastKmPace.intValue())));
+            }
+        }
+
+        return segment.toString();
     }
 }

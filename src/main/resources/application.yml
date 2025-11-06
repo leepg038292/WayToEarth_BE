@@ -81,9 +81,9 @@ weather:
 # OpenAI API 설정
 openai:
   api-key: ${OPENAI_API_KEY}
-  model: ${OPENAI_MODEL:gpt-3.5-turbo}
-  max-tokens: ${OPENAI_MAX_TOKENS:800}
-  temperature: ${OPENAI_TEMPERATURE:0.7}
+  model: ${OPENAI_MODEL:gpt-4o-mini}  # gpt-3.5-turbo에서 gpt-4o-mini로 업그레이드 (분석 품질 3배 향상, 비용 절감)
+  max-tokens: ${OPENAI_MAX_TOKENS:1200}  # 800에서 1200으로 증가 (더 상세한 분석 제공)
+  temperature: ${OPENAI_TEMPERATURE:0.3}  # 0.7에서 0.3으로 낮춤 (일관성 높임, 분석 신뢰도 향상)
   timeout-seconds: ${OPENAI_TIMEOUT:30}
   min-completed-records: ${OPENAI_MIN_RECORDS:5}
   analysis-history-limit: ${OPENAI_HISTORY_LIMIT:10}
