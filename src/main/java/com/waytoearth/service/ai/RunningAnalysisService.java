@@ -20,7 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.DayOfWeek;
+import java.time.format.TextStyle;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 러닝 기록 AI 분석 서비스
@@ -321,5 +326,90 @@ public class RunningAnalysisService {
                 .createdAt(feedback.getCreatedAt())
                 .modelName(feedback.getModelName())
                 .build();
+    }
+
+    // ==================== 통계 분석 메서드 ====================
+
+    /**
+     * 추세 분석: 최근 3회 vs 이전 3회 비교
+     * - 페이스 개선도
+     * - 거리 증가 추세
+     *
+     * @param recentRecords 과거 러닝 기록 (최신순 정렬)
+     * @return 추세 분석 결과 문자열
+     */
+    private String analyzeTrend(List<RunningRecord> recentRecords) {
+        if (recentRecords.size() < 6) {
+            return "다음 러닝부터는 성장 추세 분석도 제공됩니다! (6회 이상 기록 필요, 현재: " + recentRecords.size() + "회)";
+        }
+
+        // 최근 3회 vs 이전 3회로 분할
+        List<RunningRecord> recent3 = recentRecords.subList(0, 3);
+        List<RunningRecord> previous3 = recentRecords.subList(3, 6);
+
+        // 1. 페이스 추세 분석
+        double recentAvgPace = recent3.stream()
+                .map(RunningRecord::getAveragePaceSeconds)
+                .filter(p -> p != null && p > 0)
+                .mapToInt(Integer::intValue)
+                .average()
+                .orElse(0.0);
+
+        double previousAvgPace = previous3.stream()
+                .map(RunningRecord::getAveragePaceSeconds)
+                .filter(p -> p != null && p > 0)
+                .mapToInt(Integer::intValue)
+                .average()
+                .orElse(0.0);
+
+        // 2. 거리 추세 분석
+        double recentAvgDistance = recent3.stream()
+                .map(RunningRecord::getDistance)
+                .filter(d -> d != null)
+                .mapToDouble(BigDecimal::doubleValue)
+                .average()
+                .orElse(0.0);
+
+        double previousAvgDistance = previous3.stream()
+                .map(RunningRecord::getDistance)
+                .filter(d -> d != null)
+                .mapToDouble(BigDecimal::doubleValue)
+                .average()
+                .orElse(0.0);
+
+        StringBuilder trend = new StringBuilder();
+        trend.append("### 최근 추세 (최근 3회 vs 이전 3회)\n");
+
+        // 페이스 개선도
+        double paceImprovement = previousAvgPace - recentAvgPace;
+        if (paceImprovement > 10) {
+            trend.append(String.format("- 페이스: %s → %s (%.0f초 개선, 상승 추세)\n",
+                    formatPace((int) previousAvgPace),
+                    formatPace((int) recentAvgPace),
+                    paceImprovement));
+        } else if (paceImprovement < -10) {
+            trend.append(String.format("- 페이스: %s → %s (%.0f초 느려짐, 주의 필요)\n",
+                    formatPace((int) previousAvgPace),
+                    formatPace((int) recentAvgPace),
+                    -paceImprovement));
+        } else {
+            trend.append(String.format("- 페이스: %s (안정적 유지 중)\n",
+                    formatPace((int) recentAvgPace)));
+        }
+
+        // 거리 증가 추세
+        double distanceChange = recentAvgDistance - previousAvgDistance;
+        if (distanceChange > 0.5) {
+            trend.append(String.format("- 거리: %.2f km → %.2f km (+%.2f km, 증가 추세)\n",
+                    previousAvgDistance, recentAvgDistance, distanceChange));
+        } else if (distanceChange < -0.5) {
+            trend.append(String.format("- 거리: %.2f km → %.2f km (%.2f km 감소)\n",
+                    previousAvgDistance, recentAvgDistance, distanceChange));
+        } else {
+            trend.append(String.format("- 거리: %.2f km (안정적 유지 중)\n",
+                    recentAvgDistance));
+        }
+
+        return trend.toString();
     }
 }
