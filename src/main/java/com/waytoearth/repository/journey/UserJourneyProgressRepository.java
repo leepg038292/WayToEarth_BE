@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserJourneyProgressRepository extends JpaRepository<UserJourneyProgressEntity, Long> {
+public interface UserJourneyProgressRepository extends JpaRepository<UserJourneyProgressEntity, Long>, UserJourneyProgressRepositoryCustom {
 
     /**
      * 진행 ID로 조회 (Journey 정보 포함)

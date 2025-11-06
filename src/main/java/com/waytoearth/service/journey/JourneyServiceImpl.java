@@ -188,11 +188,7 @@ public class JourneyServiceImpl implements JourneyService {
 
     @Override
     public List<JourneyProgressResponse> getUserJourneys(Long userId) {
-        List<UserJourneyProgressEntity> progressList = progressRepository.findByUserIdWithJourney(userId);
-
-        return progressList.stream()
-                .map(this::buildProgressResponse)
-                .toList();
+        return progressRepository.findProgressResponsesByUserId(userId);
     }
 
     @Override
