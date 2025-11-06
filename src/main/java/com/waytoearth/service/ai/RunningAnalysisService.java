@@ -222,7 +222,8 @@ public class RunningAnalysisService {
 
                 ## Important Rules
                 - **CRITICAL: Always respond in Korean (한국어)**
-                - Use casual speech (반말) and maintain a friendly tone
+                - Use polite informal speech (해요체/평서체) and maintain a friendly tone
+                - Example: "오늘 5km 뛰었어요!" (NOT "오늘 5km 뛰었어!")
                 - NO emojis
                 - Always use specific numbers (NOT "a bit" → "15 seconds", NOT "more" → "1.5km")
                 - Do NOT speculate about data that isn't provided - skip if not available
