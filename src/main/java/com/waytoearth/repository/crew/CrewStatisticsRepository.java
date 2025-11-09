@@ -59,6 +59,12 @@ public interface CrewStatisticsRepository extends JpaRepository<CrewStatisticsEn
     int updateMvpUser(@Param("crewId") Long crewId, @Param("month") String month,
                       @Param("mvpUser") User mvpUser, @Param("mvpDistance") BigDecimal mvpDistance);
 
+    //회원 탈퇴 시 MVP 참조 해제
+    @Modifying
+    @Query("UPDATE CrewStatisticsEntity cs SET cs.mvpUser = null, cs.mvpDistance = null " +
+           "WHERE cs.mvpUser.id = :userId")
+    int clearMvpByUserId(@Param("userId") Long userId);
+
     //크루 현재 멤버 수 원자적 증가/감소
     @Modifying
     @Query("UPDATE CrewEntity c SET c.currentMembers = c.currentMembers + :delta " +
