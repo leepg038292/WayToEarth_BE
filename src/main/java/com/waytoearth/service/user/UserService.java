@@ -117,6 +117,8 @@ public class UserService {
                 request.getResidence(),
                 request.getAge_group(),
                 request.getGender(),
+                request.getHeight(),
+                request.getWeight(),
                 request.getWeekly_goal_distance(),
                 request.getProfileImageKey()
         );
