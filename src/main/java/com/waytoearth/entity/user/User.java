@@ -41,6 +41,12 @@ public class User extends BaseTimeEntity {
     @Column(name = "gender")
     private Gender gender;
 
+    @Column(name = "height")
+    private Integer height;
+
+    @Column(name = "weight")
+    private Integer weight;
+
     @Setter
     @Column(name = "weekly_goal_distance", precision = 5, scale = 2)
     private BigDecimal weeklyGoalDistance;
@@ -79,11 +85,14 @@ public class User extends BaseTimeEntity {
 
     // 온보딩 완료 메서드
     public void completeOnboarding(String nickname, String residence, AgeGroup ageGroup,
-                                   Gender gender, BigDecimal weeklyGoalDistance, String profileImageKey) {
+                                   Gender gender, Integer height, Integer weight,
+                                   BigDecimal weeklyGoalDistance, String profileImageKey) {
         this.nickname = nickname;
         this.residence = residence;
         this.ageGroup = ageGroup;
         this.gender = gender;
+        this.height = height;
+        this.weight = weight;
         this.weeklyGoalDistance = weeklyGoalDistance;
         this.profileImageKey = profileImageKey;
         this.isOnboardingCompleted = true;
