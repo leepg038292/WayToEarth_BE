@@ -88,10 +88,6 @@ public class CrewJoinServiceImpl implements CrewJoinService {
             throw new RuntimeException("크루 정원이 초과되었습니다. (현재: " + actualMemberCount + "명)");
         }
 
-        // 가입 신청 승인
-        joinRequest.approve(getUserEntity(user.getUserId()), "가입 승인");
-        joinRequestRepository.saveAndFlush(joinRequest);  // 즉시 DB 반영
-
         // 새로운 멤버 추가 (물리 삭제로 인해 탈퇴한 멤버는 DB에 없음)
         CrewMemberEntity newMember = CrewMemberEntity.createMember(crew, joinRequest.getUser());
         crewMemberRepository.save(newMember);
@@ -100,8 +96,13 @@ public class CrewJoinServiceImpl implements CrewJoinService {
         // 크루 멤버 수 증가 (낙관적 락으로 동시성 제어)
         crew.incrementMemberCount();
 
+        // 가입 신청 삭제 (승인 완료 = 더 이상 신청이 아님)
+        Long approvedUserId = joinRequest.getUser().getId();
+        joinRequestRepository.delete(joinRequest);
+        log.info("가입 신청 삭제 완료 - requestId: {}", requestId);
+
         log.info("크루 가입 신청이 승인되었습니다. requestId: {}, approvedBy: {}, newMemberId: {}, actualCount: {}",
-                requestId, user.getUserId(), joinRequest.getUser().getId(), actualMemberCount + 1);
+                requestId, user.getUserId(), approvedUserId, actualMemberCount + 1);
     }
 
     @Override
@@ -119,11 +120,13 @@ public class CrewJoinServiceImpl implements CrewJoinService {
             throw new RuntimeException("이미 처리된 가입 신청입니다.");
         }
 
-        // 가입 신청 거부
-        joinRequest.reject(getUserEntity(user.getUserId()), reason);
+        // 가입 신청 삭제 (거부 = 처리 완료, 더 이상 보관 불필요)
+        Long rejectedUserId = joinRequest.getUser().getId();
+        joinRequestRepository.delete(joinRequest);
+        log.info("가입 신청 삭제 완료 - requestId: {}", requestId);
 
-        log.info("크루 가입 신청이 거부되었습니다. requestId: {}, rejectedBy: {}, reason: {}",
-                requestId, user.getUserId(), reason);
+        log.info("크루 가입 신청이 거부되었습니다. requestId: {}, rejectedBy: {}, rejectedUserId: {}, reason: {}",
+                requestId, user.getUserId(), rejectedUserId, reason);
     }
 
     @Override
