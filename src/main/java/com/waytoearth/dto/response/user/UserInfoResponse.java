@@ -33,6 +33,12 @@ public class UserInfoResponse {
     @Schema(description = "성별", example = "남성")
     private String gender;
 
+    @Schema(description = "키(cm)", example = "175")
+    private Integer height;
+
+    @Schema(description = "몸무게(kg)", example = "70")
+    private Integer weight;
+
     @Schema(description = "주간 목표 거리(km)", example = "15.5")
     private BigDecimal weeklyGoalDistance;
 
@@ -54,15 +60,17 @@ public class UserInfoResponse {
     public UserInfoResponse() { }
 
     public UserInfoResponse(Long id, String nickname, String profileImageUrl, String residence,
-                            String ageGroup, String gender, BigDecimal weeklyGoalDistance,
-                            BigDecimal totalDistance, Integer totalRunningCount, Instant createdAt,
-                            String profileImageKey, String role) {
+                            String ageGroup, String gender, Integer height, Integer weight,
+                            BigDecimal weeklyGoalDistance, BigDecimal totalDistance, Integer totalRunningCount,
+                            Instant createdAt, String profileImageKey, String role) {
         this.id = id;
         this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;
         this.residence = residence;
         this.ageGroup = ageGroup;
         this.gender = gender;
+        this.height = height;
+        this.weight = weight;
         this.weeklyGoalDistance = weeklyGoalDistance;
         this.totalDistance = totalDistance;
         this.totalRunningCount = totalRunningCount;

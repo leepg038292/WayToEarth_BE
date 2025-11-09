@@ -34,6 +34,18 @@ public class OnboardingRequest {
     @NotNull(message = "성별은 필수입니다")
     private Gender gender;
 
+    @Schema(description = "키(cm)", example = "175", required = true)
+    @NotNull(message = "키는 필수입니다")
+    @Min(value = 100, message = "키는 100cm 이상이어야 합니다")
+    @Max(value = 250, message = "키는 250cm 이하여야 합니다")
+    private Integer height;
+
+    @Schema(description = "몸무게(kg)", example = "70", required = true)
+    @NotNull(message = "몸무게는 필수입니다")
+    @Min(value = 30, message = "몸무게는 30kg 이상이어야 합니다")
+    @Max(value = 200, message = "몸무게는 200kg 이하여야 합니다")
+    private Integer weight;
+
     @Schema(description = "주간 목표 거리(km)", example = "15.5", required = true)
     @NotNull(message = "주간 목표 거리는 필수입니다")
     @DecimalMin(value = "0.1", message = "주간 목표 거리는 0.1km 이상이어야 합니다")
