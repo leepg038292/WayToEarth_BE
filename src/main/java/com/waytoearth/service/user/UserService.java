@@ -339,6 +339,12 @@ public class UserService {
         }
         log.debug("[UserService] 크루 멤버십 삭제 완료");
 
+        // 5-5-1. 크루 통계에서 MVP 참조 해제 (외래 키 제약 조건 해결)
+        int clearedMvpCount = crewStatisticsRepository.clearMvpByUserId(userId);
+        if (clearedMvpCount > 0) {
+            log.debug("[UserService] 크루 통계 MVP 참조 해제 완료 - count: {}", clearedMvpCount);
+        }
+
         // 5-6. 러닝 기록 삭제 (RunningRoute는 cascade로 자동 삭제됨)
         runningRecordRepository.deleteByUserId(userId);
         log.debug("[UserService] 러닝 기록 삭제 완료");
