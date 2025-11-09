@@ -120,11 +120,13 @@ public class CrewJoinServiceImpl implements CrewJoinService {
             throw new RuntimeException("이미 처리된 가입 신청입니다.");
         }
 
-        // 가입 신청 거부
-        joinRequest.reject(getUserEntity(user.getUserId()), reason);
+        // 가입 신청 삭제 (거부 = 처리 완료, 더 이상 보관 불필요)
+        Long rejectedUserId = joinRequest.getUser().getId();
+        joinRequestRepository.delete(joinRequest);
+        log.info("가입 신청 삭제 완료 - requestId: {}", requestId);
 
-        log.info("크루 가입 신청이 거부되었습니다. requestId: {}, rejectedBy: {}, reason: {}",
-                requestId, user.getUserId(), reason);
+        log.info("크루 가입 신청이 거부되었습니다. requestId: {}, rejectedBy: {}, rejectedUserId: {}, reason: {}",
+                requestId, user.getUserId(), rejectedUserId, reason);
     }
 
     @Override
