@@ -167,6 +167,8 @@ public class UserService {
                 u.getResidence(),
                 ageGroup,
                 gender,
+                u.getHeight(),
+                u.getWeight(),
                 u.getWeeklyGoalDistance(),
                 u.getTotalDistance(),
                 u.getTotalRunningCount(),
