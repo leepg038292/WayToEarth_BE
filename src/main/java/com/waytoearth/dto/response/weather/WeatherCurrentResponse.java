@@ -4,7 +4,7 @@ import com.waytoearth.entity.enums.WeatherCondition;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Schema(description = "현재 날씨 응답")
 @Getter
@@ -26,8 +26,8 @@ public class WeatherCurrentResponse {
     @Schema(description = "현재 온도(°C)", example = "23.5")
     private Double temperature;
 
-    @Schema(description = "조회 시각")
-    private LocalDateTime fetchedAt;
+    @Schema(description = "조회 시각 (UTC)", example = "2025-11-09T10:17:09Z")
+    private Instant fetchedAt;
 
     @Schema(description = "날씨별 러닝 추천 메시지")
     private String recommendation;
@@ -38,7 +38,7 @@ public class WeatherCurrentResponse {
                 .emoji(c.getEmoji())
                 .iconCode(null)
                 .temperature(null)
-                .fetchedAt(LocalDateTime.now())
+                .fetchedAt(Instant.now())
                 .recommendation(c.getRecommendation())
                 .build();
     }
