@@ -383,7 +383,7 @@ public class RunningAnalysisService {
                 .feedbackId(feedback.getId())
                 .runningRecordId(feedback.getRunningRecord().getId())
                 .feedbackContent(feedback.getFeedbackContent())
-                .createdAt(feedback.getCreatedAt())
+                .createdAt(feedback.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant())
                 .modelName(feedback.getModelName())
                 .build();
     }

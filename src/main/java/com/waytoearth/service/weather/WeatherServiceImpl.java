@@ -70,7 +70,7 @@ public class WeatherServiceImpl implements WeatherService {
                     .emoji(condition.getEmoji())
                     .iconCode(icon) // 프론트가 자체 아이콘 쓰면 무시해도 OK
                     .temperature(temperature)
-                    .fetchedAt(LocalDateTime.now())
+                    .fetchedAt(java.time.Instant.now())
                     .recommendation(condition.getRecommendation()) // 아래 DTO 참고
                     .build();
 
