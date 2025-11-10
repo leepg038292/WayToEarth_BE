@@ -4,7 +4,7 @@ import com.waytoearth.entity.crew.CrewChatEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -32,8 +32,8 @@ public class CrewChatMessageDto {
     @Schema(description = "메시지 타입", example = "TEXT")
     private CrewChatEntity.MessageType messageType;
 
-    @Schema(description = "전송 시간")
-    private LocalDateTime sentAt;
+    @Schema(description = "전송 시간 (UTC)", example = "2025-11-09T10:17:09.125Z")
+    private Instant sentAt;
 
     @Schema(description = "읽음 여부", example = "true")
     private boolean isRead;

@@ -3,7 +3,7 @@ package com.waytoearth.dto.websocket;
 import com.waytoearth.entity.crew.CrewChatEntity;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -18,7 +18,7 @@ public class ChatMessage {
     private String senderName;
     private String message;
     private CrewChatEntity.MessageType messageType;
-    private LocalDateTime timestamp;
+    private Instant timestamp;
     private boolean isRead;
     private int unreadCount;
 }
