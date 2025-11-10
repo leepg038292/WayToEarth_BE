@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
@@ -30,14 +31,14 @@ public class CrewMemberResponse {
     @Schema(description = "크루 내 역할", example = "MEMBER")
     private String role;
 
-    @Schema(description = "가입일", example = "2024-01-15T10:30:00")
-    private LocalDateTime joinedAt;
+    @Schema(description = "가입일 (UTC)", example = "2024-01-15T01:30:00Z")
+    private Instant joinedAt;
 
     @Schema(description = "크루장 여부", example = "false")
     private Boolean isOwner;
 
-    @Schema(description = "최근 러닝 날짜 (없으면 null)", example = "2024-10-20T14:30:00")
-    private LocalDateTime lastRunningDate;
+    @Schema(description = "최근 러닝 날짜 (UTC, 없으면 null)", example = "2024-10-20T05:30:00Z")
+    private Instant lastRunningDate;
 
     /**
      * CloudFront URL을 사용하는 정적 팩토리 메서드 (최근 러닝 날짜 포함)
@@ -62,9 +63,9 @@ public class CrewMemberResponse {
                 member.getUser().getNickname(),
                 profileImageUrl,
                 member.getRole().name(),
-                member.getJoinedAt(),
+                member.getJoinedAt().atZone(java.time.ZoneId.systemDefault()).toInstant(),
                 member.isOwner(),
-                lastRunningDate
+                lastRunningDate != null ? lastRunningDate.atZone(java.time.ZoneId.systemDefault()).toInstant() : null
         );
     }
 
@@ -90,7 +91,7 @@ public class CrewMemberResponse {
                 member.getUser().getNickname(),
                 member.getUser().getProfileImageUrl(),
                 member.getRole().name(),
-                member.getJoinedAt(),
+                member.getJoinedAt().atZone(java.time.ZoneId.systemDefault()).toInstant(),
                 member.isOwner(),
                 null // lastRunningDate
         );

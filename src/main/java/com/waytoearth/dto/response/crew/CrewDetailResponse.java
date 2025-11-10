@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @NoArgsConstructor
@@ -39,11 +39,11 @@ public class CrewDetailResponse {
     @Schema(description = "크루장 닉네임", example = "김러너")
     private String ownerNickname;
 
-    @Schema(description = "생성일", example = "2024-01-15T10:30:00")
-    private LocalDateTime createdAt;
+    @Schema(description = "생성일 (UTC)", example = "2024-01-15T01:30:00Z")
+    private Instant createdAt;
 
-    @Schema(description = "수정일", example = "2024-01-15T10:30:00")
-    private LocalDateTime updatedAt;
+    @Schema(description = "수정일 (UTC)", example = "2024-01-15T01:30:00Z")
+    private Instant updatedAt;
 
     public static CrewDetailResponse from(CrewEntity crew, FileService fileService) {
         // profileImageKey가 있으면 CloudFront URL 생성, 없으면 기존 profileImageUrl 사용
@@ -64,8 +64,8 @@ public class CrewDetailResponse {
                 profileImageUrl,
                 crew.getOwner().getId(),
                 crew.getOwner().getNickname(),
-                crew.getCreatedAt(),
-                crew.getUpdatedAt()
+                crew.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant(),
+                crew.getUpdatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant()
         );
     }
 
@@ -81,8 +81,8 @@ public class CrewDetailResponse {
                 crew.getProfileImageUrl(),
                 crew.getOwner().getId(),
                 crew.getOwner().getNickname(),
-                crew.getCreatedAt(),
-                crew.getUpdatedAt()
+                crew.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant(),
+                crew.getUpdatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant()
         );
     }
 }

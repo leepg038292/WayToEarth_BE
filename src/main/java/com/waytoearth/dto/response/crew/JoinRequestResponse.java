@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @NoArgsConstructor
@@ -38,11 +38,11 @@ public class JoinRequestResponse {
     @Schema(description = "신청 상태", example = "PENDING")
     private String status;
 
-    @Schema(description = "신청일", example = "2024-01-15T10:30:00")
-    private LocalDateTime createdAt;
+    @Schema(description = "신청일 (UTC)", example = "2024-01-15T01:30:00Z")
+    private Instant createdAt;
 
-    @Schema(description = "처리일", example = "2024-01-15T11:30:00")
-    private LocalDateTime processedAt;
+    @Schema(description = "처리일 (UTC)", example = "2024-01-15T02:30:00Z")
+    private Instant processedAt;
 
     @Schema(description = "처리자 닉네임", example = "크루장")
     private String processedByNickname;
@@ -60,8 +60,8 @@ public class JoinRequestResponse {
                 userProfileImageUrl,
                 request.getMessage(),
                 request.getStatus().name(),
-                request.getCreatedAt(),
-                request.getProcessedAt(),
+                request.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant(),
+                request.getProcessedAt() != null ? request.getProcessedAt().atZone(java.time.ZoneId.systemDefault()).toInstant() : null,
                 request.getProcessedBy() != null ? request.getProcessedBy().getNickname() : null,
                 request.getProcessingNote()
         );

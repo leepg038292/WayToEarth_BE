@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @NoArgsConstructor
@@ -36,8 +36,8 @@ public class CrewListResponse {
     @Schema(description = "크루장 닉네임", example = "김러너")
     private String ownerNickname;
 
-    @Schema(description = "생성일", example = "2024-01-15T10:30:00")
-    private LocalDateTime createdAt;
+    @Schema(description = "생성일 (UTC)", example = "2024-01-15T01:30:00Z")
+    private Instant createdAt;
 
     @Schema(description = "가입 가능 여부", example = "true")
     private Boolean canJoin;
@@ -60,7 +60,7 @@ public class CrewListResponse {
                 crew.getCurrentMembers(),
                 profileImageUrl,
                 crew.getOwner().getNickname(),
-                crew.getCreatedAt(),
+                crew.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant(),
                 canJoin
         );
     }
@@ -76,7 +76,7 @@ public class CrewListResponse {
                 crew.getCurrentMembers(),
                 crew.getProfileImageUrl(),
                 crew.getOwner().getNickname(),
-                crew.getCreatedAt(),
+                crew.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant(),
                 canJoin
         );
     }
