@@ -71,7 +71,7 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
                     .senderName(user.getNickname())
                     .message(user.getNickname() + "님이 채팅방에 참여했습니다.")
                     .messageType(CrewChatEntity.MessageType.SYSTEM)
-                    .timestamp(LocalDateTime.now())
+                    .timestamp(java.time.Instant.now())
                     .build();
 
             broadcastToCrewMembers(crewId, joinMessage, userId);
@@ -148,7 +148,7 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
                     .senderName(sender != null ? sender.getNickname() : "Unknown")
                     .message(savedMessage.getMessage())
                     .messageType(savedMessage.getMessageType())
-                    .timestamp(savedMessage.getSentAt())
+                    .timestamp(savedMessage.getSentAt().atZone(java.time.ZoneId.systemDefault()).toInstant())
                     .build();
 
             // 크루 멤버들에게 브로드캐스트
@@ -192,7 +192,7 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
                         .senderName(user.getNickname())
                         .message(user.getNickname() + "님이 채팅방을 나갔습니다.")
                         .messageType(CrewChatEntity.MessageType.SYSTEM)
-                        .timestamp(LocalDateTime.now())
+                        .timestamp(java.time.Instant.now())
                         .build();
 
                 broadcastToCrewMembers(crewId, leaveMessage, userId);
@@ -257,7 +257,7 @@ public class CrewChatWebSocketHandler extends TextWebSocketHandler {
             ChatMessage errorMessage = ChatMessage.builder()
                     .message(error)
                     .messageType(CrewChatEntity.MessageType.SYSTEM)
-                    .timestamp(LocalDateTime.now())
+                    .timestamp(java.time.Instant.now())
                     .build();
 
             session.sendMessage(new TextMessage(objectMapper.writeValueAsString(errorMessage)));

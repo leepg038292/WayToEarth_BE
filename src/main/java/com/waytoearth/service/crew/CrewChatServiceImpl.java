@@ -87,7 +87,7 @@ public class CrewChatServiceImpl implements CrewChatService {
                 .senderName(entity.getSender().getNickname())
                 .message(entity.getMessage())
                 .messageType(entity.getMessageType())
-                .sentAt(entity.getSentAt())
+                .sentAt(entity.getSentAt().atZone(java.time.ZoneId.systemDefault()).toInstant())
                 .isRead(entity.isReadBy(userId))
                 .readCount(entity.getReadStatus().size())
                 .build());
@@ -306,7 +306,7 @@ public class CrewChatServiceImpl implements CrewChatService {
                         .senderName(entity.getSender().getNickname())
                         .message(entity.getMessage())
                         .messageType(entity.getMessageType())
-                        .sentAt(entity.getSentAt())
+                        .sentAt(entity.getSentAt().atZone(java.time.ZoneId.systemDefault()).toInstant())
                         .isRead(entity.isReadBy(userId))
                         .readCount(entity.getReadStatus().size())
                         .build())
