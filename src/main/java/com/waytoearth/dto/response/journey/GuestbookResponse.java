@@ -4,7 +4,7 @@ import com.waytoearth.entity.journey.GuestbookEntity;
 import com.waytoearth.service.file.FileService;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Schema(description = "방명록 응답")
 public record GuestbookResponse(
@@ -20,8 +20,8 @@ public record GuestbookResponse(
     @Schema(description = "방명록 메시지", example = "정말 아름다운 곳이에요!")
     String message,
 
-    @Schema(description = "작성 시간", example = "2024-01-15T14:30:00")
-    LocalDateTime createdAt
+    @Schema(description = "작성 시간 (UTC)", example = "2024-01-15T05:30:00Z")
+    Instant createdAt
 ) {
     public static GuestbookResponse from(GuestbookEntity guestbook, FileService fileService) {
         return new GuestbookResponse(
@@ -29,7 +29,7 @@ public record GuestbookResponse(
             UserSummaryResponse.from(guestbook.getUser(), fileService),
             LandmarkSummaryResponse.from(guestbook.getLandmark()),
             guestbook.getMessage(),
-            guestbook.getCreatedAt()
+            guestbook.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant()
         );
     }
 }
