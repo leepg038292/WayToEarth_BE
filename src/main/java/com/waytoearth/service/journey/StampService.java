@@ -25,9 +25,9 @@ public interface StampService {
 
 
     /**
-     * 스탬프 수집 가능 여부 확인
+     * 스탬프 수집 가능 여부 확인 (진행도 기반)
      */
-    boolean canCollectStamp(AuthenticatedUser user, Long progressId, Long landmarkId, Double userLatitude, Double userLongitude);
+    boolean canCollectStamp(AuthenticatedUser user, Long progressId, Long landmarkId);
 
     /**
      * 사용자의 총 스탬프 통계
