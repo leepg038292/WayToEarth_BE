@@ -96,7 +96,7 @@ public class StampServiceImpl implements StampService {
 
 
     @Override
-    public boolean canCollectStamp(AuthenticatedUser user, Long progressId, Long landmarkId, Double userLatitude, Double userLongitude) {
+    public boolean canCollectStamp(AuthenticatedUser user, Long progressId, Long landmarkId) {
         UserJourneyProgressEntity progress = progressRepository.findById(progressId)
                 .orElseThrow(() -> new IllegalArgumentException("여행 진행을 찾을 수 없습니다: " + progressId));
 
@@ -107,12 +107,17 @@ public class StampServiceImpl implements StampService {
         LandmarkEntity landmark = landmarkRepository.findById(landmarkId)
                 .orElseThrow(() -> new IllegalArgumentException("랜드마크를 찾을 수 없습니다: " + landmarkId));
 
-        double distance = calculateDistance(
-                userLatitude, userLongitude,
-                landmark.getLatitude(), landmark.getLongitude()
-        );
+        // 중복 수집 체크
+        boolean alreadyCollected = stampRepository
+                .findByUserJourneyProgressIdAndLandmarkId(progressId, landmarkId)
+                .isPresent();
 
-        return distance <= COLLECTION_RADIUS_KM;
+        if (alreadyCollected) {
+            return false;
+        }
+
+        // 진행률 기반으로만 체크 (실제 위치 검증 제거)
+        return progress.getCurrentDistanceKm() >= landmark.getDistanceFromStart();
     }
 
     @Override
