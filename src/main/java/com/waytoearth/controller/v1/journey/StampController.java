@@ -33,9 +33,12 @@ public class StampController {
             랜드마크에서 스탬프를 수집합니다.
 
             **수집 조건:**
-            - 랜드마크 500m 반경 내에 위치해야 함
-            - 해당 랜드마크에 진행률상 도달해야 함
+            - 해당 랜드마크의 누적 거리에 도달해야 함 (진행도 기반)
             - 중복 수집 불가
+
+            **가상 여행 시스템:**
+            - 실제 GPS 위치가 아닌 누적 달린 거리로 판정
+            - 해외 여정(파리, 뉴욕 등)도 한국에서 달리며 진행 가능
 
             **특별 스탬프 조건:**
             - 여정의 첫 번째/마지막 랜드마크
@@ -93,19 +96,24 @@ public class StampController {
     }
 
     @GetMapping("/check-collection")
-    @Operation(summary = "스탬프 수집 가능 여부 확인", description = "현재 위치에서 스탬프 수집이 가능한지 확인합니다.")
+    @Operation(
+        summary = "스탬프 수집 가능 여부 확인",
+        description = """
+            진행률 기반으로 스탬프 수집이 가능한지 확인합니다.
+
+            **확인 조건:**
+            - 누적 거리가 랜드마크의 distanceFromStart 이상인지 체크
+            - 이미 수집한 스탬프인지 체크
+            """
+    )
     public ResponseEntity<Boolean> checkCollectionAvailability(
             @AuthUser AuthenticatedUser user,
             @Parameter(description = "여행 진행 ID")
             @RequestParam Long progressId,
             @Parameter(description = "랜드마크 ID")
-            @RequestParam Long landmarkId,
-            @Parameter(description = "현재 위도")
-            @RequestParam Double latitude,
-            @Parameter(description = "현재 경도")
-            @RequestParam Double longitude) {
+            @RequestParam Long landmarkId) {
 
-        boolean canCollect = stampService.canCollectStamp(user, progressId, landmarkId, latitude, longitude);
+        boolean canCollect = stampService.canCollectStamp(user, progressId, landmarkId);
         return ResponseEntity.ok(canCollect);
     }
 }
