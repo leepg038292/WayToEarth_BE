@@ -27,8 +27,6 @@ public class StampServiceImpl implements StampService {
     private final UserJourneyProgressRepository progressRepository;
     private final LandmarkRepository landmarkRepository;
 
-    private static final double COLLECTION_RADIUS_KM = 0.5; // 500m 반경 내에서 수집 가능
-
     @Override
     @Transactional
     public StampResponse collectStamp(AuthenticatedUser user, StampCollectRequest request) {
@@ -47,15 +45,13 @@ public class StampServiceImpl implements StampService {
             throw new IllegalArgumentException("이미 수집한 스탬프입니다.");
         }
 
-        // 수집 가능 거리 확인
-        if (!canCollectStamp(user, request.progressId(), request.landmarkId(),
-                request.collectionLocation().latitude(), request.collectionLocation().longitude())) {
-            throw new IllegalArgumentException("랜드마크 근처에 있어야 스탬프를 수집할 수 있습니다.");
-        }
-
         // 진행률 확인 (랜드마크에 도달했는지)
+        // 가상 여행 컨셉 - 실제 GPS 위치가 아닌 누적 거리로만 판정 (해외 여정 지원)
         if (progress.getCurrentDistanceKm() < landmark.getDistanceFromStart()) {
-            throw new IllegalArgumentException("아직 이 랜드마크에 도달하지 않았습니다.");
+            throw new IllegalArgumentException(
+                String.format("아직 이 랜드마크에 도달하지 않았습니다. (현재: %.2fkm, 필요: %.2fkm)",
+                    progress.getCurrentDistanceKm(), landmark.getDistanceFromStart())
+            );
         }
 
         // 스탬프 생성
