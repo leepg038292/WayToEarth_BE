@@ -96,19 +96,24 @@ public class StampController {
     }
 
     @GetMapping("/check-collection")
-    @Operation(summary = "스탬프 수집 가능 여부 확인", description = "현재 위치에서 스탬프 수집이 가능한지 확인합니다.")
+    @Operation(
+        summary = "스탬프 수집 가능 여부 확인",
+        description = """
+            진행률 기반으로 스탬프 수집이 가능한지 확인합니다.
+
+            **확인 조건:**
+            - 누적 거리가 랜드마크의 distanceFromStart 이상인지 체크
+            - 이미 수집한 스탬프인지 체크
+            """
+    )
     public ResponseEntity<Boolean> checkCollectionAvailability(
             @AuthUser AuthenticatedUser user,
             @Parameter(description = "여행 진행 ID")
             @RequestParam Long progressId,
             @Parameter(description = "랜드마크 ID")
-            @RequestParam Long landmarkId,
-            @Parameter(description = "현재 위도")
-            @RequestParam Double latitude,
-            @Parameter(description = "현재 경도")
-            @RequestParam Double longitude) {
+            @RequestParam Long landmarkId) {
 
-        boolean canCollect = stampService.canCollectStamp(user, progressId, landmarkId, latitude, longitude);
+        boolean canCollect = stampService.canCollectStamp(user, progressId, landmarkId);
         return ResponseEntity.ok(canCollect);
     }
 }
