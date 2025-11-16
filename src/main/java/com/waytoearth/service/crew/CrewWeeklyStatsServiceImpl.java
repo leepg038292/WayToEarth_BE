@@ -1,8 +1,10 @@
 package com.waytoearth.service.crew;
 
 import com.waytoearth.dto.response.crew.CrewWeeklyCompareResponse;
+import com.waytoearth.dto.response.crew.CrewWeeklyDailyResponse;
 import com.waytoearth.repository.running.RunningRecordRepository;
 import com.waytoearth.repository.statistics.CrewWeeklyStatsMemberDto;
+import com.waytoearth.repository.statistics.CrewDailySumDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +64,43 @@ public class CrewWeeklyStatsServiceImpl implements CrewWeeklyStatsService {
         return new CrewWeeklyCompareResponse(thisWeekTotal, lastWeekTotal, growth, members);
     }
 
+    @Override
+    public CrewWeeklyDailyResponse getWeeklyDaily(Long crewId, LocalDate weekStart) {
+        LocalDateTime thisStart = weekStart.atStartOfDay();
+        LocalDateTime thisEnd = weekStart.plusDays(6).atTime(LocalTime.MAX);
+        LocalDateTime lastStart = weekStart.minusWeeks(1).atStartOfDay();
+        LocalDateTime lastEnd = weekStart.minusWeeks(1).plusDays(6).atTime(LocalTime.MAX);
+
+        List<CrewDailySumDto> thisWeek = runningRecordRepository.getCrewDailySums(
+                crewId, thisStart, thisEnd);
+        List<CrewDailySumDto> lastWeek = runningRecordRepository.getCrewDailySums(
+                crewId, lastStart, lastEnd);
+
+        java.util.Map<java.time.LocalDate, Double> thisMap = thisWeek.stream()
+                .collect(java.util.stream.Collectors.toMap(CrewDailySumDto::getDate, CrewDailySumDto::getDistance));
+        java.util.Map<java.time.LocalDate, Double> lastMap = lastWeek.stream()
+                .collect(java.util.stream.Collectors.toMap(CrewDailySumDto::getDate, CrewDailySumDto::getDistance));
+
+        java.util.List<CrewWeeklyDailyResponse.Day> days = new java.util.ArrayList<>();
+        double thisTotal = 0.0;
+        double lastTotal = 0.0;
+        for (int i = 0; i < 7; i++) {
+            var d = weekStart.plusDays(i);
+            double tw = round1(thisMap.getOrDefault(d, 0.0));
+            double lw = round1(lastMap.getOrDefault(d.minusWeeks(1), 0.0));
+            thisTotal += tw;
+            lastTotal += lw;
+            days.add(new CrewWeeklyDailyResponse.Day(
+                    d.toString(), d.getDayOfWeek().name(), tw, lw
+            ));
+        }
+        thisTotal = round1(thisTotal);
+        lastTotal = round1(lastTotal);
+        Double growth = computeGrowthRate(thisTotal, lastTotal);
+
+        return new CrewWeeklyDailyResponse(thisTotal, lastTotal, growth, days);
+    }
+
     private static double round1(double v) {
         return Math.round(v * 10.0) / 10.0;
     }
@@ -75,4 +114,3 @@ public class CrewWeeklyStatsServiceImpl implements CrewWeeklyStatsService {
         return Math.round(rate * 10.0) / 10.0;
     }
 }
-

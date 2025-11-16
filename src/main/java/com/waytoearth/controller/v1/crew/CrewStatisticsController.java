@@ -89,6 +89,35 @@ public class CrewStatisticsController {
         return ResponseEntity.ok(res);
     }
 
+    @Operation(summary = "크루 주간/전주 일자별 합계", description = "이번 주 월~일 날짜별 거리와 지난주 동일 요일 거리 합계를 제공합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "403", description = "권한 없음 (크루 멤버 아님)")
+    })
+    @GetMapping("/{crewId}/weekly-daily")
+    public ResponseEntity<com.waytoearth.dto.response.crew.CrewWeeklyDailyResponse> getCrewWeeklyDaily(
+            @Parameter(description = "크루 ID") @PathVariable Long crewId,
+            @Parameter(description = "주 시작일(월요일 권장) - yyyy-MM-dd", example = "2025-11-10")
+            @RequestParam(required = false) String weekStart,
+            @com.waytoearth.security.AuthUser com.waytoearth.security.AuthenticatedUser user
+    ) {
+        if (user == null || !crewMemberRepository.isUserMemberOfCrew(user.getUserId(), crewId)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+        }
+
+        java.time.ZoneId zone = java.time.ZoneId.of("Asia/Seoul");
+        java.time.LocalDate start;
+        if (weekStart == null || weekStart.isBlank()) {
+            java.time.LocalDate today = java.time.LocalDate.now(zone);
+            start = today.with(java.time.DayOfWeek.MONDAY);
+        } else {
+            start = java.time.LocalDate.parse(weekStart);
+        }
+
+        var res = crewWeeklyStatsService.getWeeklyDaily(crewId, start);
+        return ResponseEntity.ok(res);
+    }
+
     @Operation(summary = "크루 전체 월간 통계 목록", description = "크루의 모든 월간 통계 목록을 조회합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
