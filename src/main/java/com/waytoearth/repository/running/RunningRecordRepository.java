@@ -21,7 +21,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface RunningRecordRepository extends JpaRepository<RunningRecord, Long>, StatisticsRepositoryCustom {
+public interface RunningRecordRepository extends JpaRepository<RunningRecord, Long>, StatisticsRepositoryCustom,
+        com.waytoearth.repository.statistics.CrewWeeklyStatsRepositoryCustom {
 
     // 진행 중 세션 존재 여부(중복 시작 방지)
     boolean existsBySessionIdAndIsCompletedFalse(String sessionId);
