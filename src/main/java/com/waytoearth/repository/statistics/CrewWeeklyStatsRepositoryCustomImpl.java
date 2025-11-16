@@ -55,5 +55,29 @@ public class CrewWeeklyStatsRepositoryCustomImpl implements CrewWeeklyStatsRepos
                 .groupBy(cm.user.id, cm.user.nickname)
                 .fetch();
     }
-}
 
+    @Override
+    public List<CrewDailySumDto> getCrewDailySums(Long crewId, LocalDateTime start, LocalDateTime end) {
+        var y = r.startedAt.year();
+        var m = r.startedAt.month();
+        var d = r.startedAt.dayOfMonth();
+
+        return queryFactory
+                .select(Projections.constructor(
+                        CrewDailySumDto.class,
+                        y,
+                        m,
+                        d,
+                        r.distance.sum().doubleValue()
+                ))
+                .from(cm)
+                .leftJoin(r)
+                .on(r.user.id.eq(cm.user.id)
+                        .and(r.isCompleted.isTrue())
+                        .and(r.startedAt.between(start, end)))
+                .where(cm.crew.id.eq(crewId))
+                .groupBy(y, m, d)
+                .orderBy(y.asc(), m.asc(), d.asc())
+                .fetch();
+    }
+}

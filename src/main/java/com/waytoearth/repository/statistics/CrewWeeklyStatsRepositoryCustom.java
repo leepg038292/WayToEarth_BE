@@ -10,5 +10,8 @@ public interface CrewWeeklyStatsRepositoryCustom {
                                                         LocalDateTime thisEnd,
                                                         LocalDateTime lastStart,
                                                         LocalDateTime lastEnd);
-}
 
+    List<CrewDailySumDto> getCrewDailySums(Long crewId,
+                                           LocalDateTime start,
+                                           LocalDateTime end);
+}
