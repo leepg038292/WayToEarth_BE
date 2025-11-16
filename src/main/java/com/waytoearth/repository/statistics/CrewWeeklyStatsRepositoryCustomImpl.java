@@ -62,6 +62,7 @@ public class CrewWeeklyStatsRepositoryCustomImpl implements CrewWeeklyStatsRepos
         var m = r.startedAt.month();
         var d = r.startedAt.dayOfMonth();
 
+        // from RunningRecord (inner join) to avoid null year/month/day when no record
         return queryFactory
                 .select(Projections.constructor(
                         CrewDailySumDto.class,
@@ -70,12 +71,13 @@ public class CrewWeeklyStatsRepositoryCustomImpl implements CrewWeeklyStatsRepos
                         d,
                         r.distance.sum().doubleValue()
                 ))
-                .from(cm)
-                .leftJoin(r)
-                .on(r.user.id.eq(cm.user.id)
-                        .and(r.isCompleted.isTrue())
-                        .and(r.startedAt.between(start, end)))
-                .where(cm.crew.id.eq(crewId))
+                .from(r)
+                .join(cm).on(cm.user.id.eq(r.user.id))
+                .where(
+                        cm.crew.id.eq(crewId),
+                        r.isCompleted.isTrue(),
+                        r.startedAt.between(start, end)
+                )
                 .groupBy(y, m, d)
                 .orderBy(y.asc(), m.asc(), d.asc())
                 .fetch();
