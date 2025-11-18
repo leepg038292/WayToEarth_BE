@@ -58,7 +58,7 @@ public class PaceCoachService {
         }
 
         // 3. 완료된 러닝 기록 수 확인
-        long completedCount = getCompletedRecordsCount(userId);
+        long completedCount = getCompletedRecordsCount(user);
         log.debug("Completed records count: {}", completedCount);
 
         if (completedCount < MINIMUM_RECORDS_REQUIRED) {
@@ -121,8 +121,8 @@ public class PaceCoachService {
     /**
      * 완료된 러닝 기록 수 조회
      */
-    private long getCompletedRecordsCount(Long userId) {
-        return runningRecordRepository.countByUserIdAndIsCompletedTrue(userId);
+    private long getCompletedRecordsCount(User user) {
+        return runningRecordRepository.countByUserAndIsCompletedTrue(user);
     }
 
     /**
