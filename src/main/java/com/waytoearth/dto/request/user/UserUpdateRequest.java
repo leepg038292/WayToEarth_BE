@@ -33,6 +33,9 @@ public class UserUpdateRequest {
         @DecimalMax(value = "999.99")
         private BigDecimal weeklyGoalDistance;
 
+        @JsonProperty("is_pace_coach_enabled")
+        private Boolean isPaceCoachEnabled;
+
         //  S3 key도 함께 전달 (삭제/교체 시 필요)
         @JsonProperty("profile_image_key")
         private String profileImageKey;
