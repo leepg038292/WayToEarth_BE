@@ -52,6 +52,11 @@ public class User extends BaseTimeEntity {
     private BigDecimal weeklyGoalDistance;
 
     @Setter
+    @Column(name = "is_pace_coach_enabled", nullable = false)
+    @Builder.Default
+    private Boolean isPaceCoachEnabled = false;
+
+    @Setter
     @Column(name = "profile_image_url", length = 2048)
     private String profileImageUrl;
 
