@@ -29,6 +29,12 @@ public class NotificationService {
      */
     @Transactional
     public void registerFcmToken(Long userId, FcmTokenRequest request) {
+        // Expo 토큰 검증 (FCM 토큰만 허용)
+        if (request.getFcmToken() != null && request.getFcmToken().startsWith("ExponentPushToken")) {
+            log.warn("Expo 토큰은 등록할 수 없습니다. userId={}, token={}", userId, request.getFcmToken());
+            throw new IllegalArgumentException("유효하지 않은 FCM 토큰 형식입니다. Expo 토큰은 지원되지 않습니다.");
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -211,6 +212,7 @@ public class FcmService {
     /**
      * FCM 예외 처리 (무효한 토큰 비활성화)
      */
+    @Transactional
     protected void handleMessagingException(String token, FirebaseMessagingException e) {
         String errorCode = e.getMessagingErrorCode() != null ? e.getMessagingErrorCode().name() : "";
 
